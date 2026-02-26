@@ -113,7 +113,7 @@ const guardar = async () => {
   })
 
   if (error) {
-    errorMsg.value = error.message
+    errorMsg.value = 'No se pudo cambiar la contraseña. Intentá de nuevo.'
     loading.value = false
     return
   }
