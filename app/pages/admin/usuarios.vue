@@ -1,16 +1,18 @@
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-semibold text-gray-800">Gestión de Usuarios</h2>
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate">Gestión de Usuarios</h2>
       <UButton
         icon="i-heroicons-plus"
         label="Nuevo Usuario"
         size="sm"
+        class="flex-shrink-0"
         @click="abrirModalCrear"
       />
     </div>
 
     <UCard>
+      <div class="overflow-x-auto -mx-4 sm:mx-0">
       <UTable :rows="usuarios" :columns="columns" :loading="loading">
         <template #rol-data="{ row }">
           <UBadge
@@ -33,6 +35,7 @@
           />
         </template>
       </UTable>
+      </div>
     </UCard>
 
     <!-- Modal crear usuario -->

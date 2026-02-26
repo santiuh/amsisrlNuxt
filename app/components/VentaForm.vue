@@ -3,32 +3,32 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Cliente y contacto -->
       <UFormGroup label="Cliente *" class="md:col-span-2">
-        <UInput v-model="form.cliente" placeholder="Nombre completo del cliente" class="w-full" />
+        <UInput v-model="form.cliente" placeholder="Nombre completo del cliente" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <UFormGroup label="DNI / CUIL *">
-        <UInput v-model="form.dni_cuil" placeholder="20123456789" class="w-full" />
+        <UInput v-model="form.dni_cuil" placeholder="20123456789" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <UFormGroup label="Teléfono">
-        <UInput v-model="form.telefono" placeholder="1123456789" class="w-full" />
+        <UInput v-model="form.telefono" placeholder="1123456789" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <!-- Dirección estructurada -->
       <UFormGroup label="Dirección *">
-        <UInput v-model="form.dir_calle" placeholder="Ej: Av. Corrientes 1234" class="w-full" />
+        <UInput v-model="form.dir_calle" placeholder="Ej: Av. Corrientes 1234" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <UFormGroup label="Entre calles">
-        <UInput v-model="form.dir_entre_calles" placeholder="Ej: Callao y Riobamba" class="w-full" />
+        <UInput v-model="form.dir_entre_calles" placeholder="Ej: Callao y Riobamba" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <UFormGroup label="Localidad *">
-        <UInput v-model="form.dir_localidad" placeholder="Ej: Buenos Aires" class="w-full" />
+        <UInput v-model="form.dir_localidad" placeholder="Ej: Buenos Aires" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <UFormGroup label="Aclaración">
-        <UInput v-model="form.dir_aclaracion" placeholder="Piso, dpto, referencia..." class="w-full" />
+        <UInput v-model="form.dir_aclaracion" placeholder="Piso, dpto, referencia..." class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <!-- Paquete dinámico -->
@@ -39,6 +39,7 @@
           placeholder="Seleccionar paquete"
           class="w-full"
           :loading="loadingCatalogo"
+          :disabled="readonly"
         />
       </UFormGroup>
 
@@ -56,6 +57,7 @@
               :value="extra.id"
               v-model="form.extras_ids"
               class="w-4 h-4 accent-primary-500"
+              :disabled="readonly"
             />
             <label :for="`extra-${extra.id}`" class="text-sm cursor-pointer flex-1">
               {{ extra.nombre }}
@@ -71,6 +73,7 @@
           v-model="form.decos"
           :options="decosOptions"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormGroup>
 
@@ -80,6 +83,7 @@
           v-model="form.bocas"
           :options="bocasOptions"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormGroup>
 
@@ -91,7 +95,7 @@
             disabled
             class="w-full bg-gray-50"
           />
-          <span class="text-xs text-gray-400 whitespace-nowrap">Calculado automáticamente</span>
+          <span v-if="!readonly" class="text-xs text-gray-400 whitespace-nowrap">Calculado automáticamente</span>
         </div>
         <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 mt-1">
           {{ desgloseBocasDecos }}
@@ -105,17 +109,18 @@
           :options="formaPagoOptions"
           placeholder="Seleccionar forma de pago"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormGroup>
 
-      <!-- Estado: solo en modo edición para oficinista/admin -->
-      <UFormGroup v-if="canEditEstado" label="Estado">
-        <USelect v-model="form.estado" :options="estadoOptions" class="w-full" />
+      <!-- Estado: visible en edición (oficinista/admin) o en modo solo lectura -->
+      <UFormGroup v-if="canEditEstado || readonly" label="Estado">
+        <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <!-- Fecha de coordinación: obligatoria cuando estado = coordinado -->
       <UFormGroup
-        v-if="canEditEstado && form.estado === 'coordinado'"
+        v-if="(canEditEstado || readonly) && form.estado === 'coordinado'"
         label="Fecha y horario de coordinación *"
         class="md:col-span-2"
       >
@@ -123,6 +128,7 @@
           v-model="form.fecha_coordinacion"
           type="datetime-local"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormGroup>
 
@@ -133,11 +139,12 @@
           placeholder="Observaciones adicionales de la venta..."
           :rows="3"
           class="w-full"
+          :disabled="readonly"
         />
       </UFormGroup>
 
-      <!-- Registro de gestión: solo oficinista/admin -->
-      <UFormGroup v-if="canEditGestion" label="Registro de Gestión" class="md:col-span-2">
+      <!-- Registro de gestión: solo oficinista/admin en modo edición -->
+      <UFormGroup v-if="canEditGestion && !readonly" label="Registro de Gestión" class="md:col-span-2">
         <!-- Entradas existentes -->
         <div
           v-if="logEntradas.length > 0"
@@ -171,14 +178,14 @@
     </div>
 
     <UAlert
-      v-if="errorMsg"
+      v-if="errorMsg && !readonly"
       icon="i-heroicons-exclamation-circle"
       color="red"
       variant="soft"
       :title="errorMsg"
     />
 
-    <div class="flex justify-end gap-3">
+    <div v-if="!readonly" class="flex justify-end gap-3">
       <UButton
         v-if="showCancel"
         label="Cancelar"
@@ -200,6 +207,7 @@ const props = defineProps<{
   initialData?: Record<string, any>
   submitLabel?: string
   showCancel?: boolean
+  readonly?: boolean
 }>()
 
 const emit = defineEmits<{

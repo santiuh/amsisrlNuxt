@@ -19,7 +19,7 @@ const props = defineProps<{
   value: string | number
   icon: string
   sub?: string
-  color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple'
+  color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple' | 'orange' | 'teal'
 }>()
 
 const colorMap: Record<string, { bg: string; icon: string }> = {
@@ -28,9 +28,11 @@ const colorMap: Record<string, { bg: string; icon: string }> = {
   yellow: { bg: 'bg-yellow-50', icon: 'text-yellow-600' },
   red:    { bg: 'bg-red-50',    icon: 'text-red-600' },
   purple: { bg: 'bg-purple-50', icon: 'text-purple-600' },
+  orange: { bg: 'bg-orange-50', icon: 'text-orange-600' },
+  teal:   { bg: 'bg-teal-50',   icon: 'text-teal-600' },
 }
 
-const colors = computed(() => colorMap[props.color ?? 'blue'])
+const colors = computed(() => colorMap[props.color ?? 'blue'] ?? colorMap.blue)
 const bgColor = computed(() => colors.value.bg)
 const iconColor = computed(() => colors.value.icon)
 </script>

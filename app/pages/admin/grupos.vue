@@ -1,16 +1,18 @@
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-semibold text-gray-800">Gestión de Grupos</h2>
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate">Gestión de Grupos</h2>
       <UButton
         icon="i-heroicons-plus"
         label="Nuevo Grupo"
         size="sm"
+        class="flex-shrink-0"
         @click="abrirModalCrear"
       />
     </div>
 
     <UCard>
+      <div class="overflow-x-auto -mx-4 sm:mx-0">
       <UTable :rows="grupos" :columns="columnasGrupos" :loading="loading">
         <template #lider-data="{ row }">
           <span class="font-medium">{{ row.lider?.nombre ?? '—' }}</span>
@@ -31,6 +33,7 @@
           />
         </template>
       </UTable>
+      </div>
     </UCard>
 
     <!-- Modal: Crear grupo -->

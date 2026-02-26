@@ -52,6 +52,7 @@
             <UButton icon="i-heroicons-plus" label="Nuevo Paquete" size="sm" @click="abrirModalPaquete()" />
           </div>
           <UCard>
+            <div class="overflow-x-auto -mx-4 sm:mx-0">
             <UTable :rows="paquetes" :columns="columnasPaquetes" :loading="loadingPaquetes">
               <template #activo-data="{ row }">
                 <UBadge :color="row.activo ? 'green' : 'gray'" :label="row.activo ? 'Activo' : 'Inactivo'" variant="subtle" />
@@ -72,6 +73,7 @@
                 </div>
               </template>
             </UTable>
+            </div>
           </UCard>
         </div>
       </template>
@@ -83,6 +85,7 @@
             <UButton icon="i-heroicons-plus" label="Nuevo Extra" size="sm" @click="abrirModalExtra()" />
           </div>
           <UCard>
+            <div class="overflow-x-auto -mx-4 sm:mx-0">
             <UTable :rows="extras" :columns="columnasExtras" :loading="loadingExtras">
               <template #activo-data="{ row }">
                 <UBadge :color="row.activo ? 'green' : 'gray'" :label="row.activo ? 'Activo' : 'Inactivo'" variant="subtle" />
@@ -103,6 +106,7 @@
                 </div>
               </template>
             </UTable>
+            </div>
           </UCard>
         </div>
       </template>
