@@ -45,12 +45,13 @@ const navItems = computed(() => {
     { to: '/ventas/nueva', label: 'Nueva Venta', icon: 'i-heroicons-plus-circle' },
     {
       to: '/ventas',
-      label: rol === 'vendedor' ? 'Mis Ventas' : 'Todas las Ventas',
+      label: (rol === 'vendedor' || rol === 'lider') ? 'Mis Ventas' : 'Todas las Ventas',
       icon: 'i-heroicons-table-cells',
     },
   ]
   if (rol === 'admin') {
     items.push({ to: '/admin/usuarios', label: 'Usuarios', icon: 'i-heroicons-users' })
+    items.push({ to: '/admin/grupos', label: 'Grupos', icon: 'i-heroicons-user-group' })
   }
   return items
 })
