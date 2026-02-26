@@ -10,7 +10,7 @@
           color="blue"
         />
         <StatsCard
-          label="Mis Ventas Aceptadas"
+          label="Mis Ventas Coordinadas"
           :value="stats.misAceptadas"
           icon="i-heroicons-check-circle"
           color="green"
@@ -38,7 +38,7 @@
           color="blue"
         />
         <StatsCard
-          label="Mis Ventas Aceptadas"
+          label="Mis Ventas Coordinadas"
           :value="stats.misAceptadas"
           icon="i-heroicons-check-circle"
           color="green"
@@ -61,7 +61,7 @@
           color="orange"
         />
         <StatsCard
-          label="Aceptadas del Equipo"
+          label="Coordinadas del Equipo"
           :value="stats.equipoAceptadas"
           icon="i-heroicons-check-badge"
           color="teal"
@@ -85,7 +85,7 @@
           color="blue"
         />
         <StatsCard
-          label="Ventas Aceptadas"
+          label="Ventas Coordinadas"
           :value="stats.aceptadas"
           icon="i-heroicons-check-circle"
           color="green"
@@ -113,7 +113,7 @@
           :value="`${stats.porcentajeConversion}%`"
           icon="i-heroicons-arrow-trending-up"
           color="green"
-          :sub="`${stats.aceptadas} aceptadas / ${stats.totalMes} total`"
+          :sub="`${stats.aceptadas} coordinadas / ${stats.totalMes} total`"
         />
         <StatsCard
           label="Ventas Concretadas"
@@ -165,7 +165,7 @@ const ventas = ref<any[]>([])
 const rankingColumns = [
   { key: 'nombre', label: 'Vendedor' },
   { key: 'total', label: 'Total Ventas' },
-  { key: 'aceptadas', label: 'Aceptadas' },
+  { key: 'aceptadas', label: 'Coordinadas' },
 ]
 const actividadColumns = [
   { key: 'nombre', label: 'Oficinista' },
@@ -200,13 +200,13 @@ const stats = computed(() => {
   const propiasMes = propias.filter(v => v.fecha_carga >= inicioMes)
   const equipo = ventas.value.filter(v => v.vendedor_id !== profile.value?.id)
   const equipoMes = equipo.filter(v => v.fecha_carga >= inicioMes).length
-  const equipoAceptadas = equipo.filter(v => v.fecha_carga >= inicioMes && v.estado === 'aceptado').length
+  const equipoAceptadas = equipo.filter(v => v.fecha_carga >= inicioMes && v.estado === 'coordinado').length
   const total = ventasMes.value.length
-  const aceptadas = ventasMes.value.filter(v => v.estado === 'aceptado').length
+  const aceptadas = ventasMes.value.filter(v => v.estado === 'coordinado').length
   const concretadas = ventasMes.value.filter(v => v.estado === 'concretado').length
   return {
     misVentasMes: propiasMes.length,
-    misAceptadas: propias.filter(v => v.estado === 'aceptado').length,
+    misAceptadas: propias.filter(v => v.estado === 'coordinado').length,
     totalMes: total,
     aceptadas,
     concretadas,
@@ -222,7 +222,7 @@ const rankingVendedores = computed(() => {
     const nombre = v.profiles?.nombre ?? 'Desconocido'
     if (!map[nombre]) map[nombre] = { nombre, total: 0, aceptadas: 0 }
     map[nombre].total++
-    if (v.estado === 'aceptado') map[nombre].aceptadas++
+    if (v.estado === 'coordinado') map[nombre].aceptadas++
   })
   return Object.values(map).sort((a, b) => b.total - a.total)
 })

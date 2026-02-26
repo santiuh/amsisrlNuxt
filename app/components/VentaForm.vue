@@ -92,6 +92,19 @@
         <USelect v-model="form.estado" :options="estadoOptions" class="w-full" />
       </UFormGroup>
 
+      <!-- Fecha de coordinación: obligatoria cuando estado = coordinado -->
+      <UFormGroup
+        v-if="canEditEstado && form.estado === 'coordinado'"
+        label="Fecha y horario de coordinación *"
+        class="md:col-span-2"
+      >
+        <UInput
+          v-model="form.fecha_coordinacion"
+          type="datetime-local"
+          class="w-full"
+        />
+      </UFormGroup>
+
       <!-- Comentarios venta -->
       <UFormGroup label="Comentarios de Venta" class="md:col-span-2">
         <UTextarea
@@ -192,6 +205,7 @@ const form = reactive({
   extras_ids: [] as string[],
   forma_pago: '',
   estado: 'pendiente',
+  fecha_coordinacion: '',
   comentarios_venta: '',
   comentarios_gestion: '',
   ...(props.initialData ?? {}),
@@ -221,7 +235,7 @@ const estadoOptions = [
   { label: 'Pendiente', value: 'pendiente' },
   { label: 'En Proceso', value: 'en_proceso' },
   { label: 'Rechazado', value: 'rechazado' },
-  { label: 'Aceptado', value: 'aceptado' },
+  { label: 'Coordinado', value: 'coordinado' },
   { label: 'Concretado', value: 'concretado' },
 ]
 
@@ -231,6 +245,10 @@ const errorMsg = ref('')
 const submit = async () => {
   if (!form.cliente || !form.dni_cuil || !form.paquete_id || !form.forma_pago || !form.dir_calle || !form.dir_localidad) {
     errorMsg.value = 'Por favor completá todos los campos obligatorios (*).'
+    return
+  }
+  if (form.estado === 'coordinado' && !form.fecha_coordinacion) {
+    errorMsg.value = 'Debés ingresar la fecha y horario de coordinación.'
     return
   }
   errorMsg.value = ''

@@ -139,12 +139,12 @@ const actualizar = async (data: Record<string, any>) => {
 
 const estadoLabel = (e: string) => ({
   pendiente: 'Pendiente', en_proceso: 'En Proceso',
-  rechazado: 'Rechazado', aceptado: 'Aceptado', concretado: 'Concretado',
+  rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
 }[e] ?? e)
 
 const estadoColor = (e: string): any => ({
   pendiente: 'gray', en_proceso: 'yellow',
-  rechazado: 'red', aceptado: 'green', concretado: 'blue',
+  rechazado: 'red', coordinado: 'teal', concretado: 'blue',
 }[e] ?? 'gray')
 
 const formatFecha = (f: string) =>
@@ -165,6 +165,7 @@ const camposDetalle = computed(() => [
   { label: 'Precio Total', value: venta.value?.precio ? formatPrecio(Number(venta.value.precio)) : null },
   { label: 'Forma de Pago', value: venta.value?.forma_pago },
   { label: 'Estado', value: estadoLabel(venta.value?.estado) },
+  { label: 'Fecha de Coordinación', value: venta.value?.fecha_coordinacion ? formatFecha(venta.value.fecha_coordinacion) : null },
   { label: 'Comentarios de Venta', value: venta.value?.comentarios_venta },
   { label: 'Comentarios de Gestión', value: venta.value?.comentarios_gestion },
 ])
