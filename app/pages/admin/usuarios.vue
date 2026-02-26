@@ -56,6 +56,7 @@
               v-model="nuevoUsuario.rol"
               :options="[
                 { label: 'Vendedor', value: 'vendedor' },
+                { label: 'Líder de Grupo', value: 'lider' },
                 { label: 'Oficinista', value: 'oficinista' },
               ]"
               class="w-full"
@@ -107,8 +108,8 @@ const columns = [
   { key: 'created_at', label: 'Creado' },
 ]
 
-const rolLabel = (r: string) => ({ vendedor: 'Vendedor', oficinista: 'Oficinista', admin: 'Admin' }[r] ?? r)
-const rolColor = (r: string): any => ({ admin: 'red', oficinista: 'yellow', vendedor: 'blue' }[r] ?? 'gray')
+const rolLabel = (r: string) => ({ vendedor: 'Vendedor', lider: 'Líder', oficinista: 'Oficinista', admin: 'Admin' }[r] ?? r)
+const rolColor = (r: string): any => ({ admin: 'red', oficinista: 'yellow', vendedor: 'blue', lider: 'orange' }[r] ?? 'gray')
 
 const cargarUsuarios = async () => {
   loading.value = true
