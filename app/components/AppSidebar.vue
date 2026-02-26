@@ -52,6 +52,7 @@ const navItems = computed(() => {
   if (rol === 'admin') {
     items.push({ to: '/admin/usuarios', label: 'Usuarios', icon: 'i-heroicons-users' })
     items.push({ to: '/admin/grupos', label: 'Grupos', icon: 'i-heroicons-user-group' })
+    items.push({ to: '/admin/catalogo', label: 'Catálogo', icon: 'i-heroicons-tag' })
   }
   return items
 })
