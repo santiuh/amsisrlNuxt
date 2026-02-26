@@ -160,6 +160,7 @@ const handleExport = () => {
     Precio: v.precio,
     'Forma de Pago': v.forma_pago,
     Estado: estadoLabel(v.estado),
+    Bocas: v.bocas ?? 1,
     Vendedor: v.profiles?.nombre ?? '',
     'Comentarios Venta': v.comentarios_venta ?? '',
     'Comentarios Gestión': Array.isArray(v.comentarios_gestion)

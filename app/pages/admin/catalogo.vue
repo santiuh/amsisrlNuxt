@@ -5,6 +5,36 @@
     </div>
 
     <UTabs :items="tabs" v-model="tabActivo">
+      <!-- Tab Configuración -->
+      <template #configuracion>
+        <div class="space-y-4 pt-4 max-w-md">
+          <UCard>
+            <template #header>
+              <h3 class="font-semibold text-gray-800">Precio por boca extra</h3>
+              <p class="text-sm text-gray-500 mt-1">Las primeras 3 bocas están incluidas en el paquete. Cada boca adicional (a partir de la 4.ª) suma este precio.</p>
+            </template>
+            <div class="space-y-4">
+              <UFormGroup label="Precio por boca extra *">
+                <UInput
+                  v-model.number="formConfig.precio_boca_extra"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  class="w-full"
+                />
+              </UFormGroup>
+              <UAlert v-if="errorConfig" icon="i-heroicons-exclamation-circle" color="red" variant="soft" :title="errorConfig" />
+            </div>
+            <template #footer>
+              <div class="flex justify-end">
+                <UButton label="Guardar" :loading="guardandoConfig" @click="guardarConfig" />
+              </div>
+            </template>
+          </UCard>
+        </div>
+      </template>
+
       <!-- Tab Paquetes -->
       <template #paquetes>
         <div class="space-y-4 pt-4">
@@ -131,10 +161,37 @@ const client = useSupabaseClient()
 const toast = useToast()
 
 const tabs = [
+  { label: 'Configuración', slot: 'configuracion' },
   { label: 'Paquetes', slot: 'paquetes' },
   { label: 'Extras', slot: 'extras' },
 ]
 const tabActivo = ref(0)
+
+// ——— Configuración (precio boca extra) ———
+const formConfig = reactive({ precio_boca_extra: 0 })
+const guardandoConfig = ref(false)
+const errorConfig = ref('')
+
+const cargarConfig = async () => {
+  const { data } = await client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').single()
+  formConfig.precio_boca_extra = Number(data?.valor ?? 0)
+}
+
+const guardarConfig = async () => {
+  if (formConfig.precio_boca_extra < 0) {
+    errorConfig.value = 'El precio no puede ser negativo.'
+    return
+  }
+  guardandoConfig.value = true
+  errorConfig.value = ''
+  const { error } = await client
+    .from('configuracion')
+    .update({ valor: formConfig.precio_boca_extra, updated_at: new Date().toISOString() })
+    .eq('clave', 'precio_boca_extra')
+  guardandoConfig.value = false
+  if (error) { errorConfig.value = error.message; return }
+  toast.add({ title: 'Configuración guardada', color: 'green' })
+}
 
 // ——— Paquetes ———
 const paquetes = ref<any[]>([])
@@ -250,6 +307,7 @@ const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
 
 onMounted(() => {
+  cargarConfig()
   cargarPaquetes()
   cargarExtras()
 })

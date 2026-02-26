@@ -65,6 +65,15 @@
         </div>
       </UFormGroup>
 
+      <!-- Bocas -->
+      <UFormGroup label="Bocas (salidas de TV)">
+        <USelect
+          v-model="form.bocas"
+          :options="bocasOptions"
+          class="w-full"
+        />
+      </UFormGroup>
+
       <!-- Precio calculado (read-only) -->
       <UFormGroup label="Precio Total" class="md:col-span-2">
         <div class="flex items-center gap-2">
@@ -75,6 +84,9 @@
           />
           <span class="text-xs text-gray-400 whitespace-nowrap">Calculado automáticamente</span>
         </div>
+        <p v-if="form.bocas > 3 && precioBocaExtra > 0" class="text-xs text-gray-500 mt-1">
+          Incluye {{ form.bocas - 3 }} boca{{ form.bocas - 3 > 1 ? 's' : '' }} extra{{ form.bocas - 3 > 1 ? 's' : '' }} × {{ formatPrecio(precioBocaExtra) }}
+        </p>
       </UFormGroup>
 
       <!-- Forma de pago -->
@@ -200,14 +212,17 @@ const canEditGestion = computed(() =>
 const paquetesActivos = ref<any[]>([])
 const extrasActivos = ref<any[]>([])
 const loadingCatalogo = ref(true)
+const precioBocaExtra = ref(0)
 
 onMounted(async () => {
-  const [{ data: paquetesData }, { data: extrasData }] = await Promise.all([
+  const [{ data: paquetesData }, { data: extrasData }, { data: configData }] = await Promise.all([
     client.from('paquetes').select('*').eq('activo', true).order('nombre'),
     client.from('extras').select('*').eq('activo', true).order('nombre'),
+    client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').single(),
   ])
   paquetesActivos.value = paquetesData ?? []
   extrasActivos.value = extrasData ?? []
+  precioBocaExtra.value = Number(configData?.valor ?? 0)
   loadingCatalogo.value = false
 })
 
@@ -226,6 +241,7 @@ const form = reactive({
   dir_aclaracion: '',
   paquete_id: '',
   extras_ids: [] as string[],
+  bocas: 1,
   forma_pago: '',
   estado: 'pendiente',
   fecha_coordinacion: '',
@@ -262,13 +278,19 @@ const estadoLabelLocal = (e: string) => ({
   rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
 }[e] ?? e)
 
+const bocasOptions = Array.from({ length: 10 }, (_, i) => ({
+  label: `${i + 1} boca${i > 0 ? 's' : ''}${i >= 3 ? ` (+${i - 2} extra${i > 3 ? 's' : ''})` : ''}`,
+  value: i + 1,
+}))
+
 // ——— Precio calculado ———
 const precioCalculado = computed(() => {
   const paquete = paquetesActivos.value.find(p => p.id === form.paquete_id)
   const precioExtras = extrasActivos.value
     .filter(e => (form.extras_ids as string[]).includes(e.id))
     .reduce((sum, e) => sum + Number(e.precio), 0)
-  return (paquete ? Number(paquete.precio) : 0) + precioExtras
+  const bocasExtra = Math.max(0, Number(form.bocas) - 3) * precioBocaExtra.value
+  return (paquete ? Number(paquete.precio) : 0) + precioExtras + bocasExtra
 })
 
 const formaPagoOptions = [
@@ -338,6 +360,7 @@ const submit = async () => {
     paquete_nombre: paquete?.nombre ?? '',
     paquete_precio_snapshot: paquete?.precio ?? 0,
     precio: precioCalculado.value,
+    precio_boca_extra_snapshot: precioBocaExtra.value,
     comentarios_gestion: logActualizado,
     _extras: extrasSeleccionados.map(e => ({ id: e.id, precio: e.precio })),
   })
