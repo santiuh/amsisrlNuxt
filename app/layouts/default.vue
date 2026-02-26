@@ -1,5 +1,5 @@
 <template>
-  <div class="flex h-screen bg-gray-50 overflow-hidden">
+  <div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
     <!-- Overlay backdrop (mobile only) -->
     <Transition name="fade">
       <div
@@ -13,7 +13,7 @@
 
     <div class="flex-1 flex flex-col overflow-hidden w-0">
       <AppHeader />
-      <main class="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6">
+      <main class="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 bg-transparent">
         <slot />
       </main>
     </div>

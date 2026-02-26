@@ -40,12 +40,12 @@
           v-if="row.telefono"
           :href="`https://wa.me/549${row.telefono.replace(/\D/g, '')}`"
           target="_blank"
-          class="flex items-center gap-1 text-green-600 hover:underline text-sm"
+          class="flex items-center gap-1 text-green-600 dark:text-green-400 hover:underline text-sm"
         >
           <UIcon name="i-heroicons-phone" class="w-4 h-4" />
           {{ row.telefono }}
         </a>
-        <span v-else class="text-gray-400">—</span>
+        <span v-else class="text-gray-400 dark:text-gray-500">—</span>
       </template>
 
       <template #precio-data="{ row }">
@@ -53,7 +53,7 @@
       </template>
 
       <template #fecha_carga-data="{ row }">
-        <span class="text-sm text-gray-600">{{ formatFecha(row.fecha_carga) }}</span>
+        <span class="text-sm text-gray-600 dark:text-gray-300">{{ formatFecha(row.fecha_carga) }}</span>
       </template>
 
       <template #paquete-data="{ row }">
@@ -87,7 +87,7 @@
     </div>
     </div>
 
-    <p v-if="!loading && !ventasFiltradas.length" class="text-center py-8 text-gray-400 text-sm">
+    <p v-if="!loading && !ventasFiltradas.length" class="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
       No hay ventas que coincidan con los filtros.
     </p>
   </div>

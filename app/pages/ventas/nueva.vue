@@ -2,7 +2,7 @@
   <div class="max-w-3xl mx-auto">
     <UCard>
       <template #header>
-        <h2 class="text-lg font-semibold text-gray-800">Cargar Nueva Venta</h2>
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Cargar Nueva Venta</h2>
       </template>
       <VentaForm
         submit-label="Guardar Venta"

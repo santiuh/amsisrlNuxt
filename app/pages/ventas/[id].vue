@@ -9,7 +9,7 @@
         size="sm"
         @click="volver()"
       />
-      <h2 class="text-lg font-semibold text-gray-800">
+      <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
         {{ canEdit ? 'Editar Venta' : 'Detalle de Venta' }}
       </h2>
       <UBadge
@@ -22,12 +22,12 @@
 
     <!-- Cargando -->
     <div v-if="loading" class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin" />
+      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" />
     </div>
 
     <UCard v-else-if="venta">
       <!-- Metadata -->
-      <div class="mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg text-sm text-gray-600 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div class="mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-900/70 rounded-lg text-sm text-gray-600 dark:text-gray-300 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <span class="font-medium">Vendedor:</span> {{ venta.profiles?.nombre ?? '—' }}
         </div>
@@ -51,8 +51,8 @@
         <VentaForm :initial-data="venta" readonly />
 
         <!-- Panel de gestión editable (solo oficinista) -->
-        <div v-if="isOficinistra" class="border-t border-gray-200 pt-4 mt-4 space-y-4">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Gestión</p>
+        <div v-if="isOficinistra" class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4 space-y-4">
+          <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Gestión</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <UFormGroup label="Estado">
@@ -76,12 +76,12 @@
             <UFormGroup label="Registro de Gestión" class="sm:col-span-2">
               <div
                 v-if="logGestion.length > 0"
-                class="mb-3 max-h-52 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100 bg-gray-50"
+                class="mb-3 max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
               >
                 <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
                   <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span class="text-xs text-gray-400">{{ formatFecha(entry.fecha_hora) }}</span>
-                    <span class="text-xs font-medium text-gray-600">{{ entry.autor }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
+                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
                     <UBadge
                       v-if="entry.tipo === 'estado'"
                       color="teal"
@@ -90,10 +90,10 @@
                       label="Estado"
                     />
                   </div>
-                  <p class="text-gray-800">{{ entry.texto }}</p>
+                  <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
                 </div>
               </div>
-              <p v-else class="text-xs text-gray-400 mb-2 italic">Sin registros de gestión aún.</p>
+              <p v-else class="text-xs text-gray-400 dark:text-gray-500 mb-2 italic">Sin registros de gestión aún.</p>
 
               <UTextarea
                 v-model="gestionForm.nuevoComentario"
@@ -130,12 +130,12 @@
 
             <!-- Log de gestión -->
             <div v-if="logGestion.length > 0" class="space-y-1">
-              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Registro de Gestión</p>
-              <div class="border border-orange-200 rounded-lg divide-y divide-orange-100 bg-orange-50">
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Registro de Gestión</p>
+              <div class="border border-orange-200 dark:border-orange-900/60 rounded-lg divide-y divide-orange-100 dark:divide-orange-900/40 bg-orange-50 dark:bg-orange-950/40">
                 <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
                   <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span class="text-xs text-gray-400">{{ formatFecha(entry.fecha_hora) }}</span>
-                    <span class="text-xs font-medium text-gray-600">{{ entry.autor }}</span>
+                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
+                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
                     <UBadge
                       v-if="entry.tipo === 'estado'"
                       color="orange"
@@ -144,14 +144,14 @@
                       label="Estado"
                     />
                   </div>
-                  <p class="text-gray-800">{{ entry.texto }}</p>
+                  <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Textarea para responder -->
             <div class="space-y-2">
-              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Tu respuesta</p>
+              <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tu respuesta</p>
               <UTextarea
                 v-model="comentarioConflicto"
                 placeholder="Escribí tu respuesta o aclaración para resolver el conflicto..."
@@ -180,12 +180,12 @@
 
         <!-- Registro de gestión read-only (vendedor/lider — otros estados) -->
         <div v-else-if="logGestion.length > 0" class="space-y-1 mt-4">
-            <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Registro de Gestión</p>
-            <div class="border border-gray-200 rounded-lg divide-y divide-gray-100 bg-gray-50">
+            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Registro de Gestión</p>
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70">
               <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
                 <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                  <span class="text-xs text-gray-400">{{ formatFecha(entry.fecha_hora) }}</span>
-                  <span class="text-xs font-medium text-gray-600">{{ entry.autor }}</span>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
                   <UBadge
                     v-if="entry.tipo === 'estado'"
                     color="teal"
@@ -194,7 +194,7 @@
                     label="Estado"
                   />
                 </div>
-                <p class="text-gray-800">{{ entry.texto }}</p>
+                <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
               </div>
             </div>
         </div>

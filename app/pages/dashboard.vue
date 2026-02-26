@@ -26,7 +26,7 @@
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">Mis Ventas</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-gray-100">Mis Ventas</h3>
           </div>
         </template>
         <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
@@ -36,7 +36,7 @@
     <!-- ============ LIDER ============ -->
     <template v-else-if="profile?.rol === 'lider'">
       <!-- Mis Ventas -->
-      <h3 class="text-base font-semibold text-gray-600 uppercase tracking-wide">Mis Ventas</h3>
+      <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Mis Ventas</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatsCard
           label="Mis Ventas del Mes"
@@ -53,13 +53,13 @@
       </div>
       <UCard>
         <template #header>
-          <h3 class="font-semibold text-gray-800">Mis Ventas</h3>
+          <h3 class="font-semibold text-gray-800 dark:text-gray-100">Mis Ventas</h3>
         </template>
         <VentaTable :ventas="ventasPropias" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
       </UCard>
 
       <!-- Mi Equipo -->
-      <h3 class="text-base font-semibold text-gray-600 uppercase tracking-wide mt-2">Mi Equipo</h3>
+      <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide mt-2">Mi Equipo</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatsCard
           label="Ventas del Equipo (Mes)"
@@ -76,7 +76,7 @@
       </div>
       <UCard>
         <template #header>
-          <h3 class="font-semibold text-gray-800">Ventas de mi Equipo</h3>
+          <h3 class="font-semibold text-gray-800 dark:text-gray-100">Ventas de mi Equipo</h3>
         </template>
         <VentaTable :ventas="ventasEquipo" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
       </UCard>
@@ -107,7 +107,7 @@
       </div>
       <UCard>
         <template #header>
-          <h3 class="font-semibold text-gray-800">Todas las Ventas</h3>
+          <h3 class="font-semibold text-gray-800 dark:text-gray-100">Todas las Ventas</h3>
         </template>
         <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
       </UCard>
@@ -141,7 +141,7 @@
         <!-- Ranking vendedores -->
         <UCard>
           <template #header>
-            <h3 class="font-semibold text-gray-800 text-sm sm:text-base">Ranking de Vendedores (Mes)</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base">Ranking de Vendedores (Mes)</h3>
           </template>
           <div class="overflow-x-auto -mx-4 sm:mx-0">
             <UTable :rows="rankingVendedores" :columns="rankingColumns" />
@@ -151,7 +151,7 @@
         <!-- Actividad oficinistas -->
         <UCard>
           <template #header>
-            <h3 class="font-semibold text-gray-800 text-sm sm:text-base">Actividad de Oficinistas</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base">Actividad de Oficinistas</h3>
           </template>
           <div class="overflow-x-auto -mx-4 sm:mx-0">
             <UTable :rows="actividadОфицинistas" :columns="actividadColumns" />
@@ -161,7 +161,7 @@
 
       <UCard>
         <template #header>
-          <h3 class="font-semibold text-gray-800">Todas las Ventas</h3>
+          <h3 class="font-semibold text-gray-800 dark:text-gray-100">Todas las Ventas</h3>
         </template>
         <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
       </UCard>
@@ -169,7 +169,7 @@
 
     <!-- Loading -->
     <div v-if="loading && !profile" class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin" />
+      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" />
     </div>
   </div>
 </template>

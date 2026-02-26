@@ -59,10 +59,10 @@
               class="w-4 h-4 accent-primary-500"
               :disabled="readonly"
             />
-            <label :for="`extra-${extra.id}`" class="text-sm cursor-pointer flex-1">
+            <label :for="`extra-${extra.id}`" class="text-sm cursor-pointer flex-1 text-gray-800 dark:text-gray-200">
               {{ extra.nombre }}
             </label>
-            <span class="text-sm text-gray-500">{{ formatPrecio(extra.precio) }}</span>
+            <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatPrecio(extra.precio) }}</span>
           </div>
         </div>
       </UFormGroup>
@@ -90,14 +90,11 @@
       <!-- Precio calculado (read-only) -->
       <UFormGroup label="Precio Total" class="md:col-span-2">
         <div class="flex items-center gap-2">
-          <UInput
-            :model-value="formatPrecio(precioCalculado)"
-            disabled
-            class="w-full bg-gray-50"
-          />
-          <span v-if="!readonly" class="text-xs text-gray-400 whitespace-nowrap">Calculado automáticamente</span>
+          <div class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-4xl">
+            <span class="text-gray-800 dark:text-gray-100 font-medium">{{ formatPrecio(precioCalculado) }}</span>
+          </div>
         </div>
-        <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 mt-1">
+        <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
           {{ desgloseBocasDecos }}
         </p>
       </UFormGroup>
@@ -148,12 +145,12 @@
         <!-- Entradas existentes -->
         <div
           v-if="logEntradas.length > 0"
-          class="mb-3 max-h-52 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100 bg-gray-50"
+          class="mb-3 max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
         >
           <div v-for="(entry, i) in logEntradas" :key="i" class="px-3 py-2 text-sm">
             <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span class="text-xs text-gray-400">{{ formatFechaLog(entry.fecha_hora) }}</span>
-              <span class="text-xs font-medium text-gray-600">{{ entry.autor }}</span>
+              <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFechaLog(entry.fecha_hora) }}</span>
+              <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
               <UBadge
                 v-if="entry.tipo === 'estado'"
                 color="teal"
@@ -162,10 +159,10 @@
                 label="Estado"
               />
             </div>
-            <p class="text-gray-800">{{ entry.texto }}</p>
+            <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
           </div>
         </div>
-        <p v-else class="text-xs text-gray-400 mb-2 italic">Sin registros de gestión aún.</p>
+        <p v-else class="text-xs text-gray-400 dark:text-gray-500 mb-2 italic">Sin registros de gestión aún.</p>
 
         <!-- Nuevo comentario -->
         <UTextarea

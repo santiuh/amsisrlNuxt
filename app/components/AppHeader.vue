@@ -1,15 +1,15 @@
 <template>
-  <header class="h-14 sm:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 gap-2">
+  <header class="h-14 sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 gap-2">
     <div class="flex items-center gap-2 min-w-0">
-      <button class="lg:hidden p-1.5 -ml-1 rounded-md text-gray-500 hover:bg-gray-100" @click="sidebarOpen = true">
+      <button class="lg:hidden p-1.5 -ml-1 rounded-md text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" @click="sidebarOpen = true">
         <UIcon name="i-heroicons-bars-3" class="w-6 h-6" />
       </button>
-      <h2 class="text-base sm:text-lg font-semibold text-gray-800 truncate">{{ pageTitle }}</h2>
+      <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 truncate">{{ pageTitle }}</h2>
     </div>
     <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
       <div class="text-right hidden sm:block">
-        <p class="text-sm font-medium text-gray-800">{{ profile?.nombre }}</p>
-        <p class="text-xs text-gray-500 capitalize">{{ rolLabel }}</p>
+        <p class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ profile?.nombre }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ rolLabel }}</p>
       </div>
       <UButton
         icon="i-heroicons-arrow-right-on-rectangle"
