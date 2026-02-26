@@ -431,6 +431,7 @@ const camposDetalle = computed(() => [
   { label: 'Localidad', value: venta.value?.dir_localidad },
   { label: 'Aclaración', value: venta.value?.dir_aclaracion },
   { label: 'Paquete', value: venta.value?.paquete_nombre },
+  { label: 'Decos', value: venta.value?.decos ? `${venta.value.decos} deco${venta.value.decos > 1 ? 's' : ''}` : '1 deco' },
   { label: 'Bocas', value: venta.value?.bocas ? `${venta.value.bocas} boca${venta.value.bocas > 1 ? 's' : ''}` : '1 boca' },
   { label: 'Precio Total', value: venta.value?.precio ? formatPrecio(Number(venta.value.precio)) : null },
   { label: 'Forma de Pago', value: venta.value?.forma_pago },

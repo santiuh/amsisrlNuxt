@@ -10,13 +10,23 @@
         <div class="space-y-4 pt-4 max-w-md">
           <UCard>
             <template #header>
-              <h3 class="font-semibold text-gray-800">Precio por boca extra</h3>
-              <p class="text-sm text-gray-500 mt-1">Las primeras 3 bocas están incluidas en el paquete. Cada boca adicional (a partir de la 4.ª) suma este precio.</p>
+              <h3 class="font-semibold text-gray-800">Precios extras de Bocas y Decos</h3>
+              <p class="text-sm text-gray-500 mt-1">Las primeras 3 bocas y 3 decos están incluidos en el paquete. A partir de la 4.ª unidad se cobra el precio extra. Los decos extra ya incluyen su boca; solo se cobran bocas sueltas cuando superan la cantidad de decos.</p>
             </template>
             <div class="space-y-4">
               <UFormGroup label="Precio por boca extra *">
                 <UInput
                   v-model.number="formConfig.precio_boca_extra"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  class="w-full"
+                />
+              </UFormGroup>
+              <UFormGroup label="Precio por deco extra *">
+                <UInput
+                  v-model.number="formConfig.precio_deco_extra"
                   type="number"
                   step="0.01"
                   min="0"
@@ -168,28 +178,33 @@ const tabs = [
 const tabActivo = ref(0)
 
 // ——— Configuración (precio boca extra) ———
-const formConfig = reactive({ precio_boca_extra: 0 })
+const formConfig = reactive({ precio_boca_extra: 0, precio_deco_extra: 0 })
 const guardandoConfig = ref(false)
 const errorConfig = ref('')
 
 const cargarConfig = async () => {
-  const { data } = await client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').single()
-  formConfig.precio_boca_extra = Number(data?.valor ?? 0)
+  const [{ data: bocaData }, { data: decoData }] = await Promise.all([
+    client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').single(),
+    client.from('configuracion').select('valor').eq('clave', 'precio_deco_extra').single(),
+  ])
+  formConfig.precio_boca_extra = Number(bocaData?.valor ?? 0)
+  formConfig.precio_deco_extra = Number(decoData?.valor ?? 0)
 }
 
 const guardarConfig = async () => {
-  if (formConfig.precio_boca_extra < 0) {
-    errorConfig.value = 'El precio no puede ser negativo.'
+  if (formConfig.precio_boca_extra < 0 || formConfig.precio_deco_extra < 0) {
+    errorConfig.value = 'Los precios no pueden ser negativos.'
     return
   }
   guardandoConfig.value = true
   errorConfig.value = ''
-  const { error } = await client
-    .from('configuracion')
-    .update({ valor: formConfig.precio_boca_extra, updated_at: new Date().toISOString() })
-    .eq('clave', 'precio_boca_extra')
+  const ahora = new Date().toISOString()
+  const [{ error: e1 }, { error: e2 }] = await Promise.all([
+    client.from('configuracion').update({ valor: formConfig.precio_boca_extra, updated_at: ahora }).eq('clave', 'precio_boca_extra'),
+    client.from('configuracion').update({ valor: formConfig.precio_deco_extra, updated_at: ahora }).eq('clave', 'precio_deco_extra'),
+  ])
   guardandoConfig.value = false
-  if (error) { errorConfig.value = error.message; return }
+  if (e1 || e2) { errorConfig.value = (e1 || e2)!.message; return }
   toast.add({ title: 'Configuración guardada', color: 'green' })
 }
 

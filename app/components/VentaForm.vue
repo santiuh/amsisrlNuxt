@@ -65,6 +65,15 @@
         </div>
       </UFormGroup>
 
+      <!-- Decos -->
+      <UFormGroup label="Decos (decodificadores)">
+        <USelect
+          v-model="form.decos"
+          :options="decosOptions"
+          class="w-full"
+        />
+      </UFormGroup>
+
       <!-- Bocas -->
       <UFormGroup label="Bocas (salidas de TV)">
         <USelect
@@ -84,8 +93,8 @@
           />
           <span class="text-xs text-gray-400 whitespace-nowrap">Calculado automáticamente</span>
         </div>
-        <p v-if="form.bocas > 3 && precioBocaExtra > 0" class="text-xs text-gray-500 mt-1">
-          Incluye {{ form.bocas - 3 }} boca{{ form.bocas - 3 > 1 ? 's' : '' }} extra{{ form.bocas - 3 > 1 ? 's' : '' }} × {{ formatPrecio(precioBocaExtra) }}
+        <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 mt-1">
+          {{ desgloseBocasDecos }}
         </p>
       </UFormGroup>
 
@@ -213,16 +222,19 @@ const paquetesActivos = ref<any[]>([])
 const extrasActivos = ref<any[]>([])
 const loadingCatalogo = ref(true)
 const precioBocaExtra = ref(0)
+const precioDecoExtra = ref(0)
 
 onMounted(async () => {
-  const [{ data: paquetesData }, { data: extrasData }, { data: configData }] = await Promise.all([
+  const [{ data: paquetesData }, { data: extrasData }, { data: configBoca }, { data: configDeco }] = await Promise.all([
     client.from('paquetes').select('*').eq('activo', true).order('nombre'),
     client.from('extras').select('*').eq('activo', true).order('nombre'),
     client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').single(),
+    client.from('configuracion').select('valor').eq('clave', 'precio_deco_extra').single(),
   ])
   paquetesActivos.value = paquetesData ?? []
   extrasActivos.value = extrasData ?? []
-  precioBocaExtra.value = Number(configData?.valor ?? 0)
+  precioBocaExtra.value = Number(configBoca?.valor ?? 0)
+  precioDecoExtra.value = Number(configDeco?.valor ?? 0)
   loadingCatalogo.value = false
 })
 
@@ -241,6 +253,7 @@ const form = reactive({
   dir_aclaracion: '',
   paquete_id: '',
   extras_ids: [] as string[],
+  decos: 1,
   bocas: 1,
   forma_pago: '',
   estado: 'pendiente',
@@ -278,10 +291,22 @@ const estadoLabelLocal = (e: string) => ({
   rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
 }[e] ?? e)
 
+const decosOptions = Array.from({ length: 10 }, (_, i) => ({
+  label: `${i + 1} deco${i > 0 ? 's' : ''}${i >= 3 ? ` (+${i - 2} extra${i > 3 ? 's' : ''})` : ''}`,
+  value: i + 1,
+}))
+
 const bocasOptions = Array.from({ length: 10 }, (_, i) => ({
   label: `${i + 1} boca${i > 0 ? 's' : ''}${i >= 3 ? ` (+${i - 2} extra${i > 3 ? 's' : ''})` : ''}`,
   value: i + 1,
 }))
+
+// Cada deco requiere al menos 1 boca
+watch(() => form.decos, (newDecos) => {
+  if (Number(form.bocas) < Number(newDecos)) {
+    form.bocas = Number(newDecos)
+  }
+})
 
 // ——— Precio calculado ———
 const precioCalculado = computed(() => {
@@ -289,8 +314,25 @@ const precioCalculado = computed(() => {
   const precioExtras = extrasActivos.value
     .filter(e => (form.extras_ids as string[]).includes(e.id))
     .reduce((sum, e) => sum + Number(e.precio), 0)
-  const bocasExtra = Math.max(0, Number(form.bocas) - 3) * precioBocaExtra.value
-  return (paquete ? Number(paquete.precio) : 0) + precioExtras + bocasExtra
+  const extraDecos = Math.max(0, Number(form.decos) - 3)
+  const extraBocas = Math.max(0, Number(form.bocas) - 3)
+  const bocasSueltas = Math.max(0, extraBocas - extraDecos)
+  const costoBocasDecos = (extraDecos * precioDecoExtra.value) + (bocasSueltas * precioBocaExtra.value)
+  return (paquete ? Number(paquete.precio) : 0) + precioExtras + costoBocasDecos
+})
+
+const desgloseBocasDecos = computed(() => {
+  const extraDecos = Math.max(0, Number(form.decos) - 3)
+  const extraBocas = Math.max(0, Number(form.bocas) - 3)
+  const bocasSueltas = Math.max(0, extraBocas - extraDecos)
+  const parts: string[] = []
+  if (extraDecos > 0 && precioDecoExtra.value > 0) {
+    parts.push(`${extraDecos} deco${extraDecos > 1 ? 's' : ''} extra${extraDecos > 1 ? 's' : ''} × ${formatPrecio(precioDecoExtra.value)}`)
+  }
+  if (bocasSueltas > 0 && precioBocaExtra.value > 0) {
+    parts.push(`${bocasSueltas} boca${bocasSueltas > 1 ? 's' : ''} extra${bocasSueltas > 1 ? 's' : ''} × ${formatPrecio(precioBocaExtra.value)}`)
+  }
+  return parts.length > 0 ? 'Incluye ' + parts.join(' + ') : ''
 })
 
 const formaPagoOptions = [
@@ -361,6 +403,7 @@ const submit = async () => {
     paquete_precio_snapshot: paquete?.precio ?? 0,
     precio: precioCalculado.value,
     precio_boca_extra_snapshot: precioBocaExtra.value,
+    precio_deco_extra_snapshot: precioDecoExtra.value,
     comentarios_gestion: logActualizado,
     _extras: extrasSeleccionados.map(e => ({ id: e.id, precio: e.precio })),
   })
