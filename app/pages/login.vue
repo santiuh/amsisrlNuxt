@@ -23,11 +23,21 @@
           <UFormGroup label="Contraseña">
             <UInput
               v-model="form.password"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
               placeholder="••••••••"
               icon="i-heroicons-lock-closed"
               class="w-full"
-            />
+            >
+              <template #trailing>
+                <UButton
+                  :icon="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+                  variant="link"
+                  color="gray"
+                  :padded="false"
+                  @click="showPassword = !showPassword"
+                />
+              </template>
+            </UInput>
           </UFormGroup>
 
           <UAlert
@@ -72,6 +82,7 @@ const client = useSupabaseClient()
 const form = reactive({ email: '', password: '' })
 const loading = ref(false)
 const errorMsg = ref('')
+const showPassword = ref(false)
 
 const login = async () => {
   if (!form.email || !form.password) {
