@@ -123,7 +123,7 @@ onMounted(async () => {
 })
 
 const actualizar = async (data: Record<string, any>) => {
-  const { _extras, extras_ids, ...ventaData } = data
+  const { _extras, extras_ids, profiles, venta_extras, ...ventaData } = data
 
   // Oficinista solo puede actualizar estado y comentarios_gestion
   const payload = profile.value?.rol === 'oficinista'
