@@ -246,7 +246,10 @@ const stats = computed(() => {
 const tieneComentarioNuevo = (venta: any): boolean => {
   const log = venta.comentarios_gestion
   if (!Array.isArray(log) || log.length === 0) return false
-  const ultimoComentario = log[0]?.fecha_hora
+  // Solo contar comentarios reales, no cambios de estado
+  const comentarios = log.filter((e: any) => e.tipo === 'comentario')
+  if (comentarios.length === 0) return false
+  const ultimoComentario = comentarios[0]?.fecha_hora
   if (!ultimoComentario) return false
   const ultimaLectura = lecturas.value[venta.id]
   if (!ultimaLectura) return true
