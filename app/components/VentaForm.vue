@@ -259,6 +259,7 @@ const submit = async () => {
 
   emit('submit', {
     ...form,
+    fecha_coordinacion: form.fecha_coordinacion || null,
     paquete_nombre: paquete?.nombre ?? '',
     paquete_precio_snapshot: paquete?.precio ?? 0,
     precio: precioCalculado.value,
