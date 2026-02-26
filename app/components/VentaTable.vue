@@ -161,7 +161,11 @@ const handleExport = () => {
     Estado: estadoLabel(v.estado),
     Vendedor: v.profiles?.nombre ?? '',
     'Comentarios Venta': v.comentarios_venta ?? '',
-    'Comentarios Gestión': v.comentarios_gestion ?? '',
+    'Comentarios Gestión': Array.isArray(v.comentarios_gestion)
+      ? v.comentarios_gestion.map((e: any) =>
+          `[${new Date(e.fecha_hora).toLocaleString('es-AR')}] ${e.autor}: ${e.texto}`
+        ).join(' | ')
+      : (v.comentarios_gestion ?? ''),
   }))
   exportCsv(data, `ventas-${new Date().toISOString().split('T')[0]}.csv`)
 }

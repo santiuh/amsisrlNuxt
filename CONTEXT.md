@@ -23,7 +23,10 @@ ventas       id, vendedor_id (FK→profiles), cliente, dni_cuil, telefono,
              dir_calle, dir_entre_calles, dir_localidad, dir_aclaracion,
              paquete_id (FK→paquetes), paquete_nombre (snapshot), paquete_precio_snapshot,
              precio (total calculado), forma_pago, estado,
-             comentarios_venta, comentarios_gestion, fecha_carga, created_by
+             fecha_coordinacion (TIMESTAMPTZ, nullable — requerida si estado='coordinado'),
+             comentarios_venta (TEXT),
+             comentarios_gestion (JSONB DEFAULT '[]' — array de {fecha_hora, autor, tipo, texto}),
+             fecha_carga, created_by
 venta_extras venta_id (FK→ventas), extra_id (FK→extras), precio_snapshot  ← PK compuesta
 grupos       id (UUID PK), lider_id (FK→profiles), created_at
 ```
@@ -133,3 +136,6 @@ git push origin main  # → trigger Vercel deploy automático
 - [x] Paquetes y extras dinámicos con gestión admin (/admin/catalogo) — precio snapshot en ventas
 - [x] Dirección estructurada en ventas (dir_calle, dir_entre_calles, dir_localidad, dir_aclaracion)
 - [x] Precio calculado automáticamente en formulario (paquete + extras, read-only para vendedor)
+- [x] Estado 'coordinado' con fecha_coordinacion obligatoria
+- [x] comentarios_gestion como log JSONB: {fecha_hora, autor, tipo ('comentario'|'estado'), texto}
+- [x] Oficinistas solo pueden editar estado y agregar comentarios de gestión

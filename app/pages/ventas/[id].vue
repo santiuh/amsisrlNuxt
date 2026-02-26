@@ -67,6 +67,27 @@
             </UBadge>
           </div>
         </div>
+
+        <!-- Registro de gestión (read-only) -->
+        <div v-if="logGestion.length > 0" class="sm:col-span-2 space-y-1">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Registro de Gestión</p>
+          <div class="border border-gray-200 rounded-lg divide-y divide-gray-100 bg-gray-50">
+            <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
+              <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                <span class="text-xs text-gray-400">{{ formatFecha(entry.fecha_hora) }}</span>
+                <span class="text-xs font-medium text-gray-600">{{ entry.autor }}</span>
+                <UBadge
+                  v-if="entry.tipo === 'estado'"
+                  color="teal"
+                  variant="subtle"
+                  size="xs"
+                  label="Estado"
+                />
+              </div>
+              <p class="text-gray-800">{{ entry.texto }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </UCard>
 
@@ -153,6 +174,11 @@ const formatFecha = (f: string) =>
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n ?? 0)
 
+const logGestion = computed(() => {
+  const log = venta.value?.comentarios_gestion
+  return Array.isArray(log) ? log : []
+})
+
 const camposDetalle = computed(() => [
   { label: 'Cliente', value: venta.value?.cliente },
   { label: 'DNI/CUIL', value: venta.value?.dni_cuil },
@@ -167,7 +193,6 @@ const camposDetalle = computed(() => [
   { label: 'Estado', value: estadoLabel(venta.value?.estado) },
   { label: 'Fecha de Coordinación', value: venta.value?.fecha_coordinacion ? formatFecha(venta.value.fecha_coordinacion) : null },
   { label: 'Comentarios de Venta', value: venta.value?.comentarios_venta },
-  { label: 'Comentarios de Gestión', value: venta.value?.comentarios_gestion },
 ])
 
 useHead({ title: 'Detalle de Venta — AMSI SRL' })

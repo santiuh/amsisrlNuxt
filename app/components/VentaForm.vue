@@ -115,12 +115,35 @@
         />
       </UFormGroup>
 
-      <!-- Comentarios gestión: solo oficinista/admin -->
-      <UFormGroup v-if="canEditGestion" label="Comentarios de Gestión" class="md:col-span-2">
+      <!-- Registro de gestión: solo oficinista/admin -->
+      <UFormGroup v-if="canEditGestion" label="Registro de Gestión" class="md:col-span-2">
+        <!-- Entradas existentes -->
+        <div
+          v-if="logEntradas.length > 0"
+          class="mb-3 max-h-52 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100 bg-gray-50"
+        >
+          <div v-for="(entry, i) in logEntradas" :key="i" class="px-3 py-2 text-sm">
+            <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+              <span class="text-xs text-gray-400">{{ formatFechaLog(entry.fecha_hora) }}</span>
+              <span class="text-xs font-medium text-gray-600">{{ entry.autor }}</span>
+              <UBadge
+                v-if="entry.tipo === 'estado'"
+                color="teal"
+                variant="subtle"
+                size="xs"
+                label="Estado"
+              />
+            </div>
+            <p class="text-gray-800">{{ entry.texto }}</p>
+          </div>
+        </div>
+        <p v-else class="text-xs text-gray-400 mb-2 italic">Sin registros de gestión aún.</p>
+
+        <!-- Nuevo comentario -->
         <UTextarea
-          v-model="form.comentarios_gestion"
-          placeholder="Notas de gestión interna..."
-          :rows="3"
+          v-model="nuevoComentario"
+          placeholder="Agregar comentario de gestión..."
+          :rows="2"
           class="w-full"
         />
       </UFormGroup>
@@ -207,14 +230,37 @@ const form = reactive({
   estado: 'pendiente',
   fecha_coordinacion: '',
   comentarios_venta: '',
-  comentarios_gestion: '',
+  comentarios_gestion: [] as any[],
   ...(props.initialData ?? {}),
 })
+
+// Normalizar comentarios_gestion a array (por si viene como string de datos legacy)
+if (!Array.isArray(form.comentarios_gestion)) {
+  form.comentarios_gestion = []
+}
 
 // Cargar extras seleccionados en modo edición
 if (props.initialData?.venta_extras) {
   form.extras_ids = (props.initialData.venta_extras as any[]).map((ve: any) => ve.extra_id)
 }
+
+// ——— Log de gestión ———
+const nuevoComentario = ref('')
+
+const logEntradas = computed(() =>
+  Array.isArray(form.comentarios_gestion) ? (form.comentarios_gestion as any[]) : []
+)
+
+const formatFechaLog = (isoString: string) =>
+  new Date(isoString).toLocaleString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+
+const estadoLabelLocal = (e: string) => ({
+  pendiente: 'Pendiente', en_proceso: 'En Proceso',
+  rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
+}[e] ?? e)
 
 // ——— Precio calculado ———
 const precioCalculado = computed(() => {
@@ -254,6 +300,34 @@ const submit = async () => {
   errorMsg.value = ''
   loading.value = true
 
+  // ——— Construir nuevas entradas del log ———
+  const nuevasEntradas: any[] = []
+  const ahora = new Date().toISOString()
+  const autor = profile.value?.nombre ?? 'Sistema'
+
+  // Entrada automática si cambió el estado (solo en modo edición)
+  if (props.initialData && form.estado !== props.initialData.estado) {
+    nuevasEntradas.push({
+      fecha_hora: ahora,
+      autor,
+      tipo: 'estado',
+      texto: `Estado cambiado de "${estadoLabelLocal(props.initialData.estado)}" a "${estadoLabelLocal(form.estado)}"`,
+    })
+  }
+
+  // Entrada manual si hay comentario nuevo
+  if (nuevoComentario.value.trim()) {
+    nuevasEntradas.push({
+      fecha_hora: ahora,
+      autor,
+      tipo: 'comentario',
+      texto: nuevoComentario.value.trim(),
+    })
+  }
+
+  // Combinar: entradas nuevas primero (más recientes al inicio)
+  const logActualizado = [...nuevasEntradas, ...logEntradas.value]
+
   const paquete = paquetesActivos.value.find(p => p.id === form.paquete_id)
   const extrasSeleccionados = extrasActivos.value.filter(e => (form.extras_ids as string[]).includes(e.id))
 
@@ -263,6 +337,7 @@ const submit = async () => {
     paquete_nombre: paquete?.nombre ?? '',
     paquete_precio_snapshot: paquete?.precio ?? 0,
     precio: precioCalculado.value,
+    comentarios_gestion: logActualizado,
     _extras: extrasSeleccionados.map(e => ({ id: e.id, precio: e.precio })),
   })
   loading.value = false
