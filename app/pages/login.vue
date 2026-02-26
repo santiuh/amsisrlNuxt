@@ -1,80 +1,96 @@
 <template>
-  <div class="DaoRb">
-    <h1 class="eSHwvX">Sign in</h1>
-    <form @submit.prevent="login">
-      <ErrorAlert :error-msg="authError" @clearError="clearError" />
-      <div class="jGQTZC">
-        <label class="iJLvzO">
-          <div class="fdCSlG">
-            <input class="cmCuLh" type="text" placeholder="Email address" v-model="email" />
+  <div class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div class="w-full max-w-md px-4">
+      <UCard class="shadow-lg">
+        <template #header>
+          <div class="text-center py-2">
+            <h1 class="text-2xl font-bold text-gray-900">AMSI SRL</h1>
+            <p class="text-sm text-gray-500 mt-1">Sistema de Gestión de Ventas</p>
           </div>
-        </label>
-        <label class="iJLvzO">
-          <div class="fdCSlG">
-            <input class="cmCuLh" type="password" placeholder="Password" v-model="password" />
+        </template>
+
+        <div class="space-y-4">
+          <UFormGroup label="Email">
+            <UInput
+              v-model="form.email"
+              type="email"
+              placeholder="tu@email.com"
+              icon="i-heroicons-envelope"
+              class="w-full"
+            />
+          </UFormGroup>
+
+          <UFormGroup label="Contraseña">
+            <UInput
+              v-model="form.password"
+              type="password"
+              placeholder="••••••••"
+              icon="i-heroicons-lock-closed"
+              class="w-full"
+            />
+          </UFormGroup>
+
+          <UAlert
+            v-if="errorMsg"
+            icon="i-heroicons-exclamation-circle"
+            color="red"
+            variant="soft"
+            :title="errorMsg"
+          />
+
+          <UButton
+            block
+            :loading="loading"
+            label="Ingresar"
+            @click="login"
+          />
+        </div>
+
+        <template #footer>
+          <div class="text-center">
+            <NuxtLink to="/forgot-password" class="text-sm text-primary-600 hover:underline">
+              ¿Olvidaste tu contraseña?
+            </NuxtLink>
           </div>
-        </label>
-      </div>
-      <div class="jGQTZC">
-        <button class="gZMQdu" type="submit" :disabled="loading">
-          <div class="bjhGPG" :class="{ loading: loading }">Sign in</div>
-          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="jjoFVh" :class="{ loading: loading }">
-            <g fill="none" stroke-width="1.5" stroke-linecap="round" class="faEWLr" style="stroke: var(--icon-color)">
-              <circle stroke-opacity=".2" cx="8" cy="8" r="6"></circle>
-              <circle cx="8" cy="8" r="6" class="VFMrX"></circle>
-            </g>
-          </svg>
-        </button>
-        <NuxtLink to="/forgot-password" class="fTZPOV">Forgot your password?</NuxtLink>
-      </div>
-    </form>
-    <div class="jGQTZC">
-      <p class="dEDhcH">Don’t have a SupaAuth account?</p>
-      <NuxtLink to="/register">
-        <button class="lcqpaS">
-          <div class="bjhGPG">Create new account</div>
-        </button>
-      </NuxtLink>
+        </template>
+      </UCard>
+
+      <p class="text-center text-xs text-gray-400 mt-4">
+        Desarrollado por
+        <a href="https://soldemayosoft.com.ar" target="_blank" class="hover:underline text-gray-500">
+          SolDeMayoSoft
+        </a>
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  layout: 'auth',
-});
-useHead({
-  title: 'Login | supaAuth',
-});
-const user = useSupabaseUser();
-const loading = ref(false);
-const authError = ref('');
-const email = ref('');
-const password = ref('');
-const client = useSupabaseClient();
+definePageMeta({ layout: 'auth' })
 
-watchEffect(async () => {
-  if (user.value) {
-    await navigateTo('/');
-  }
-});
+const client = useSupabaseClient()
+const form = reactive({ email: '', password: '' })
+const loading = ref(false)
+const errorMsg = ref('')
 
 const login = async () => {
-  loading.value = true;
-  const { error } = await client.auth.signInWithPassword({
-    email: email.value,
-    password: password.value,
-  });
-  if (error) {
-    loading.value = false;
-    authError.value = error.message;
-    setTimeout(() => {
-      authError.value = '';
-    }, 5000);
+  if (!form.email || !form.password) {
+    errorMsg.value = 'Completá email y contraseña.'
+    return
   }
-};
+  loading.value = true
+  errorMsg.value = ''
+  const { error } = await client.auth.signInWithPassword({
+    email: form.email,
+    password: form.password,
+  })
+  if (error) {
+    errorMsg.value = 'Email o contraseña incorrectos.'
+    loading.value = false
+    return
+  }
+  await navigateTo('/dashboard')
+}
 
-const clearError = () => {
-  authError.value = '';
-};
+useHead({ title: 'Ingresar — AMSI SRL' })
 </script>

@@ -1,14 +1,15 @@
 <template>
-  <main>
-    <section class="pt-20 pb-28 min-h-screen flex flex-col justify-center">
-      <div class="px-6 w-full mx-auto max-w-6xl">
+  <div class="flex h-screen bg-gray-50 overflow-hidden">
+    <AppSidebar />
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <AppHeader />
+      <main class="flex-1 overflow-y-auto p-6">
         <slot />
-        <div class="absolute inset-0">
-          <div class="background-gradient">
-            <div class="background-gradient-pattern"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+      </main>
+    </div>
+  </div>
 </template>
+
+<script setup lang="ts">
+await useFetchProfile()
+</script>
