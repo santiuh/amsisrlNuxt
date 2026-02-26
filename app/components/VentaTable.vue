@@ -95,6 +95,7 @@ const estadoOptions = [
   { label: 'Todos los estados', value: '' },
   { label: 'Pendiente', value: 'pendiente' },
   { label: 'En Proceso', value: 'en_proceso' },
+  { label: 'En Conflicto', value: 'en_conflicto' },
   { label: 'Rechazado', value: 'rechazado' },
   { label: 'Coordinado', value: 'coordinado' },
   { label: 'Concretado', value: 'concretado' },
@@ -130,12 +131,12 @@ const ventasFiltradas = computed(() =>
 )
 
 const estadoLabel = (e: string) => ({
-  pendiente: 'Pendiente', en_proceso: 'En Proceso',
+  pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
   rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
 }[e] ?? e)
 
 const estadoColor = (e: string): any => ({
-  pendiente: 'gray', en_proceso: 'yellow',
+  pendiente: 'gray', en_proceso: 'yellow', en_conflicto: 'orange',
   rechazado: 'red', coordinado: 'teal', concretado: 'blue',
 }[e] ?? 'gray')
 

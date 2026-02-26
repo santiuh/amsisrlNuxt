@@ -137,7 +137,70 @@
           </div>
         </template>
 
-        <!-- Registro de gestión read-only (vendedor/lider) -->
+        <!-- Estado en conflicto: banner llamativo + comentarios para vendedor/lider -->
+        <template v-else-if="venta.estado === 'en_conflicto'">
+          <div class="sm:col-span-2 space-y-4">
+            <!-- Banner de advertencia -->
+            <div class="border-2 border-orange-400 bg-orange-50 rounded-xl p-4 flex gap-3">
+              <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-orange-500 shrink-0 mt-0.5" />
+              <div class="space-y-1">
+                <p class="font-semibold text-orange-800 text-sm">Esta venta tiene un conflicto que requiere tu atención</p>
+                <p class="text-orange-700 text-sm">Revisá los comentarios de gestión a continuación. Podés responder o agregar información para que tu venta pueda concretarse.</p>
+              </div>
+            </div>
+
+            <!-- Log de gestión -->
+            <div v-if="logGestion.length > 0" class="space-y-1">
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Registro de Gestión</p>
+              <div class="border border-orange-200 rounded-lg divide-y divide-orange-100 bg-orange-50">
+                <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
+                  <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                    <span class="text-xs text-gray-400">{{ formatFecha(entry.fecha_hora) }}</span>
+                    <span class="text-xs font-medium text-gray-600">{{ entry.autor }}</span>
+                    <UBadge
+                      v-if="entry.tipo === 'estado'"
+                      color="orange"
+                      variant="subtle"
+                      size="xs"
+                      label="Estado"
+                    />
+                  </div>
+                  <p class="text-gray-800">{{ entry.texto }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Textarea para responder -->
+            <div class="space-y-2">
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Tu respuesta</p>
+              <UTextarea
+                v-model="comentarioConflicto"
+                placeholder="Escribí tu respuesta o aclaración para resolver el conflicto..."
+                :rows="3"
+                class="w-full"
+              />
+              <UAlert
+                v-if="conflictoError"
+                icon="i-heroicons-exclamation-circle"
+                color="red"
+                variant="soft"
+                :title="conflictoError"
+              />
+              <div class="flex justify-end gap-3">
+                <UButton label="Cancelar" color="gray" variant="outline" @click="navigateTo('/ventas')" />
+                <UButton
+                  label="Enviar Respuesta"
+                  color="orange"
+                  icon="i-heroicons-paper-airplane"
+                  :loading="savingConflicto"
+                  @click="guardarComentarioConflicto"
+                />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Registro de gestión read-only (vendedor/lider — otros estados) -->
         <template v-else>
           <div v-if="logGestion.length > 0" class="sm:col-span-2 space-y-1">
             <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Registro de Gestión</p>
@@ -193,9 +256,15 @@ const gestionForm = reactive({
 const savingGestion = ref(false)
 const gestionError = ref('')
 
+// Para comentarios de vendedor/lider en estado en_conflicto
+const comentarioConflicto = ref('')
+const savingConflicto = ref(false)
+const conflictoError = ref('')
+
 const estadoOptions = [
   { label: 'Pendiente', value: 'pendiente' },
   { label: 'En Proceso', value: 'en_proceso' },
+  { label: 'En Conflicto', value: 'en_conflicto' },
   { label: 'Rechazado', value: 'rechazado' },
   { label: 'Coordinado', value: 'coordinado' },
   { label: 'Concretado', value: 'concretado' },
@@ -277,6 +346,41 @@ const guardarGestion = async () => {
   await navigateTo('/ventas')
 }
 
+// Guardar comentario de vendedor/lider en estado en_conflicto
+const guardarComentarioConflicto = async () => {
+  conflictoError.value = ''
+  if (!comentarioConflicto.value.trim()) {
+    conflictoError.value = 'Escribí un comentario antes de enviar.'
+    return
+  }
+  savingConflicto.value = true
+
+  const autor = profile.value?.nombre ?? 'Sistema'
+  const logActual: any[] = Array.isArray(venta.value?.comentarios_gestion)
+    ? venta.value.comentarios_gestion
+    : []
+  const nuevaEntrada = {
+    fecha_hora: new Date().toISOString(),
+    autor,
+    tipo: 'comentario',
+    texto: comentarioConflicto.value.trim(),
+  }
+
+  const { error } = await client
+    .from('ventas')
+    .update({ comentarios_gestion: [nuevaEntrada, ...logActual] })
+    .eq('id', route.params.id as string)
+
+  savingConflicto.value = false
+  if (error) {
+    conflictoError.value = error.message
+    return
+  }
+
+  toast.add({ title: 'Respuesta enviada', color: 'green' })
+  await navigateTo('/ventas')
+}
+
 // Guardar edición completa (solo admin)
 const actualizar = async (data: Record<string, any>) => {
   const { _extras, extras_ids, profiles, venta_extras, ...ventaData } = data
@@ -309,12 +413,12 @@ const actualizar = async (data: Record<string, any>) => {
 }
 
 const estadoLabel = (e: string) => ({
-  pendiente: 'Pendiente', en_proceso: 'En Proceso',
+  pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
   rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
 }[e] ?? e)
 
 const estadoColor = (e: string): any => ({
-  pendiente: 'gray', en_proceso: 'yellow',
+  pendiente: 'gray', en_proceso: 'yellow', en_conflicto: 'orange',
   rechazado: 'red', coordinado: 'teal', concretado: 'blue',
 }[e] ?? 'gray')
 
