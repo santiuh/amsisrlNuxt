@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- ============ VENDEDOR ============ -->
     <template v-if="profile?.rol === 'vendedor'">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard
           label="Mis Ventas del Mes"
           :value="stats.misVentasMes"
@@ -15,6 +15,13 @@
           icon="i-heroicons-check-circle"
           color="green"
         />
+        <StatsCard
+          v-if="ventasConComentariosPendientes > 0"
+          label="Comentarios Pendientes"
+          :value="ventasConComentariosPendientes"
+          icon="i-heroicons-chat-bubble-left-ellipsis"
+          color="orange"
+        />
       </div>
       <UCard>
         <template #header>
@@ -22,7 +29,7 @@
             <h3 class="font-semibold text-gray-800">Mis Ventas</h3>
           </div>
         </template>
-        <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="false" />
+        <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
       </UCard>
     </template>
 
@@ -48,7 +55,7 @@
         <template #header>
           <h3 class="font-semibold text-gray-800">Mis Ventas</h3>
         </template>
-        <VentaTable :ventas="ventasPropias" :loading="loading" :show-vendedor="false" />
+        <VentaTable :ventas="ventasPropias" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
       </UCard>
 
       <!-- Mi Equipo -->
@@ -71,13 +78,13 @@
         <template #header>
           <h3 class="font-semibold text-gray-800">Ventas de mi Equipo</h3>
         </template>
-        <VentaTable :ventas="ventasEquipo" :loading="loading" :show-vendedor="true" :can-export="true" />
+        <VentaTable :ventas="ventasEquipo" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
       </UCard>
     </template>
 
     <!-- ============ OFICINISTA ============ -->
     <template v-else-if="profile?.rol === 'oficinista'">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard
           label="Ventas del Mes"
           :value="stats.totalMes"
@@ -90,12 +97,19 @@
           icon="i-heroicons-check-circle"
           color="green"
         />
+        <StatsCard
+          v-if="ventasConComentariosPendientes > 0"
+          label="Comentarios Pendientes"
+          :value="ventasConComentariosPendientes"
+          icon="i-heroicons-chat-bubble-left-ellipsis"
+          color="orange"
+        />
       </div>
       <UCard>
         <template #header>
           <h3 class="font-semibold text-gray-800">Todas las Ventas</h3>
         </template>
-        <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" />
+        <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
       </UCard>
     </template>
 
@@ -123,21 +137,25 @@
         />
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <!-- Ranking vendedores -->
         <UCard>
           <template #header>
-            <h3 class="font-semibold text-gray-800">Ranking de Vendedores (Mes Actual)</h3>
+            <h3 class="font-semibold text-gray-800 text-sm sm:text-base">Ranking de Vendedores (Mes)</h3>
           </template>
-          <UTable :rows="rankingVendedores" :columns="rankingColumns" />
+          <div class="overflow-x-auto -mx-4 sm:mx-0">
+            <UTable :rows="rankingVendedores" :columns="rankingColumns" />
+          </div>
         </UCard>
 
         <!-- Actividad oficinistas -->
         <UCard>
           <template #header>
-            <h3 class="font-semibold text-gray-800">Actividad de Oficinistas</h3>
+            <h3 class="font-semibold text-gray-800 text-sm sm:text-base">Actividad de Oficinistas</h3>
           </template>
-          <UTable :rows="actividadOficинistas" :columns="actividadColumns" />
+          <div class="overflow-x-auto -mx-4 sm:mx-0">
+            <UTable :rows="actividadОфицинistas" :columns="actividadColumns" />
+          </div>
         </UCard>
       </div>
 
@@ -145,7 +163,7 @@
         <template #header>
           <h3 class="font-semibold text-gray-800">Todas las Ventas</h3>
         </template>
-        <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" />
+        <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
       </UCard>
     </template>
 
@@ -161,6 +179,7 @@ const client = useSupabaseClient()
 const profile = useCurrentProfile()
 const loading = ref(true)
 const ventas = ref<any[]>([])
+const lecturas = ref<Record<string, string>>({})
 
 const rankingColumns = [
   { key: 'nombre', label: 'Vendedor' },
@@ -173,11 +192,19 @@ const actividadColumns = [
 ]
 
 onMounted(async () => {
-  const { data } = await client
-    .from('ventas')
-    .select('*, profiles:vendedor_id(nombre, rol)')
-    .order('fecha_carga', { ascending: false })
+  const [{ data }, { data: lecturasData }] = await Promise.all([
+    client
+      .from('ventas')
+      .select('*, profiles:vendedor_id(nombre, rol)')
+      .order('fecha_carga', { ascending: false }),
+    client
+      .from('venta_lecturas')
+      .select('venta_id, ultima_lectura'),
+  ])
   ventas.value = data ?? []
+  lecturas.value = Object.fromEntries(
+    (lecturasData ?? []).map((l: any) => [l.venta_id, l.ultima_lectura])
+  )
   loading.value = false
 })
 
@@ -215,6 +242,20 @@ const stats = computed(() => {
     equipoAceptadas,
   }
 })
+
+const tieneComentarioNuevo = (venta: any): boolean => {
+  const log = venta.comentarios_gestion
+  if (!Array.isArray(log) || log.length === 0) return false
+  const ultimoComentario = log[0]?.fecha_hora
+  if (!ultimoComentario) return false
+  const ultimaLectura = lecturas.value[venta.id]
+  if (!ultimaLectura) return true
+  return new Date(ultimoComentario) > new Date(ultimaLectura)
+}
+
+const ventasConComentariosPendientes = computed(() =>
+  ventas.value.filter(v => tieneComentarioNuevo(v)).length
+)
 
 const rankingVendedores = computed(() => {
   const map: Record<string, { nombre: string; total: number; aceptadas: number }> = {}

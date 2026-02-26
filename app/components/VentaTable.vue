@@ -1,18 +1,18 @@
 <template>
   <div class="space-y-4">
     <!-- Toolbar -->
-    <div class="flex items-center justify-between gap-4 flex-wrap">
-      <div class="flex items-center gap-3 flex-wrap">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
         <UInput
           v-model="search"
-          placeholder="Buscar por cliente o DNI/CUIL..."
+          placeholder="Buscar cliente o DNI/CUIL..."
           icon="i-heroicons-magnifying-glass"
-          class="w-72"
+          class="w-full sm:w-72"
         />
         <USelect
           v-model="filtroEstado"
           :options="estadoOptions"
-          class="w-48"
+          class="w-full sm:w-48"
         />
       </div>
       <UButton
@@ -22,11 +22,14 @@
         color="gray"
         variant="outline"
         size="sm"
+        class="self-end sm:self-auto"
         @click="handleExport"
       />
     </div>
 
     <!-- Tabla -->
+    <div class="overflow-x-auto -mx-4 sm:mx-0">
+    <div class="min-w-[700px] sm:min-w-0">
     <UTable :rows="ventasFiltradas" :columns="columnas" :loading="loading">
       <template #estado-data="{ row }">
         <UBadge :color="estadoColor(row.estado)" :label="estadoLabel(row.estado)" variant="subtle" />
@@ -66,11 +69,23 @@
       </template>
 
       <template #acciones-data="{ row }">
-        <NuxtLink :to="`/ventas/${row.id}`">
-          <UButton icon="i-heroicons-eye" size="xs" color="gray" variant="ghost" />
-        </NuxtLink>
+        <div class="flex items-center gap-1">
+          <span
+            v-if="tieneComentarioNuevo(row)"
+            class="relative flex h-2.5 w-2.5"
+            title="Nuevo comentario"
+          >
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500" />
+          </span>
+          <NuxtLink :to="`/ventas/${row.id}`">
+            <UButton icon="i-heroicons-eye" size="xs" color="gray" variant="ghost" />
+          </NuxtLink>
+        </div>
       </template>
     </UTable>
+    </div>
+    </div>
 
     <p v-if="!loading && !ventasFiltradas.length" class="text-center py-8 text-gray-400 text-sm">
       No hay ventas que coincidan con los filtros.
@@ -86,6 +101,7 @@ const props = defineProps<{
   loading?: boolean
   canExport?: boolean
   showVendedor?: boolean
+  lecturas?: Record<string, string>  // venta_id → ultima_lectura ISO
 }>()
 
 const search = ref('')
@@ -139,6 +155,17 @@ const estadoColor = (e: string): any => ({
   pendiente: 'gray', en_proceso: 'yellow', en_conflicto: 'orange',
   rechazado: 'red', coordinado: 'teal', concretado: 'blue',
 }[e] ?? 'gray')
+
+const tieneComentarioNuevo = (venta: any): boolean => {
+  if (!props.lecturas) return false
+  const log = venta.comentarios_gestion
+  if (!Array.isArray(log) || log.length === 0) return false
+  const ultimoComentario = log[0]?.fecha_hora
+  if (!ultimoComentario) return false
+  const ultimaLectura = props.lecturas[venta.id]
+  if (!ultimaLectura) return true // nunca abrió → es nuevo
+  return new Date(ultimoComentario) > new Date(ultimaLectura)
+}
 
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)

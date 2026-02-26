@@ -27,7 +27,7 @@
 
     <UCard v-else-if="venta">
       <!-- Metadata -->
-      <div class="mb-6 p-4 bg-gray-50 rounded-lg text-sm text-gray-600 grid grid-cols-2 gap-2">
+      <div class="mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg text-sm text-gray-600 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
           <span class="font-medium">Vendedor:</span> {{ venta.profiles?.nombre ?? '—' }}
         </div>
@@ -46,31 +46,12 @@
         @cancel="navigateTo('/ventas')"
       />
 
-      <!-- Vista de solo lectura + panel de gestión (oficinista) o solo lectura (vendedor/lider) -->
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div v-for="campo in camposDetalle" :key="campo.label" class="space-y-1">
-          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ campo.label }}</p>
-          <p class="text-gray-900">{{ campo.value || '—' }}</p>
-        </div>
-
-        <!-- Extras seleccionados -->
-        <div v-if="venta.venta_extras?.length" class="sm:col-span-2 space-y-1">
-          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Extras</p>
-          <div class="flex flex-wrap gap-2">
-            <UBadge
-              v-for="ve in venta.venta_extras"
-              :key="ve.extra_id"
-              color="blue"
-              variant="subtle"
-            >
-              {{ ve.extras?.nombre }} — {{ formatPrecio(ve.precio_snapshot) }}
-            </UBadge>
-          </div>
-        </div>
+      <!-- Vista de solo lectura: mismo formato que el formulario de creación -->
+      <template v-else>
+        <VentaForm :initial-data="venta" readonly />
 
         <!-- Panel de gestión editable (solo oficinista) -->
-        <template v-if="isOficinistra">
-          <div class="sm:col-span-2 border-t border-gray-200 pt-4 mt-2 space-y-4">
+        <div v-if="isOficinistra" class="border-t border-gray-200 pt-4 mt-4 space-y-4">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Gestión</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -134,12 +115,10 @@
               <UButton label="Cancelar" color="gray" variant="outline" @click="navigateTo('/ventas')" />
               <UButton label="Guardar Gestión" :loading="savingGestion" @click="guardarGestion" />
             </div>
-          </div>
-        </template>
+        </div>
 
         <!-- Estado en conflicto: banner llamativo + comentarios para vendedor/lider -->
-        <template v-else-if="venta.estado === 'en_conflicto'">
-          <div class="sm:col-span-2 space-y-4">
+        <div v-else-if="venta.estado === 'en_conflicto'" class="space-y-4 mt-4">
             <!-- Banner de advertencia -->
             <div class="border-2 border-orange-400 bg-orange-50 rounded-xl p-4 flex gap-3">
               <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-orange-500 shrink-0 mt-0.5" />
@@ -197,12 +176,10 @@
                 />
               </div>
             </div>
-          </div>
-        </template>
+        </div>
 
         <!-- Registro de gestión read-only (vendedor/lider — otros estados) -->
-        <template v-else>
-          <div v-if="logGestion.length > 0" class="sm:col-span-2 space-y-1">
+        <div v-else-if="logGestion.length > 0" class="space-y-1 mt-4">
             <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Registro de Gestión</p>
             <div class="border border-gray-200 rounded-lg divide-y divide-gray-100 bg-gray-50">
               <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
@@ -220,9 +197,8 @@
                 <p class="text-gray-800">{{ entry.texto }}</p>
               </div>
             </div>
-          </div>
-        </template>
-      </div>
+        </div>
+      </template>
     </UCard>
 
     <UAlert
@@ -284,6 +260,8 @@ onMounted(async () => {
     gestionForm.fecha_coordinacion = data.fecha_coordinacion
       ? new Date(data.fecha_coordinacion).toISOString().slice(0, 16)
       : ''
+    // Marcar venta como leída para este usuario
+    client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
   }
 })
 
@@ -414,31 +392,10 @@ const estadoColor = (e: string): any => ({
 const formatFecha = (f: string) =>
   new Date(f).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
-const formatPrecio = (n: number) =>
-  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n ?? 0)
-
 const logGestion = computed(() => {
   const log = venta.value?.comentarios_gestion
   return Array.isArray(log) ? log : []
 })
-
-const camposDetalle = computed(() => [
-  { label: 'Cliente', value: venta.value?.cliente },
-  { label: 'DNI/CUIL', value: venta.value?.dni_cuil },
-  { label: 'Teléfono', value: venta.value?.telefono },
-  { label: 'Dirección', value: venta.value?.dir_calle },
-  { label: 'Entre calles', value: venta.value?.dir_entre_calles },
-  { label: 'Localidad', value: venta.value?.dir_localidad },
-  { label: 'Aclaración', value: venta.value?.dir_aclaracion },
-  { label: 'Paquete', value: venta.value?.paquete_nombre },
-  { label: 'Decos', value: venta.value?.decos ? `${venta.value.decos} deco${venta.value.decos > 1 ? 's' : ''}` : '1 deco' },
-  { label: 'Bocas', value: venta.value?.bocas ? `${venta.value.bocas} boca${venta.value.bocas > 1 ? 's' : ''}` : '1 boca' },
-  { label: 'Precio Total', value: venta.value?.precio ? formatPrecio(Number(venta.value.precio)) : null },
-  { label: 'Forma de Pago', value: venta.value?.forma_pago },
-  { label: 'Estado', value: estadoLabel(venta.value?.estado) },
-  { label: 'Fecha de Coordinación', value: venta.value?.fecha_coordinacion ? formatFecha(venta.value.fecha_coordinacion) : null },
-  { label: 'Comentarios de Venta', value: venta.value?.comentarios_venta },
-])
 
 useHead({ title: 'Detalle de Venta — AMSI SRL' })
 </script>
