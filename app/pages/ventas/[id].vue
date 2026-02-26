@@ -7,7 +7,7 @@
         color="gray"
         variant="ghost"
         size="sm"
-        @click="navigateTo('/ventas')"
+        @click="volver()"
       />
       <h2 class="text-lg font-semibold text-gray-800">
         {{ canEdit ? 'Editar Venta' : 'Detalle de Venta' }}
@@ -43,7 +43,7 @@
         submit-label="Guardar Cambios"
         :show-cancel="true"
         @submit="actualizar"
-        @cancel="navigateTo('/ventas')"
+        @cancel="volver()"
       />
 
       <!-- Vista de solo lectura: mismo formato que el formulario de creación -->
@@ -112,7 +112,7 @@
             />
 
             <div class="flex justify-end gap-3">
-              <UButton label="Cancelar" color="gray" variant="outline" @click="navigateTo('/ventas')" />
+              <UButton label="Cancelar" color="gray" variant="outline" @click="volver()" />
               <UButton label="Guardar Gestión" :loading="savingGestion" @click="guardarGestion" />
             </div>
         </div>
@@ -166,7 +166,7 @@
                 :title="conflictoError"
               />
               <div class="flex justify-end gap-3">
-                <UButton label="Cancelar" color="gray" variant="outline" @click="navigateTo('/ventas')" />
+                <UButton label="Cancelar" color="gray" variant="outline" @click="volver()" />
                 <UButton
                   label="Enviar Respuesta"
                   color="orange"
@@ -261,9 +261,15 @@ onMounted(async () => {
       ? new Date(data.fecha_coordinacion).toISOString().slice(0, 16)
       : ''
     // Marcar venta como leída para este usuario
-    client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
+    await client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
   }
 })
+
+// Navegar de vuelta marcando como leída (asegura timestamp actualizado)
+const volver = async () => {
+  await client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
+  await navigateTo('/ventas')
+}
 
 // Guardar gestión (solo oficinista: estado, fecha_coordinacion, comentarios_gestion)
 const guardarGestion = async () => {
@@ -321,7 +327,7 @@ const guardarGestion = async () => {
   }
 
   toast.add({ title: 'Gestión guardada', color: 'green' })
-  await navigateTo('/ventas')
+  await volver()
 }
 
 // Guardar comentario de vendedor/lider en estado en_conflicto
@@ -345,7 +351,7 @@ const guardarComentarioConflicto = async () => {
   }
 
   toast.add({ title: 'Respuesta enviada', color: 'green' })
-  await navigateTo('/ventas')
+  await volver()
 }
 
 // Guardar edición completa (solo admin)
@@ -376,7 +382,7 @@ const actualizar = async (data: Record<string, any>) => {
   }
 
   toast.add({ title: 'Venta actualizada', color: 'green' })
-  await navigateTo('/ventas')
+  await volver()
 }
 
 const estadoLabel = (e: string) => ({
