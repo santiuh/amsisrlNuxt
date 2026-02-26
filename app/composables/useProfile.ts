@@ -5,6 +5,7 @@ export interface Profile {
   rol: 'vendedor' | 'oficinista' | 'admin' | 'lider'
   grupo_id: string | null
   created_at: string
+  must_change_password: boolean
 }
 
 export const useCurrentProfile = () => {
