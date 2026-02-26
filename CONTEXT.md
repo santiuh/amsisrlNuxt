@@ -17,7 +17,14 @@
 ### Tablas principales
 ```
 profiles     id (UUID PK), nombre, email, rol, grupo_id (FK→grupos), created_at
-ventas       id, vendedor_id (FK→profiles), cliente, producto, estado, comentarios, fecha_carga, created_by
+paquetes     id (UUID PK), nombre, precio, activo, created_at
+extras       id (UUID PK), nombre, precio, activo, created_at
+ventas       id, vendedor_id (FK→profiles), cliente, dni_cuil, telefono,
+             dir_calle, dir_entre_calles, dir_localidad, dir_aclaracion,
+             paquete_id (FK→paquetes), paquete_nombre (snapshot), paquete_precio_snapshot,
+             precio (total calculado), forma_pago, estado,
+             comentarios_venta, comentarios_gestion, fecha_carga, created_by
+venta_extras venta_id (FK→ventas), extra_id (FK→extras), precio_snapshot  ← PK compuesta
 grupos       id (UUID PK), lider_id (FK→profiles), created_at
 ```
 
@@ -83,7 +90,8 @@ app/
 │   │   └── [id].vue            ← detalle/edición venta
 │   └── admin/
 │       ├── usuarios.vue        ← gestión de usuarios (crear, listar)
-│       └── grupos.vue          ← gestión de grupos (crear, asignar miembros)
+│       ├── grupos.vue          ← gestión de grupos (crear, asignar miembros)
+│       └── catalogo.vue        ← gestión de paquetes y extras (tabs, CRUD, toggle activo)
 └── utils/
     └── exportCsv.ts
 ```
@@ -122,3 +130,6 @@ git push origin main  # → trigger Vercel deploy automático
 - [x] Gestión de grupos (/admin/grupos) con asignación de miembros
 - [x] Export CSV para oficinista/lider/admin
 - [x] Deploy en Vercel (amsisrl-nuxt.vercel.app)
+- [x] Paquetes y extras dinámicos con gestión admin (/admin/catalogo) — precio snapshot en ventas
+- [x] Dirección estructurada en ventas (dir_calle, dir_entre_calles, dir_localidad, dir_aclaracion)
+- [x] Precio calculado automáticamente en formulario (paquete + extras, read-only para vendedor)

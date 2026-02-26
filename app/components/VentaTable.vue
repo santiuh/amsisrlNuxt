@@ -54,7 +54,7 @@
       </template>
 
       <template #paquete-data="{ row }">
-        <span class="capitalize">{{ row.paquete }}</span>
+        <span>{{ row.paquete_nombre ?? '—' }}</span>
       </template>
 
       <template #forma_pago-data="{ row }">
@@ -150,9 +150,12 @@ const handleExport = () => {
     Fecha: formatFecha(v.fecha_carga),
     Cliente: v.cliente,
     'DNI/CUIL': v.dni_cuil,
-    Dirección: v.direccion ?? '',
+    Dirección: v.dir_calle ?? '',
+    'Entre calles': v.dir_entre_calles ?? '',
+    Localidad: v.dir_localidad ?? '',
+    Aclaración: v.dir_aclaracion ?? '',
     Teléfono: v.telefono ?? '',
-    Paquete: v.paquete,
+    Paquete: v.paquete_nombre ?? '',
     Precio: v.precio,
     'Forma de Pago': v.forma_pago,
     Estado: estadoLabel(v.estado),

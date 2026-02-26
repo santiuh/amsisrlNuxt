@@ -46,11 +46,26 @@
         @cancel="navigateTo('/ventas')"
       />
 
-      <!-- Vista de solo lectura (vendedor) -->
+      <!-- Vista de solo lectura (vendedor/lider) -->
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="campo in camposDetalle" :key="campo.label" class="space-y-1">
           <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ campo.label }}</p>
           <p class="text-gray-900">{{ campo.value || '—' }}</p>
+        </div>
+
+        <!-- Extras seleccionados -->
+        <div v-if="venta.venta_extras?.length" class="sm:col-span-2 space-y-1">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Extras</p>
+          <div class="flex flex-wrap gap-2">
+            <UBadge
+              v-for="ve in venta.venta_extras"
+              :key="ve.extra_id"
+              color="blue"
+              variant="subtle"
+            >
+              {{ ve.extras?.nombre }} — {{ formatPrecio(ve.precio_snapshot) }}
+            </UBadge>
+          </div>
         </div>
       </div>
     </UCard>
@@ -79,7 +94,7 @@ const canEdit = computed(() =>
 onMounted(async () => {
   const { data } = await client
     .from('ventas')
-    .select('*, profiles:vendedor_id(nombre, rol)')
+    .select('*, profiles:vendedor_id(nombre, rol), venta_extras(extra_id, precio_snapshot, extras(nombre))')
     .eq('id', route.params.id as string)
     .single()
   venta.value = data
@@ -87,10 +102,12 @@ onMounted(async () => {
 })
 
 const actualizar = async (data: Record<string, any>) => {
+  const { _extras, extras_ids, ...ventaData } = data
+
   // Oficinista solo puede actualizar estado y comentarios_gestion
   const payload = profile.value?.rol === 'oficinista'
-    ? { estado: data.estado, comentarios_gestion: data.comentarios_gestion }
-    : data
+    ? { estado: ventaData.estado, comentarios_gestion: ventaData.comentarios_gestion }
+    : ventaData
 
   const { error } = await client
     .from('ventas')
@@ -101,6 +118,21 @@ const actualizar = async (data: Record<string, any>) => {
     toast.add({ title: 'Error al guardar', description: error.message, color: 'red' })
     return
   }
+
+  // Si es admin, actualizar también los extras
+  if (profile.value?.rol === 'admin' && _extras !== undefined) {
+    await client.from('venta_extras').delete().eq('venta_id', route.params.id as string)
+    if ((_extras as any[]).length > 0) {
+      await client.from('venta_extras').insert(
+        (_extras as any[]).map((e: any) => ({
+          venta_id: route.params.id as string,
+          extra_id: e.id,
+          precio_snapshot: e.precio,
+        }))
+      )
+    }
+  }
+
   toast.add({ title: 'Venta actualizada', color: 'green' })
   await navigateTo('/ventas')
 }
@@ -118,13 +150,19 @@ const estadoColor = (e: string): any => ({
 const formatFecha = (f: string) =>
   new Date(f).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 
+const formatPrecio = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n ?? 0)
+
 const camposDetalle = computed(() => [
   { label: 'Cliente', value: venta.value?.cliente },
   { label: 'DNI/CUIL', value: venta.value?.dni_cuil },
-  { label: 'Dirección', value: venta.value?.direccion },
   { label: 'Teléfono', value: venta.value?.telefono },
-  { label: 'Paquete', value: venta.value?.paquete },
-  { label: 'Precio', value: venta.value?.precio ? `$${Number(venta.value.precio).toLocaleString('es-AR')}` : null },
+  { label: 'Dirección', value: venta.value?.dir_calle },
+  { label: 'Entre calles', value: venta.value?.dir_entre_calles },
+  { label: 'Localidad', value: venta.value?.dir_localidad },
+  { label: 'Aclaración', value: venta.value?.dir_aclaracion },
+  { label: 'Paquete', value: venta.value?.paquete_nombre },
+  { label: 'Precio Total', value: venta.value?.precio ? formatPrecio(Number(venta.value.precio)) : null },
   { label: 'Forma de Pago', value: venta.value?.forma_pago },
   { label: 'Estado', value: estadoLabel(venta.value?.estado) },
   { label: 'Comentarios de Venta', value: venta.value?.comentarios_venta },
