@@ -6,7 +6,7 @@
         icon="i-heroicons-plus"
         label="Nuevo Usuario"
         size="sm"
-        @click="abrirModal"
+        @click="abrirModalCrear"
       />
     </div>
 
@@ -22,11 +22,21 @@
         <template #created_at-data="{ row }">
           {{ new Date(row.created_at).toLocaleDateString('es-AR') }}
         </template>
+        <template #acciones-data="{ row }">
+          <UButton
+            icon="i-heroicons-pencil-square"
+            size="xs"
+            color="gray"
+            variant="ghost"
+            label="Editar"
+            @click="abrirModalEditar(row)"
+          />
+        </template>
       </UTable>
     </UCard>
 
-    <!-- Modal nuevo usuario -->
-    <UModal v-model="showModal">
+    <!-- Modal crear usuario -->
+    <UModal v-model="showModalCrear">
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
@@ -36,7 +46,7 @@
               color="gray"
               variant="ghost"
               size="xs"
-              @click="showModal = false"
+              @click="showModalCrear = false"
             />
           </div>
         </template>
@@ -54,11 +64,7 @@
           <UFormGroup label="Rol *">
             <USelect
               v-model="nuevoUsuario.rol"
-              :options="[
-                { label: 'Vendedor', value: 'vendedor' },
-                { label: 'Líder de Grupo', value: 'lider' },
-                { label: 'Oficinista', value: 'oficinista' },
-              ]"
+              :options="opcionesRol"
               class="w-full"
             />
           </UFormGroup>
@@ -74,8 +80,57 @@
 
         <template #footer>
           <div class="flex justify-end gap-3">
-            <UButton label="Cancelar" color="gray" variant="outline" @click="showModal = false" />
+            <UButton label="Cancelar" color="gray" variant="outline" @click="showModalCrear = false" />
             <UButton label="Crear Usuario" :loading="creating" @click="crearUsuario" />
+          </div>
+        </template>
+      </UCard>
+    </UModal>
+
+    <!-- Modal editar usuario -->
+    <UModal v-model="showModalEditar">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-gray-800">Editar Usuario</h3>
+            <UButton
+              icon="i-heroicons-x-mark"
+              color="gray"
+              variant="ghost"
+              size="xs"
+              @click="showModalEditar = false"
+            />
+          </div>
+        </template>
+
+        <div class="space-y-4">
+          <UFormGroup label="Email">
+            <UInput :model-value="usuarioEditando.email" disabled class="w-full" />
+          </UFormGroup>
+          <UFormGroup label="Nombre completo *">
+            <UInput v-model="usuarioEditando.nombre" placeholder="Juan García" class="w-full" />
+          </UFormGroup>
+          <UFormGroup label="Rol *">
+            <USelect
+              v-model="usuarioEditando.rol"
+              :options="opcionesRol"
+              class="w-full"
+            />
+          </UFormGroup>
+
+          <UAlert
+            v-if="editError"
+            icon="i-heroicons-exclamation-circle"
+            color="red"
+            variant="soft"
+            :title="editError"
+          />
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton label="Cancelar" color="gray" variant="outline" @click="showModalEditar = false" />
+            <UButton label="Guardar Cambios" :loading="saving" @click="guardarCambios" />
           </div>
         </template>
       </UCard>
@@ -90,9 +145,16 @@ const client = useSupabaseClient()
 const toast = useToast()
 const loading = ref(true)
 const usuarios = ref<any[]>([])
-const showModal = ref(false)
+
+// Modal crear
+const showModalCrear = ref(false)
 const creating = ref(false)
 const createError = ref('')
+
+// Modal editar
+const showModalEditar = ref(false)
+const saving = ref(false)
+const editError = ref('')
 
 const nuevoUsuario = reactive({
   nombre: '',
@@ -101,11 +163,26 @@ const nuevoUsuario = reactive({
   rol: 'vendedor',
 })
 
+const usuarioEditando = reactive({
+  id: '',
+  nombre: '',
+  email: '',
+  rol: 'vendedor',
+})
+
+const opcionesRol = [
+  { label: 'Vendedor', value: 'vendedor' },
+  { label: 'Líder de Grupo', value: 'lider' },
+  { label: 'Oficinista', value: 'oficinista' },
+  { label: 'Admin', value: 'admin' },
+]
+
 const columns = [
   { key: 'nombre', label: 'Nombre' },
   { key: 'email', label: 'Email' },
   { key: 'rol', label: 'Rol' },
   { key: 'created_at', label: 'Creado' },
+  { key: 'acciones', label: '' },
 ]
 
 const rolLabel = (r: string) => ({ vendedor: 'Vendedor', lider: 'Líder', oficinista: 'Oficinista', admin: 'Admin' }[r] ?? r)
@@ -123,10 +200,21 @@ const cargarUsuarios = async () => {
 
 onMounted(cargarUsuarios)
 
-const abrirModal = () => {
+const abrirModalCrear = () => {
   Object.assign(nuevoUsuario, { nombre: '', email: '', password: '', rol: 'vendedor' })
   createError.value = ''
-  showModal.value = true
+  showModalCrear.value = true
+}
+
+const abrirModalEditar = (row: any) => {
+  Object.assign(usuarioEditando, {
+    id: row.id,
+    nombre: row.nombre,
+    email: row.email,
+    rol: row.rol,
+  })
+  editError.value = ''
+  showModalEditar.value = true
 }
 
 const crearUsuario = async () => {
@@ -142,7 +230,7 @@ const crearUsuario = async () => {
   creating.value = true
   createError.value = ''
 
-  const { data, error } = await client.rpc('admin_create_user', {
+  const { error } = await client.rpc('admin_create_user', {
     p_email: nuevoUsuario.email,
     p_password: nuevoUsuario.password,
     p_nombre: nuevoUsuario.nombre,
@@ -156,8 +244,35 @@ const crearUsuario = async () => {
   }
 
   toast.add({ title: `Usuario ${nuevoUsuario.nombre} creado`, color: 'green' })
-  showModal.value = false
+  showModalCrear.value = false
   creating.value = false
+  await cargarUsuarios()
+}
+
+const guardarCambios = async () => {
+  if (!usuarioEditando.nombre.trim()) {
+    editError.value = 'El nombre no puede estar vacío.'
+    return
+  }
+
+  saving.value = true
+  editError.value = ''
+
+  const { error } = await client.rpc('admin_update_profile', {
+    p_user_id: usuarioEditando.id,
+    p_nombre: usuarioEditando.nombre.trim(),
+    p_rol: usuarioEditando.rol,
+  })
+
+  if (error) {
+    editError.value = error.message
+    saving.value = false
+    return
+  }
+
+  toast.add({ title: `Usuario ${usuarioEditando.nombre} actualizado`, color: 'green' })
+  showModalEditar.value = false
+  saving.value = false
   await cargarUsuarios()
 }
 
