@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/supabase', '@nuxt/ui', '@nuxthub/core'],
+  modules: ['@nuxtjs/supabase', '@nuxt/ui'],
 
   supabase: {
     redirectOptions: {
