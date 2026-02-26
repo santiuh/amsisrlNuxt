@@ -2,7 +2,8 @@ export interface Profile {
   id: string
   nombre: string
   email: string
-  rol: 'vendedor' | 'oficinista' | 'admin'
+  rol: 'vendedor' | 'oficinista' | 'admin' | 'lider'
+  grupo_id: string | null
   created_at: string
 }
 
