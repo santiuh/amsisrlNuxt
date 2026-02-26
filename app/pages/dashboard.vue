@@ -26,6 +26,55 @@
       </UCard>
     </template>
 
+    <!-- ============ LIDER ============ -->
+    <template v-else-if="profile?.rol === 'lider'">
+      <!-- Mis Ventas -->
+      <h3 class="text-base font-semibold text-gray-600 uppercase tracking-wide">Mis Ventas</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StatsCard
+          label="Mis Ventas del Mes"
+          :value="stats.misVentasMes"
+          icon="i-heroicons-chart-bar"
+          color="blue"
+        />
+        <StatsCard
+          label="Mis Ventas Aceptadas"
+          :value="stats.misAceptadas"
+          icon="i-heroicons-check-circle"
+          color="green"
+        />
+      </div>
+      <UCard>
+        <template #header>
+          <h3 class="font-semibold text-gray-800">Mis Ventas</h3>
+        </template>
+        <VentaTable :ventas="ventasPropias" :loading="loading" :show-vendedor="false" />
+      </UCard>
+
+      <!-- Mi Equipo -->
+      <h3 class="text-base font-semibold text-gray-600 uppercase tracking-wide mt-2">Mi Equipo</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <StatsCard
+          label="Ventas del Equipo (Mes)"
+          :value="stats.equipoMes"
+          icon="i-heroicons-users"
+          color="orange"
+        />
+        <StatsCard
+          label="Aceptadas del Equipo"
+          :value="stats.equipoAceptadas"
+          icon="i-heroicons-check-badge"
+          color="teal"
+        />
+      </div>
+      <UCard>
+        <template #header>
+          <h3 class="font-semibold text-gray-800">Ventas de mi Equipo</h3>
+        </template>
+        <VentaTable :ventas="ventasEquipo" :loading="loading" :show-vendedor="true" :can-export="true" />
+      </UCard>
+    </template>
+
     <!-- ============ OFICINISTA ============ -->
     <template v-else-if="profile?.rol === 'oficinista'">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -139,9 +188,19 @@ const ventasMes = computed(() =>
   ventas.value.filter(v => v.fecha_carga >= inicioMes)
 )
 
+const ventasPropias = computed(() =>
+  ventas.value.filter(v => v.vendedor_id === profile.value?.id)
+)
+const ventasEquipo = computed(() =>
+  ventas.value.filter(v => v.vendedor_id !== profile.value?.id)
+)
+
 const stats = computed(() => {
   const propias = ventas.value.filter(v => v.vendedor_id === profile.value?.id)
   const propiasMes = propias.filter(v => v.fecha_carga >= inicioMes)
+  const equipo = ventas.value.filter(v => v.vendedor_id !== profile.value?.id)
+  const equipoMes = equipo.filter(v => v.fecha_carga >= inicioMes).length
+  const equipoAceptadas = equipo.filter(v => v.fecha_carga >= inicioMes && v.estado === 'aceptado').length
   const total = ventasMes.value.length
   const aceptadas = ventasMes.value.filter(v => v.estado === 'aceptado').length
   const concretadas = ventasMes.value.filter(v => v.estado === 'concretado').length
@@ -152,6 +211,8 @@ const stats = computed(() => {
     aceptadas,
     concretadas,
     porcentajeConversion: total > 0 ? Math.round((aceptadas / total) * 100) : 0,
+    equipoMes,
+    equipoAceptadas,
   }
 })
 
