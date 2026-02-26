@@ -355,21 +355,10 @@ const guardarComentarioConflicto = async () => {
   }
   savingConflicto.value = true
 
-  const autor = profile.value?.nombre ?? 'Sistema'
-  const logActual: any[] = Array.isArray(venta.value?.comentarios_gestion)
-    ? venta.value.comentarios_gestion
-    : []
-  const nuevaEntrada = {
-    fecha_hora: new Date().toISOString(),
-    autor,
-    tipo: 'comentario',
-    texto: comentarioConflicto.value.trim(),
-  }
-
-  const { error } = await client
-    .from('ventas')
-    .update({ comentarios_gestion: [nuevaEntrada, ...logActual] })
-    .eq('id', route.params.id as string)
+  const { error } = await client.rpc('vendedor_add_gestion_comment', {
+    p_venta_id: route.params.id as string,
+    p_texto: comentarioConflicto.value.trim(),
+  })
 
   savingConflicto.value = false
   if (error) {
