@@ -258,7 +258,7 @@ onMounted(async () => {
   if (data) {
     gestionForm.estado = data.estado ?? 'pendiente'
     gestionForm.fecha_coordinacion = data.fecha_coordinacion
-      ? new Date(data.fecha_coordinacion).toISOString().slice(0, 16)
+      ? toDatetimeLocalValue(data.fecha_coordinacion)
       : ''
     // Marcar venta como leída para este usuario
     await client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
@@ -395,8 +395,45 @@ const estadoColor = (e: string): any => ({
   rechazado: 'red', coordinado: 'teal', concretado: 'blue',
 }[e] ?? 'gray')
 
-const formatFecha = (f: string) =>
-  new Date(f).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+const parseBackendDate = (value: unknown): Date | null => {
+  if (!value) return null
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
+  if (typeof value === 'number') {
+    const d = new Date(value)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  if (typeof value !== 'string') return null
+
+  const raw = value.trim()
+  if (!raw) return null
+
+  const normalized = raw
+    .replace(' ', 'T')
+    .replace(/([+-]\d{2})(\d{2})$/, '$1:$2')
+
+  const d = new Date(normalized)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+const toDatetimeLocalValue = (value: unknown): string => {
+  const d = parseBackendDate(value)
+  if (!d) return ''
+
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+const formatFecha = (f: unknown) => {
+  const d = parseBackendDate(f)
+  if (!d) return '—'
+  return d.toLocaleString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 const logGestion = computed(() => {
   const log = venta.value?.comentarios_gestion
