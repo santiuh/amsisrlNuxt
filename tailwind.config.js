@@ -1,6 +1,7 @@
 import defaultTheme from 'tailwindcss/defaultTheme'
 
 export default {
+  darkMode: 'media',
   theme: {
     extend: {
       colors: {

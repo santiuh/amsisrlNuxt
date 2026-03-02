@@ -84,7 +84,7 @@
 
     <!-- ============ OFICINISTA ============ -->
     <template v-else-if="profile?.rol === 'oficinista'">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatsCard
           label="Ventas del Mes"
           :value="stats.totalMes"
@@ -105,9 +105,9 @@
           color="orange"
         />
       </div>
-      <UCard>
+      <UCard class="shadow-sm ring-1 ring-gray-200 dark:ring-white/10">
         <template #header>
-          <h3 class="font-semibold text-gray-800 dark:text-gray-100">Todas las Ventas</h3>
+          <h3 class="text-3xl leading-none font-bold text-gray-900 dark:text-gray-100">Todas las Ventas</h3>
         </template>
         <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
       </UCard>
@@ -154,7 +154,7 @@
             <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base">Actividad de Oficinistas</h3>
           </template>
           <div class="overflow-x-auto -mx-4 sm:mx-0">
-            <UTable :rows="actividadОфицинistas" :columns="actividadColumns" />
+            <UTable :rows="actividadOficinistas" :columns="actividadColumns" />
           </div>
         </UCard>
       </div>
@@ -272,7 +272,7 @@ const rankingVendedores = computed(() => {
 })
 
 // Actividad de oficinistas: ventas que pasaron de pendiente a otro estado
-const actividadOficинistas = computed(() => {
+const actividadOficinistas = computed(() => {
   const map: Record<string, { nombre: string; gestionadas: number }> = {}
   ventas.value.forEach(v => {
     if (v.profiles?.rol === 'oficinista' && v.estado !== 'pendiente') {

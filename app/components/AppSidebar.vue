@@ -1,15 +1,18 @@
 <template>
   <aside
-    class="fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 text-white flex flex-col transform transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 lg:z-auto"
+    class="fixed inset-y-0 left-0 z-40 w-64 bg-white text-gray-700 flex flex-col border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 lg:z-auto dark:bg-[#0c162b] dark:text-gray-200 dark:border-[#22314d]"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
   >
     <!-- Logo -->
-    <div class="px-6 py-5 border-b border-gray-700 flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-bold text-white">AMSI SRL</h1>
-        <p class="text-xs text-gray-400 mt-0.5">Gestión de Ventas</p>
+    <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between dark:border-[#22314d]">
+      <div class="flex items-center gap-3">
+        <img src="/img/logo.png" alt="AMSI SRL" class="h-11 w-11 rounded-xl shadow-sm object-contain bg-[#1e293b] p-1" />
+        <div>
+          <h1 class="text-3xl leading-none font-extrabold tracking-tight text-gray-800 dark:text-gray-100">AMSI SRL</h1>
+          <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Gestión de Ventas</p>
+        </div>
       </div>
-      <button class="lg:hidden text-gray-400 hover:text-white" @click="sidebarOpen = false">
+      <button class="lg:hidden text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200" @click="sidebarOpen = false">
         <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
       </button>
     </div>
@@ -20,22 +23,22 @@
         v-for="item in navItems"
         :key="item.to"
         :to="item.to"
-        class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base leading-none font-medium transition-all"
         :class="$route.path === item.to
-          ? 'bg-primary-600 text-white'
-          : 'text-gray-300 hover:bg-gray-800 hover:text-white'"
+          ? 'bg-gradient-to-r from-[#0ea777] to-[#19c58e] text-white shadow-sm'
+          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-[#14213b] dark:hover:text-white'"
         @click="sidebarOpen = false"
       >
-        <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" />
+        <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" :class="$route.path === item.to ? 'text-white' : 'text-gray-500 dark:text-gray-400'" />
         {{ item.label }}
       </NuxtLink>
     </nav>
 
     <!-- Footer -->
-    <div class="px-6 py-4 border-t border-gray-700">
-      <p class="text-xs text-gray-500">
+    <div class="px-6 py-5 border-t border-gray-200 dark:border-[#22314d]">
+      <p class="text-xs text-gray-500 dark:text-gray-400">
         Desarrollado por
-        <a href="https://soldemayosoft.com.ar" target="_blank" class="text-primary-400 hover:underline">
+        <a href="https://soldemayosoft.com.ar" target="_blank" class="text-gray-700 hover:underline dark:text-gray-200">
           SolDeMayoSoft
         </a>
       </p>

@@ -1,5 +1,6 @@
 <template>
-  <div class="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+  <div class="h-screen overflow-hidden bg-[#f3f4f6] text-gray-900 dark:bg-[#081226] dark:text-gray-100">
+    <div class="flex h-full overflow-hidden bg-[#f7f8fa] dark:bg-transparent">
     <!-- Overlay backdrop (mobile only) -->
     <Transition name="fade">
       <div
@@ -16,6 +17,7 @@
       <main class="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 bg-transparent">
         <slot />
       </main>
+    </div>
     </div>
   </div>
 </template>

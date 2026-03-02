@@ -1,73 +1,92 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50">
-    <div class="w-full max-w-md px-4">
-      <UCard class="shadow-lg">
-        <template #header>
-          <div class="text-center py-2">
-            <h1 class="text-2xl font-bold text-gray-900">AMSI SRL</h1>
-            <p class="text-sm text-gray-500 mt-1">Sistema de Gestión de Ventas</p>
-          </div>
-        </template>
+  <div class="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#f4f4f4] px-4 dark:bg-[#071225]">
+    <div class="pointer-events-none absolute inset-0 hidden dark:block">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(26,64,124,0.38),transparent_58%)]" />
+      <div class="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.03),transparent_30%,rgba(255,255,255,0.02)_65%,transparent)]" />
+      <div class="absolute inset-0 opacity-30 [background-size:3px_3px] [background-image:radial-gradient(circle,rgba(255,255,255,0.22)_0.5px,transparent_0.5px)]" />
+    </div>
 
-        <div class="space-y-4">
-          <UFormGroup label="Email">
-            <UInput
-              v-model="form.email"
-              type="email"
-              placeholder="tu@email.com"
-              icon="i-heroicons-envelope"
-              class="w-full"
-            />
-          </UFormGroup>
+    <div class="relative w-full max-w-[420px] rounded-2xl border border-gray-100 bg-white p-7 shadow-xl md:p-8 dark:border-white/15 dark:bg-white/10 dark:backdrop-blur-md dark:shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+      <div class="text-center">
+        <img
+          src="/img/logo.png"
+          alt="AMSI SRL"
+          class="mx-auto h-24 w-auto object-contain"
+        />
+        <h1 class="mt-2 text-5xl leading-none font-extrabold tracking-tight text-[#17355b] dark:text-white/85">AMSI.SRL</h1>
+        <p class="mt-5 text-2xl leading-tight font-semibold text-[#0f172a] dark:text-white/70">Iniciar Sesión</p>
+      </div>
 
-          <UFormGroup label="Contraseña">
-            <UInput
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="••••••••"
-              icon="i-heroicons-lock-closed"
-              class="w-full"
-            >
-              <template #trailing>
-                <UButton
-                  :icon="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
-                  variant="link"
-                  color="gray"
-                  :padded="false"
-                  @click="showPassword = !showPassword"
-                />
-              </template>
-            </UInput>
-          </UFormGroup>
-
-          <UAlert
-            v-if="errorMsg"
-            icon="i-heroicons-exclamation-circle"
-            color="red"
-            variant="soft"
-            :title="errorMsg"
-          />
-
-          <UButton
-            block
-            :loading="loading"
-            label="Ingresar"
-            @click="login"
+      <form class="mt-8 space-y-4" @submit.prevent="login">
+        <div class="relative">
+          <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 dark:text-white/45">
+            <UIcon name="i-heroicons-user" class="h-5 w-5" />
+          </span>
+          <input
+            v-model="form.email"
+            type="email"
+            placeholder="Correo electrónico"
+            class="h-12 w-full rounded-lg border border-gray-300 bg-white pl-11 pr-4 text-base text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 dark:border-white/20 dark:bg-white/5 dark:text-white/85 dark:placeholder:text-white/35 dark:focus:border-cyan-400 dark:focus:ring-cyan-500/20"
           />
         </div>
 
-        <template #footer>
-          <div class="text-center">
-            <NuxtLink to="/forgot-password" class="text-sm text-primary-600 hover:underline">
-              ¿Olvidaste tu contraseña?
-            </NuxtLink>
-          </div>
-        </template>
-      </UCard>
+        <div class="relative">
+          <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400 dark:text-white/45">
+            <UIcon name="i-heroicons-lock-closed" class="h-5 w-5" />
+          </span>
+          <input
+            v-model="form.password"
+            :type="showPassword ? 'text' : 'password'"
+            placeholder="Contraseña"
+            class="h-12 w-full rounded-lg border border-gray-300 bg-white pl-11 pr-11 text-base text-gray-700 placeholder:text-gray-400 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-100 dark:border-white/20 dark:bg-white/5 dark:text-white/85 dark:placeholder:text-white/35 dark:focus:border-cyan-400 dark:focus:ring-cyan-500/20"
+          />
+          <button
+            type="button"
+            class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 dark:text-white/45 dark:hover:text-white/70"
+            @click="showPassword = !showPassword"
+          >
+            <UIcon :name="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'" class="h-5 w-5" />
+          </button>
+        </div>
 
-      <p class="text-center text-xs text-gray-400 mt-4">
+        <UAlert
+          v-if="errorMsg"
+          icon="i-heroicons-exclamation-circle"
+          color="red"
+          variant="soft"
+          :title="errorMsg"
+        />
+
+        <div class="flex items-center justify-between text-sm">
+          <label class="inline-flex items-center gap-2 text-gray-600 select-none dark:text-white/60">
+            <input
+              v-model="rememberMe"
+              type="checkbox"
+              class="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500 dark:border-white/30 dark:bg-transparent dark:checked:border-cyan-400 dark:checked:bg-cyan-500"
+            />
+            Recordarme
+          </label>
+          <NuxtLink to="/forgot-password" class="font-medium text-sky-600 hover:underline dark:text-cyan-400">
+            Olvidé mi contraseña
+          </NuxtLink>
+        </div>
+
+        <button
+          type="submit"
+          :disabled="loading"
+          class="h-12 w-full rounded-full bg-gradient-to-r from-cyan-500 to-fuchsia-600 text-lg font-semibold text-white shadow-md transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70 dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
+        >
+          {{ loading ? 'Ingresando...' : 'Ingresar' }}
+        </button>
+      </form>
+
+      <p class="mt-8 text-center text-sm text-gray-500 dark:text-white/55">
+        © 2026 AMSI SRL.
+      </p>
+
+      <p class="mt-2 text-center text-xs text-gray-400 dark:text-white/45">
         Desarrollado por
-        <a href="https://soldemayosoft.com.ar" target="_blank" class="hover:underline text-gray-500">
+        <a href="https://soldemayosoft.com.ar" target="_blank" class="hover:underline text-gray-500 dark:text-white/60">
           SolDeMayoSoft
         </a>
       </p>
@@ -83,6 +102,7 @@ const form = reactive({ email: '', password: '' })
 const loading = ref(false)
 const errorMsg = ref('')
 const showPassword = ref(false)
+const rememberMe = ref(false)
 
 const login = async () => {
   if (!form.email || !form.password) {

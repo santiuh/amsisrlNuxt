@@ -1,6 +1,12 @@
 export default defineNuxtConfig({
   modules: ['@nuxtjs/supabase', '@nuxt/ui'],
 
+  colorMode: {
+    preference: 'system',
+    fallback: 'light',
+    classSuffix: '',
+  },
+
   supabase: {
     redirectOptions: {
       login: '/login',
