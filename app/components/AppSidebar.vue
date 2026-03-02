@@ -64,6 +64,7 @@ const navItems = computed(() => {
     items.push({ to: '/admin/grupos', label: 'Grupos', icon: 'i-heroicons-user-group' })
     items.push({ to: '/admin/catalogo', label: 'Catálogo', icon: 'i-heroicons-tag' })
   }
+  items.push({ to: '/cambiar-contrasena', label: 'Cambiar Contraseña', icon: 'i-heroicons-key' })
   return items
 })
 </script>

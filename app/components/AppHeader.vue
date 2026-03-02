@@ -56,6 +56,7 @@ const pageTitle = computed(() => {
     '/ventas': 'Ventas',
     '/ventas/nueva': 'Nueva Venta',
     '/admin/usuarios': 'Gestión de Usuarios',
+    '/cambiar-contrasena': 'Cambiar Contraseña',
   }
   return titles[route.path] ?? 'AMSI SRL'
 })
