@@ -22,7 +22,7 @@
           />
         </template>
         <template #created_at-data="{ row }">
-          {{ new Date(row.created_at).toLocaleDateString('es-AR') }}
+          {{ formatFecha(row.created_at) }}
         </template>
         <template #acciones-data="{ row }">
           <UButton

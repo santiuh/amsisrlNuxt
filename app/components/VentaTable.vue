@@ -173,8 +173,6 @@ const tieneComentarioNuevo = (venta: any): boolean => {
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
 
-const formatFecha = (f: string) =>
-  new Date(f).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
 const handleExport = () => {
   const data = ventasFiltradas.value.map(v => ({
@@ -197,7 +195,7 @@ const handleExport = () => {
     'Comentarios Venta': v.comentarios_venta ?? '',
     'Comentarios Gestión': Array.isArray(v.comentarios_gestion)
       ? v.comentarios_gestion.map((e: any) =>
-          `[${new Date(e.fecha_hora).toLocaleString('es-AR')}] ${e.autor}: ${e.texto}`
+          `[${formatFechaHora(e.fecha_hora)}] ${e.autor}: ${e.texto}`
         ).join(' | ')
       : (v.comentarios_gestion ?? ''),
   }))

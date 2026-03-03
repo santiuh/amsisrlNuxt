@@ -280,6 +280,11 @@ if (!Array.isArray(form.comentarios_gestion)) {
   form.comentarios_gestion = []
 }
 
+// Normalizar fecha_coordinacion al formato que espera datetime-local (YYYY-MM-DDTHH:MM)
+if (form.fecha_coordinacion) {
+  form.fecha_coordinacion = toDatetimeLocalValue(form.fecha_coordinacion)
+}
+
 // Cargar extras seleccionados en modo edición
 if (props.initialData?.venta_extras) {
   form.extras_ids = (props.initialData.venta_extras as any[]).map((ve: any) => ve.extra_id)
@@ -292,11 +297,7 @@ const logEntradas = computed(() =>
   Array.isArray(form.comentarios_gestion) ? (form.comentarios_gestion as any[]) : []
 )
 
-const formatFechaLog = (isoString: string) =>
-  new Date(isoString).toLocaleString('es-AR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  })
+const formatFechaLog = (value: unknown) => formatFechaHora(value)
 
 const estadoLabelLocal = (e: string) => ({
   pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',

@@ -394,57 +394,7 @@ const estadoColor = (e: string): any => ({
   rechazado: 'red', coordinado: 'teal', concretado: 'blue',
 }[e] ?? 'gray')
 
-const parseBackendDate = (value: unknown): Date | null => {
-  if (!value) return null
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
-  if (typeof value === 'number') {
-    const d = new Date(value)
-    return Number.isNaN(d.getTime()) ? null : d
-  }
-  if (typeof value !== 'string') return null
-
-  const raw = value.trim()
-  if (!raw) return null
-
-  // Formato local sin zona (más estable entre navegadores móviles, incluido Android)
-  const localMatch = raw.match(
-    /^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/
-  )
-  if (localMatch) {
-    const [, y, m, day, hh = '00', mm = '00', ss = '00'] = localMatch
-    const d = new Date(
-      Number(y),
-      Number(m) - 1,
-      Number(day),
-      Number(hh),
-      Number(mm),
-      Number(ss)
-    )
-    return Number.isNaN(d.getTime()) ? null : d
-  }
-
-  const normalized = raw
-    .replace(' ', 'T')
-    .replace(/([+-]\d{2})(\d{2})$/, '$1:$2')
-
-  const d = new Date(normalized)
-  return Number.isNaN(d.getTime()) ? null : d
-}
-
-const toDatetimeLocalValue = (value: unknown): string => {
-  const d = parseBackendDate(value)
-  if (!d) return ''
-
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-const formatFecha = (f: unknown) => {
-  const d = parseBackendDate(f)
-  if (!d) return '—'
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
+const formatFecha = (f: unknown) => formatFechaHora(f)
 
 const logGestion = computed(() => {
   const log = venta.value?.comentarios_gestion
