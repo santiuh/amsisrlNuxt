@@ -186,6 +186,7 @@ const handleExport = () => {
     Localidad: v.dir_localidad ?? '',
     Aclaración: v.dir_aclaracion ?? '',
     Teléfono: v.telefono ?? '',
+    Email: v.mail ?? '',
     Paquete: v.paquete_nombre ?? '',
     Precio: v.precio,
     'Forma de Pago': v.forma_pago,

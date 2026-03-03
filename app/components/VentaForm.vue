@@ -14,6 +14,10 @@
         <UInput v-model="form.telefono" placeholder="1123456789" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
+      <UFormGroup label="Email">
+        <UInput v-model="form.mail" type="email" placeholder="cliente@ejemplo.com" class="w-full" :disabled="readonly" />
+      </UFormGroup>
+
       <!-- Dirección estructurada -->
       <UFormGroup label="Dirección *">
         <UInput v-model="form.dir_calle" placeholder="Ej: Av. Corrientes 1234" class="w-full" :disabled="readonly" />
@@ -254,6 +258,7 @@ const form = reactive({
   cliente: '',
   dni_cuil: '',
   telefono: '',
+  mail: '',
   dir_calle: '',
   dir_entre_calles: '',
   dir_localidad: '',
