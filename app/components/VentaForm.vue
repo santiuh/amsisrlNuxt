@@ -111,13 +111,13 @@
       </UFormGroup>
 
       <!-- Estado: visible en edición (oficinista/admin) o en modo solo lectura -->
-      <UFormGroup v-if="canEditEstado || readonly" label="Estado">
+      <UFormGroup v-if="!hideGestionFields && (canEditEstado || readonly)" label="Estado">
         <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
       </UFormGroup>
 
       <!-- Fecha de coordinación: obligatoria cuando estado = coordinado -->
       <UFormGroup
-        v-if="(canEditEstado || readonly) && form.estado === 'coordinado'"
+        v-if="!hideGestionFields && (canEditEstado || readonly) && form.estado === 'coordinado'"
         label="Fecha y horario de coordinación *"
         class="md:col-span-2"
       >
@@ -141,7 +141,7 @@
       </UFormGroup>
 
       <!-- Registro de gestión: solo oficinista/admin en modo edición -->
-      <UFormGroup v-if="canEditGestion && !readonly" label="Registro de Gestión" class="md:col-span-2">
+      <UFormGroup v-if="!hideGestionFields && canEditGestion && !readonly" label="Registro de Gestión" class="md:col-span-2">
         <!-- Entradas existentes -->
         <div
           v-if="logEntradas.length > 0"
@@ -205,6 +205,7 @@ const props = defineProps<{
   submitLabel?: string
   showCancel?: boolean
   readonly?: boolean
+  hideGestionFields?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -221,6 +222,7 @@ const canEditEstado = computed(() =>
 const canEditGestion = computed(() =>
   ['oficinista', 'admin'].includes(profile.value?.rol ?? '')
 )
+const hideGestionFields = computed(() => !!props.hideGestionFields)
 
 // ——— Catálogo dinámico ———
 const paquetesActivos = ref<any[]>([])

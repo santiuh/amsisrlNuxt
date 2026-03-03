@@ -48,11 +48,10 @@
 
       <!-- Vista de solo lectura: mismo formato que el formulario de creación -->
       <template v-else>
-        <VentaForm :initial-data="venta" readonly />
+        <VentaForm :initial-data="venta" :hide-gestion-fields="isOficinistra" readonly />
 
         <!-- Panel de gestión editable (solo oficinista) -->
         <div v-if="isOficinistra" class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4 space-y-4">
-          <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Gestión</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <UFormGroup label="Estado">
