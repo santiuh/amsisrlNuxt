@@ -59,3 +59,14 @@ export const toDatetimeLocalValue = (value: unknown): string => {
   if (!d) return ''
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
+
+/**
+ * Convierte el valor de un input datetime-local (hora local sin timezone)
+ * a ISO UTC string para enviar a Supabase.
+ * Sin esto, Supabase interpreta la hora como UTC y se pierden 3hs (offset AR).
+ */
+export const datetimeLocalToISO = (value: string | null | undefined): string | null => {
+  if (!value) return null
+  const d = parseBackendDate(value) // "sin timezone" → lo trata como hora local ✓
+  return d ? d.toISOString() : null
+}

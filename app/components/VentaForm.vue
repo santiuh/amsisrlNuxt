@@ -411,7 +411,7 @@ const submit = async () => {
 
   emit('submit', {
     ...form,
-    fecha_coordinacion: form.fecha_coordinacion || null,
+    fecha_coordinacion: datetimeLocalToISO(form.fecha_coordinacion),
     paquete_nombre: paquete?.nombre ?? '',
     paquete_precio_snapshot: paquete?.precio ?? 0,
     precio: precioCalculado.value,

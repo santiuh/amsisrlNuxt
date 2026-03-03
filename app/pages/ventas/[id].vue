@@ -309,7 +309,7 @@ const guardarGestion = async () => {
   const payload: Record<string, any> = {
     estado: gestionForm.estado,
     fecha_coordinacion: gestionForm.estado === 'coordinado'
-      ? gestionForm.fecha_coordinacion || null
+      ? datetimeLocalToISO(gestionForm.fecha_coordinacion)
       : null,
     comentarios_gestion: [...nuevasEntradas, ...logActual],
   }
