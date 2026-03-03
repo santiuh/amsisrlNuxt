@@ -406,6 +406,23 @@ const parseBackendDate = (value: unknown): Date | null => {
   const raw = value.trim()
   if (!raw) return null
 
+  // Formato local sin zona (más estable entre navegadores móviles, incluido Android)
+  const localMatch = raw.match(
+    /^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?$/
+  )
+  if (localMatch) {
+    const [, y, m, day, hh = '00', mm = '00', ss = '00'] = localMatch
+    const d = new Date(
+      Number(y),
+      Number(m) - 1,
+      Number(day),
+      Number(hh),
+      Number(mm),
+      Number(ss)
+    )
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+
   const normalized = raw
     .replace(' ', 'T')
     .replace(/([+-]\d{2})(\d{2})$/, '$1:$2')
@@ -425,13 +442,8 @@ const toDatetimeLocalValue = (value: unknown): string => {
 const formatFecha = (f: unknown) => {
   const d = parseBackendDate(f)
   if (!d) return '—'
-  return d.toLocaleString('es-AR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 const logGestion = computed(() => {

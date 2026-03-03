@@ -30,6 +30,12 @@ Crear `.env` con:
 4. Evitar agregar dependencias nuevas si no son necesarias.
 5. Si se toca configuración, validar que `pnpm dev` arranque sin errores.
 
+## Perfil del desarrollador
+- **Frontend**: Mid-senior en Nuxt/Vue. No necesita explicaciones básicas de componentes, composables, stores ni routing.
+- **Backend**: Conocimiento muy limitado. Explicar siempre con simplicidad y contexto cuando se toque lógica de servidor, base de datos o APIs.
+- **Claude Code**: Usuario nuevo en la herramienta. Orientar cuando sea relevante.
+- **Idioma**: Responder siempre en español.
+
 ## Notas rápidas
 - Módulos Nuxt activos: `@nuxtjs/supabase`, `@nuxtjs/tailwindcss`, `@nuxthub/core`.
 - `compatibilityVersion` de Nuxt configurado en `4`.
