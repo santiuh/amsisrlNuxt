@@ -58,6 +58,15 @@
                 <USelect v-model="gestionForm.estado" :options="estadoOptions" class="w-full" />
               </UFormGroup>
 
+              <UFormGroup label="Número de Cliente">
+                <UInput
+                  v-model="gestionForm.nro_cliente"
+                  placeholder="Ej: 123456"
+                  class="w-full"
+                  :disabled="gestionForm.estado !== 'coordinado'"
+                />
+              </UFormGroup>
+
               <UFormGroup
                 v-if="gestionForm.estado === 'coordinado'"
                 label="Fecha y horario de coordinación *"
@@ -227,6 +236,7 @@ const gestionForm = reactive({
   estado: 'pendiente',
   fecha_coordinacion: '',
   nuevoComentario: '',
+  nro_cliente: '',
 })
 const savingGestion = ref(false)
 const gestionError = ref('')
@@ -259,6 +269,7 @@ onMounted(async () => {
     gestionForm.fecha_coordinacion = data.fecha_coordinacion
       ? toDatetimeLocalValue(data.fecha_coordinacion)
       : ''
+    gestionForm.nro_cliente = data.nro_cliente ?? ''
     // Marcar venta como leída para este usuario
     await client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
   }
@@ -312,6 +323,7 @@ const guardarGestion = async () => {
       ? datetimeLocalToISO(gestionForm.fecha_coordinacion)
       : null,
     comentarios_gestion: [...nuevasEntradas, ...logActual],
+    nro_cliente: gestionForm.nro_cliente || null,
   }
 
   const { error } = await client
