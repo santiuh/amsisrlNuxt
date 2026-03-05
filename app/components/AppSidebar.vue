@@ -62,10 +62,14 @@ const navItems = computed(() => {
       icon: 'i-heroicons-table-cells',
     },
   ]
+  if (rol !== 'admin') {
+    items.push({ to: '/comisiones', label: 'Mis Comisiones', icon: 'i-heroicons-banknotes' })
+  }
   if (rol === 'admin') {
     items.push({ to: '/admin/usuarios', label: 'Usuarios', icon: 'i-heroicons-users' })
     items.push({ to: '/admin/grupos', label: 'Grupos', icon: 'i-heroicons-user-group' })
     items.push({ to: '/admin/catalogo', label: 'Catálogo', icon: 'i-heroicons-tag' })
+    items.push({ to: '/admin/comisiones', label: 'Comisiones', icon: 'i-heroicons-calculator' })
   }
   items.push({ to: '/cambiar-contrasena', label: 'Cambiar Contraseña', icon: 'i-heroicons-key' })
   return items

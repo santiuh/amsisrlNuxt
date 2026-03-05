@@ -16,6 +16,14 @@
           color="green"
         />
         <StatsCard
+          v-if="cicloActivo"
+          label="Estimado Ciclo Actual"
+          :value="formatPrecioDashboard(estimadoTotal)"
+          icon="i-heroicons-banknotes"
+          color="purple"
+          :sub="`${ventasConcretadasCiclo} concretadas`"
+        />
+        <StatsCard
           v-if="ventasConComentariosPendientes > 0"
           label="Comentarios Pendientes"
           :value="ventasConComentariosPendientes"
@@ -37,7 +45,7 @@
     <template v-else-if="profile?.rol === 'lider'">
       <!-- Mis Ventas -->
       <h3 class="text-base font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Mis Ventas</h3>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard
           label="Mis Ventas del Mes"
           :value="stats.misVentasMes"
@@ -49,6 +57,14 @@
           :value="stats.misAceptadas"
           icon="i-heroicons-check-circle"
           color="green"
+        />
+        <StatsCard
+          v-if="cicloActivo"
+          label="Estimado Ciclo Actual"
+          :value="formatPrecioDashboard(estimadoTotal)"
+          icon="i-heroicons-banknotes"
+          color="purple"
+          :sub="`Comisión + Bonus liderazgo`"
         />
       </div>
       <UCard>
@@ -84,7 +100,7 @@
 
     <!-- ============ OFICINISTA ============ -->
     <template v-else-if="profile?.rol === 'oficinista'">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard
           label="Ventas del Mes"
           :value="stats.totalMes"
@@ -96,6 +112,14 @@
           :value="stats.aceptadas"
           icon="i-heroicons-check-circle"
           color="green"
+        />
+        <StatsCard
+          v-if="cicloActivo"
+          label="Estimado Ciclo Actual"
+          :value="formatPrecioDashboard(estimadoTotal)"
+          icon="i-heroicons-banknotes"
+          color="purple"
+          :sub="`${ventasConcretadasCiclo} concretadas`"
         />
         <StatsCard
           v-if="ventasConComentariosPendientes > 0"
@@ -115,7 +139,7 @@
 
     <!-- ============ ADMIN ============ -->
     <template v-else-if="profile?.rol === 'admin'">
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           label="Total Ventas del Mes"
           :value="stats.totalMes"
@@ -134,6 +158,14 @@
           :value="stats.concretadas"
           icon="i-heroicons-banknotes"
           color="purple"
+        />
+        <StatsCard
+          v-if="cicloActivo"
+          label="Comisiones Ciclo"
+          :value="formatPrecioDashboard(totalComisionesCiclo)"
+          icon="i-heroicons-calculator"
+          color="orange"
+          :sub="`Cierre: ${formatFecha(fechaCierrePrevista)}`"
         />
       </div>
 
@@ -175,11 +207,25 @@
 </template>
 
 <script setup lang="ts">
+import { calcularEstimaciones } from '~/composables/useComisiones'
+
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
 const loading = ref(true)
 const ventas = ref<any[]>([])
 const lecturas = ref<Record<string, string>>({})
+
+// Comisiones
+const cicloActivo = ref<any>(null)
+const estimadoComision = ref(0)
+const estimadoTotal = ref(0)
+const ventasConcretadasCiclo = ref(0)
+const estimadoBonus = ref(0)
+const totalComisionesCiclo = ref(0)
+const fechaCierrePrevista = ref('')
+
+const formatPrecioDashboard = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
 
 const rankingColumns = [
   { key: 'nombre', label: 'Vendedor' },
@@ -192,7 +238,7 @@ const actividadColumns = [
 ]
 
 onMounted(async () => {
-  const [{ data }, { data: lecturasData }] = await Promise.all([
+  const [{ data }, { data: lecturasData }, { data: cicloData }] = await Promise.all([
     client
       .from('ventas')
       .select('*, profiles:vendedor_id(nombre, rol)')
@@ -200,11 +246,49 @@ onMounted(async () => {
     client
       .from('venta_lecturas')
       .select('venta_id, ultima_lectura'),
+    client
+      .from('ciclos_comision')
+      .select('*')
+      .eq('estado', 'activo')
+      .maybeSingle(),
   ])
   ventas.value = data ?? []
   lecturas.value = Object.fromEntries(
     (lecturasData ?? []).map((l: any) => [l.venta_id, l.ultima_lectura])
   )
+  cicloActivo.value = cicloData
+
+  // Calcular estimación de comisiones si hay ciclo activo
+  if (cicloData && profile.value) {
+    fechaCierrePrevista.value = cicloData.fecha_cierre_prevista
+    const [{ data: ventasCicloData }, { data: profilesData }, { data: gruposData }, { data: pctGrupoData }, { data: pctLiderData }] = await Promise.all([
+      client.from('ventas').select('id, vendedor_id, precio, fecha_carga')
+        .eq('estado', 'concretado')
+        .gte('fecha_carga', cicloData.fecha_inicio)
+        .lte('fecha_carga', new Date().toISOString()),
+      client.from('profiles').select('id, nombre, rol, grupo_id'),
+      client.from('grupos').select('id, lider_id'),
+      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').single(),
+      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').single(),
+    ])
+    const pctGrupo = Number(pctGrupoData?.valor ?? 80)
+    const pctLider = Number(pctLiderData?.valor ?? 25)
+    const estimaciones = calcularEstimaciones(
+      ventasCicloData ?? [],
+      profilesData ?? [],
+      gruposData ?? [],
+      { pct_grupo: pctGrupo, pct_lider: pctLider },
+    )
+    const miEstimacion = estimaciones.find(e => e.vendedor_id === profile.value!.id)
+    if (miEstimacion) {
+      estimadoComision.value = miEstimacion.monto_comision
+      estimadoTotal.value = miEstimacion.monto_total
+      ventasConcretadasCiclo.value = miEstimacion.cantidad_ventas
+      estimadoBonus.value = miEstimacion.monto_liderazgo
+    }
+    totalComisionesCiclo.value = estimaciones.reduce((sum, e) => sum + e.monto_total, 0)
+  }
+
   loading.value = false
 })
 
