@@ -144,6 +144,16 @@
         />
       </UFormGroup>
 
+      <!-- Número de Cliente -->
+      <UFormGroup label="Número de Cliente" class="md:col-span-2">
+        <UInput
+          v-model="form.nro_cliente"
+          placeholder="Ej: 123456"
+          class="w-full"
+          :disabled="readonly"
+        />
+      </UFormGroup>
+
       <!-- Registro de gestión: solo oficinista/admin en modo edición -->
       <UFormGroup v-if="!hideGestionFields && canEditGestion && !readonly" label="Registro de Gestión" class="md:col-span-2">
         <!-- Entradas existentes -->
@@ -272,6 +282,7 @@ const form = reactive({
   fecha_coordinacion: '',
   comentarios_venta: '',
   comentarios_gestion: [] as any[],
+  nro_cliente: '',
   ...(props.initialData ?? {}),
 })
 
