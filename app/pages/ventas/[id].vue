@@ -34,6 +34,9 @@
         <div>
           <span class="font-medium">Fecha de carga:</span> {{ formatFecha(venta.fecha_carga) }}
         </div>
+        <div v-if="venta.nro_cliente">
+          <span class="font-medium">Nro. de Cliente:</span> {{ venta.nro_cliente }}
+        </div>
       </div>
 
       <!-- Formulario editable completo (solo admin) -->
