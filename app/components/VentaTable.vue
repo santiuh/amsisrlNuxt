@@ -1,18 +1,23 @@
 <template>
   <div class="space-y-4">
-    <!-- Toolbar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
-        <UInput
-          v-model="search"
-          placeholder="Buscar cliente o DNI/CUIL..."
-          icon="i-heroicons-magnifying-glass"
-          class="w-full sm:w-72"
+    <!-- Filtros + Exportar -->
+    <div class="flex flex-col gap-3">
+      <div class="flex items-start justify-between gap-3">
+        <VentaFilters
+          v-model:filters="filters"
+          :show-vendedor="showVendedor"
+          :vendedores="vendedoresOptions"
+          class="flex-1"
         />
-        <USelect
-          v-model="filtroEstado"
-          :options="estadoOptions"
-          class="w-full sm:w-48"
+        <UButton
+          v-if="canExport"
+          icon="i-heroicons-arrow-down-tray"
+          label="Exportar CSV"
+          color="gray"
+          variant="outline"
+          size="sm"
+          class="shrink-0 hidden sm:flex"
+          @click="handleExport"
         />
       </div>
       <UButton
@@ -22,7 +27,7 @@
         color="gray"
         variant="outline"
         size="sm"
-        class="self-end sm:self-auto"
+        class="self-end sm:hidden"
         @click="handleExport"
       />
     </div>
@@ -95,6 +100,7 @@
 
 <script setup lang="ts">
 import { exportCsv } from '~/utils/exportCsv'
+import type { VentaFilterState } from '~/components/VentaFilters.vue'
 
 const props = defineProps<{
   ventas: any[]
@@ -104,18 +110,28 @@ const props = defineProps<{
   lecturas?: Record<string, string>  // venta_id → ultima_lectura ISO
 }>()
 
-const search = ref('')
-const filtroEstado = ref('')
+const filters = reactive<VentaFilterState>({
+  search: '',
+  estado: '',
+  fechaDesde: '',
+  fechaHasta: '',
+  vendedor: '',
+  formaPago: '',
+})
 
-const estadoOptions = [
-  { label: 'Todos los estados', value: '' },
-  { label: 'Pendiente', value: 'pendiente' },
-  { label: 'En Proceso', value: 'en_proceso' },
-  { label: 'En Conflicto', value: 'en_conflicto' },
-  { label: 'Rechazado', value: 'rechazado' },
-  { label: 'Coordinado', value: 'coordinado' },
-  { label: 'Concretado', value: 'concretado' },
-]
+const vendedoresOptions = computed(() => {
+  const map = new Map<string, string>()
+  props.ventas.forEach(v => {
+    if (v.vendedor_id && v.profiles?.nombre) {
+      map.set(v.vendedor_id, v.profiles.nombre)
+    }
+  })
+  return [
+    { label: 'Todos los vendedores', value: '' },
+    ...Array.from(map, ([value, label]) => ({ label, value }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  ]
+})
 
 const columnas = computed(() => {
   const base = [
@@ -137,13 +153,18 @@ const columnas = computed(() => {
 
 const ventasFiltradas = computed(() =>
   props.ventas.filter(v => {
-    const q = search.value.toLowerCase()
+    const q = filters.search.toLowerCase()
     const matchSearch = !q ||
       v.cliente?.toLowerCase().includes(q) ||
       v.dni_cuil?.toLowerCase().includes(q)
-    const matchEstado = !filtroEstado.value || v.estado === filtroEstado.value
-    return matchSearch && matchEstado
-  })
+    const matchEstado = !filters.estado || v.estado === filters.estado
+    const fechaVenta = v.fecha_carga?.split('T')[0] ?? ''
+    const matchFechaDesde = !filters.fechaDesde || fechaVenta >= filters.fechaDesde
+    const matchFechaHasta = !filters.fechaHasta || fechaVenta <= filters.fechaHasta
+    const matchVendedor = !filters.vendedor || v.vendedor_id === filters.vendedor
+    const matchFormaPago = !filters.formaPago || v.forma_pago === filters.formaPago
+    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor && matchFormaPago
+  }),
 )
 
 const estadoLabel = (e: string) => ({
@@ -160,19 +181,17 @@ const tieneComentarioNuevo = (venta: any): boolean => {
   if (!props.lecturas) return false
   const log = venta.comentarios_gestion
   if (!Array.isArray(log) || log.length === 0) return false
-  // Solo contar comentarios reales, no cambios de estado
   const comentarios = log.filter((e: any) => e.tipo === 'comentario')
   if (comentarios.length === 0) return false
   const ultimoComentario = comentarios[0]?.fecha_hora
   if (!ultimoComentario) return false
   const ultimaLectura = props.lecturas[venta.id]
-  if (!ultimaLectura) return true // nunca abrió → hay comentario nuevo
+  if (!ultimaLectura) return true
   return new Date(ultimoComentario) > new Date(ultimaLectura)
 }
 
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
-
 
 const handleExport = () => {
   const data = ventasFiltradas.value.map(v => ({
