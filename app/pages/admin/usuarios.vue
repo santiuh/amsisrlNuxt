@@ -233,23 +233,24 @@ const crearUsuario = async () => {
   creating.value = true
   createError.value = ''
 
-  const { error } = await client.rpc('admin_create_user', {
-    p_email: nuevoUsuario.email,
-    p_password: nuevoUsuario.password,
-    p_nombre: nuevoUsuario.nombre,
-    p_rol: nuevoUsuario.rol,
-  })
-
-  if (error) {
-    createError.value = error.message
+  try {
+    await $fetch('/api/admin/usuarios', {
+      method: 'POST',
+      body: {
+        email: nuevoUsuario.email,
+        password: nuevoUsuario.password,
+        nombre: nuevoUsuario.nombre,
+        rol: nuevoUsuario.rol,
+      },
+    })
+    toast.add({ title: `Usuario ${nuevoUsuario.nombre} creado`, color: 'green' })
+    showModalCrear.value = false
+    await cargarUsuarios()
+  } catch (err: any) {
+    createError.value = err.data?.statusMessage || 'Error al crear usuario'
+  } finally {
     creating.value = false
-    return
   }
-
-  toast.add({ title: `Usuario ${nuevoUsuario.nombre} creado`, color: 'green' })
-  showModalCrear.value = false
-  creating.value = false
-  await cargarUsuarios()
 }
 
 const guardarCambios = async () => {
@@ -261,22 +262,22 @@ const guardarCambios = async () => {
   saving.value = true
   editError.value = ''
 
-  const { error } = await client.rpc('admin_update_profile', {
-    p_user_id: usuarioEditando.id,
-    p_nombre: usuarioEditando.nombre.trim(),
-    p_rol: usuarioEditando.rol,
-  })
-
-  if (error) {
-    editError.value = error.message
+  try {
+    await $fetch(`/api/admin/usuarios/${usuarioEditando.id}`, {
+      method: 'PUT',
+      body: {
+        nombre: usuarioEditando.nombre.trim(),
+        rol: usuarioEditando.rol,
+      },
+    })
+    toast.add({ title: `Usuario ${usuarioEditando.nombre} actualizado`, color: 'green' })
+    showModalEditar.value = false
+    await cargarUsuarios()
+  } catch (err: any) {
+    editError.value = err.data?.statusMessage || 'Error al actualizar usuario'
+  } finally {
     saving.value = false
-    return
   }
-
-  toast.add({ title: `Usuario ${usuarioEditando.nombre} actualizado`, color: 'green' })
-  showModalEditar.value = false
-  saving.value = false
-  await cargarUsuarios()
 }
 
 useHead({ title: 'Usuarios — AMSI SRL' })

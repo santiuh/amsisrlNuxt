@@ -202,14 +202,21 @@ const guardarConfig = async () => {
   }
   guardandoConfig.value = true
   errorConfig.value = ''
-  const ahora = new Date().toISOString()
-  const [{ error: e1 }, { error: e2 }] = await Promise.all([
-    client.from('configuracion').update({ valor: formConfig.precio_boca_extra, updated_at: ahora }).eq('clave', 'precio_boca_extra'),
-    client.from('configuracion').update({ valor: formConfig.precio_deco_extra, updated_at: ahora }).eq('clave', 'precio_deco_extra'),
-  ])
-  guardandoConfig.value = false
-  if (e1 || e2) { errorConfig.value = (e1 || e2)!.message; return }
-  toast.add({ title: 'Configuración guardada', color: 'green' })
+
+  try {
+    await $fetch('/api/admin/catalogo/config', {
+      method: 'PUT',
+      body: {
+        precio_boca_extra: formConfig.precio_boca_extra,
+        precio_deco_extra: formConfig.precio_deco_extra,
+      },
+    })
+    toast.add({ title: 'Configuración guardada', color: 'green' })
+  } catch (err: any) {
+    errorConfig.value = err.data?.statusMessage || 'Error al guardar configuración'
+  } finally {
+    guardandoConfig.value = false
+  }
 }
 
 // ——— Paquetes ———
@@ -250,18 +257,28 @@ const guardarPaquete = async () => {
   }
   guardando.value = true
   errorModal.value = ''
-  if (editandoPaquete.value?.id) {
-    const { error } = await client.from('paquetes').update({ nombre: formPaquete.nombre, precio: formPaquete.precio }).eq('id', editandoPaquete.value.id)
-    if (error) { errorModal.value = error.message; guardando.value = false; return }
-    toast.add({ title: 'Paquete actualizado', color: 'green' })
-  } else {
-    const { error } = await client.from('paquetes').insert({ nombre: formPaquete.nombre, precio: formPaquete.precio })
-    if (error) { errorModal.value = error.message; guardando.value = false; return }
-    toast.add({ title: 'Paquete creado', color: 'green' })
+
+  try {
+    if (editandoPaquete.value?.id) {
+      await $fetch(`/api/admin/catalogo/paquetes/${editandoPaquete.value.id}`, {
+        method: 'PUT',
+        body: { nombre: formPaquete.nombre, precio: formPaquete.precio },
+      })
+      toast.add({ title: 'Paquete actualizado', color: 'green' })
+    } else {
+      await $fetch('/api/admin/catalogo/paquetes', {
+        method: 'POST',
+        body: { nombre: formPaquete.nombre, precio: formPaquete.precio },
+      })
+      toast.add({ title: 'Paquete creado', color: 'green' })
+    }
+    showModalPaquete.value = false
+    await cargarPaquetes()
+  } catch (err: any) {
+    errorModal.value = err.data?.statusMessage || 'Error al guardar paquete'
+  } finally {
+    guardando.value = false
   }
-  guardando.value = false
-  showModalPaquete.value = false
-  await cargarPaquetes()
 }
 
 // ——— Extras ———
@@ -300,26 +317,43 @@ const guardarExtra = async () => {
   }
   guardando.value = true
   errorModal.value = ''
-  if (editandoExtra.value?.id) {
-    const { error } = await client.from('extras').update({ nombre: formExtra.nombre, precio: formExtra.precio }).eq('id', editandoExtra.value.id)
-    if (error) { errorModal.value = error.message; guardando.value = false; return }
-    toast.add({ title: 'Extra actualizado', color: 'green' })
-  } else {
-    const { error } = await client.from('extras').insert({ nombre: formExtra.nombre, precio: formExtra.precio })
-    if (error) { errorModal.value = error.message; guardando.value = false; return }
-    toast.add({ title: 'Extra creado', color: 'green' })
+
+  try {
+    if (editandoExtra.value?.id) {
+      await $fetch(`/api/admin/catalogo/extras/${editandoExtra.value.id}`, {
+        method: 'PUT',
+        body: { nombre: formExtra.nombre, precio: formExtra.precio },
+      })
+      toast.add({ title: 'Extra actualizado', color: 'green' })
+    } else {
+      await $fetch('/api/admin/catalogo/extras', {
+        method: 'POST',
+        body: { nombre: formExtra.nombre, precio: formExtra.precio },
+      })
+      toast.add({ title: 'Extra creado', color: 'green' })
+    }
+    showModalExtra.value = false
+    await cargarExtras()
+  } catch (err: any) {
+    errorModal.value = err.data?.statusMessage || 'Error al guardar extra'
+  } finally {
+    guardando.value = false
   }
-  guardando.value = false
-  showModalExtra.value = false
-  await cargarExtras()
 }
 
 // ——— Toggle activo ———
 const toggleActivo = async (tabla: 'paquetes' | 'extras', row: any) => {
-  await client.from(tabla).update({ activo: !row.activo }).eq('id', row.id)
-  if (tabla === 'paquetes') await cargarPaquetes()
-  else await cargarExtras()
-  toast.add({ title: `${row.activo ? 'Desactivado' : 'Activado'} correctamente`, color: 'green' })
+  try {
+    await $fetch(`/api/admin/catalogo/${tabla}/${row.id}`, {
+      method: 'PUT',
+      body: { activo: !row.activo },
+    })
+    if (tabla === 'paquetes') await cargarPaquetes()
+    else await cargarExtras()
+    toast.add({ title: `${row.activo ? 'Desactivado' : 'Activado'} correctamente`, color: 'green' })
+  } catch (err: any) {
+    toast.add({ title: err.data?.statusMessage || 'Error al cambiar estado', color: 'red' })
+  }
 }
 
 const formatPrecio = (n: number) =>

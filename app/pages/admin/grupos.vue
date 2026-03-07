@@ -199,16 +199,20 @@ const crearGrupo = async () => {
   if (!nuevoGrupo.lider_id) return
   creando.value = true
   errorCrear.value = ''
-  const { error } = await client.rpc('admin_create_grupo', { p_lider_id: nuevoGrupo.lider_id })
-  if (error) {
-    errorCrear.value = error.message
+
+  try {
+    await $fetch('/api/admin/grupos', {
+      method: 'POST',
+      body: { lider_id: nuevoGrupo.lider_id },
+    })
+    toast.add({ title: 'Grupo creado', color: 'green' })
+    showModalCrear.value = false
+    await cargarDatos()
+  } catch (err: any) {
+    errorCrear.value = err.data?.statusMessage || 'Error al crear grupo'
+  } finally {
     creando.value = false
-    return
   }
-  toast.add({ title: 'Grupo creado', color: 'green' })
-  showModalCrear.value = false
-  creando.value = false
-  await cargarDatos()
 }
 
 const abrirModalMiembros = (grupo: any) => {
@@ -220,19 +224,23 @@ const abrirModalMiembros = (grupo: any) => {
 const guardarMiembros = async () => {
   if (!grupoSeleccionado.value) return
   guardando.value = true
-  const { error } = await client.rpc('admin_set_grupo_members', {
-    p_grupo_id: grupoSeleccionado.value.id,
-    p_vendedor_ids: miembrosSeleccionados.value,
-  })
-  if (error) {
-    toast.add({ title: 'Error al guardar', description: error.message, color: 'red' })
+
+  try {
+    await $fetch('/api/admin/grupos/miembros', {
+      method: 'PUT',
+      body: {
+        grupo_id: grupoSeleccionado.value.id,
+        vendedor_ids: miembrosSeleccionados.value,
+      },
+    })
+    toast.add({ title: 'Miembros actualizados', color: 'green' })
+    showModalMiembros.value = false
+    await cargarDatos()
+  } catch (err: any) {
+    toast.add({ title: 'Error al guardar', description: err.data?.statusMessage || err.message, color: 'red' })
+  } finally {
     guardando.value = false
-    return
   }
-  toast.add({ title: 'Miembros actualizados', color: 'green' })
-  showModalMiembros.value = false
-  guardando.value = false
-  await cargarDatos()
 }
 
 useHead({ title: 'Grupos — AMSI SRL' })

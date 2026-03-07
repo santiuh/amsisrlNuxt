@@ -96,7 +96,37 @@ app/
 │       ├── grupos.vue          ← gestión de grupos (crear, asignar miembros)
 │       └── catalogo.vue        ← gestión de paquetes y extras (tabs, CRUD, toggle activo)
 └── utils/
+    ├── dates.ts
     └── exportCsv.ts
+server/
+├── utils/
+│   └── auth.ts                ← requireAuth, requireProfile, requireAdmin, requireRole
+└── api/
+    ├── profile.get.ts          ← GET perfil del usuario autenticado
+    ├── cambiar-contrasena.post.ts ← cambiar password (requireAuth)
+    ├── admin/
+    │   ├── usuarios.post.ts    ← crear usuario (requireAdmin)
+    │   ├── usuarios/[id].put.ts ← editar usuario (requireAdmin)
+    │   ├── catalogo/
+    │   │   ├── config.put.ts   ← precios boca/deco extra (requireAdmin)
+    │   │   ├── paquetes.post.ts ← crear paquete (requireAdmin)
+    │   │   ├── paquetes/[id].put.ts ← editar paquete (requireAdmin)
+    │   │   ├── extras.post.ts  ← crear extra (requireAdmin)
+    │   │   └── extras/[id].put.ts ← editar extra (requireAdmin)
+    │   ├── grupos.post.ts      ← crear grupo (requireAdmin)
+    │   ├── grupos/miembros.put.ts ← asignar miembros (requireAdmin)
+    │   └── comisiones/
+    │       ├── config.put.ts   ← porcentajes comisión (requireAdmin)
+    │       ├── ciclos.post.ts  ← crear ciclo (requireAdmin)
+    │       ├── ciclos/fecha.put.ts ← editar fecha cierre (requireAdmin)
+    │       ├── ciclos/cerrar.post.ts ← cerrar ciclo (requireAdmin)
+    │       └── pagos/[id].put.ts ← marcar pago (requireAdmin)
+    └── ventas/
+        ├── index.post.ts       ← crear venta (requireProfile)
+        ├── [id].put.ts         ← editar venta completa (requireAdmin)
+        ├── gestion.put.ts      ← gestión oficinista (requireRole(['oficinista']))
+        ├── comentario.post.ts  ← comentario conflicto (requireRole(['vendedor','lider']))
+        └── leida.post.ts       ← marcar leída (requireAuth)
 ```
 
 ## Decisiones Arquitecturales Clave
@@ -106,6 +136,7 @@ app/
 3. **`grupo_id` en profiles** — vendedores tienen FK a su grupo; líderes tienen `grupo_id = null`
 4. **Lider = rol separado** — `rol='lider'`, no pertenece a ningún grupo, lidera uno
 5. **`@nuxthub/core` removido** — estaba forzando preset `cloudflare-pages` → roto en Vercel
+6. **API routes para mutaciones** — todas las escrituras (insert/update/delete/rpc) pasan por `server/api/` con verificación de auth + rol server-side; las lecturas siguen client-side protegidas por RLS
 
 ## Convenciones de Código
 
@@ -113,8 +144,10 @@ app/
 - Composables: `camelCase`, prefijo `use`
 - Páginas admin: `definePageMeta({ middleware: ['role'] })`
 - Toast: `useToast()` de @nuxt/ui → `toast.add({ title, color })`
-- Supabase client: `useSupabaseClient()`, usuario: `useSupabaseUser()`
-- Profile global: `useCurrentProfile()` (useState)
+- Supabase client: `useSupabaseClient()` solo para lecturas (SELECT), usuario: `useSupabaseUser()`
+- Mutaciones: `$fetch('/api/...')` → API routes server-side con auth
+- Server auth: `requireAuth()`, `requireAdmin()`, `requireRole()` de `server/utils/auth.ts`
+- Profile global: `useCurrentProfile()` (useState), carga vía `$fetch('/api/profile')`
 
 ## Comandos Útiles
 
@@ -139,3 +172,4 @@ git push origin main  # → trigger Vercel deploy automático
 - [x] Estado 'coordinado' con fecha_coordinacion obligatoria
 - [x] comentarios_gestion como log JSONB: {fecha_hora, autor, tipo ('comentario'|'estado'), texto}
 - [x] Oficinistas solo pueden editar estado y agregar comentarios de gestión
+- [x] API server-side protegida: todas las mutaciones via Nitro routes con auth + roles (server/api/)

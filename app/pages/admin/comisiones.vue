@@ -495,19 +495,23 @@ const cargarEstimaciones = async () => {
 // ——— Acciones ———
 const guardarConfig = async () => {
   guardandoConfig.value = true
-  const ahora = new Date().toISOString()
-  const [{ error: e1 }, { error: e2 }] = await Promise.all([
-    client.from('configuracion').update({ valor: String(configForm.pct_grupo), updated_at: ahora }).eq('clave', 'comision_porcentaje_grupo'),
-    client.from('configuracion').update({ valor: String(configForm.pct_lider), updated_at: ahora }).eq('clave', 'comision_porcentaje_lider'),
-  ])
-  guardandoConfig.value = false
-  if (e1 || e2) {
-    toast.add({ title: (e1 || e2)!.message, color: 'red' })
-    return
+
+  try {
+    await $fetch('/api/admin/comisiones/config', {
+      method: 'PUT',
+      body: {
+        pct_grupo: configForm.pct_grupo,
+        pct_lider: configForm.pct_lider,
+      },
+    })
+    toast.add({ title: 'Porcentajes actualizados', color: 'green' })
+    // Recalcular estimaciones con nuevos porcentajes
+    await cargarEstimaciones()
+  } catch (err: any) {
+    toast.add({ title: err.data?.statusMessage || 'Error al guardar', color: 'red' })
+  } finally {
+    guardandoConfig.value = false
   }
-  toast.add({ title: 'Porcentajes actualizados', color: 'green' })
-  // Recalcular estimaciones con nuevos porcentajes
-  await cargarEstimaciones()
 }
 
 const abrirModalCrear = () => {
@@ -523,18 +527,21 @@ const crearCiclo = async () => {
   }
   guardando.value = true
   errorModal.value = ''
-  const { error } = await client.rpc('admin_crear_ciclo', {
-    p_fecha_cierre_prevista: formCrear.fecha_cierre,
-  })
-  guardando.value = false
-  if (error) {
-    errorModal.value = error.message
-    return
+
+  try {
+    await $fetch('/api/admin/comisiones/ciclos', {
+      method: 'POST',
+      body: { fecha_cierre_prevista: formCrear.fecha_cierre },
+    })
+    showModalCrear.value = false
+    toast.add({ title: 'Ciclo creado', color: 'green' })
+    await cargarCicloActivo()
+    await cargarEstimaciones()
+  } catch (err: any) {
+    errorModal.value = err.data?.statusMessage || 'Error al crear ciclo'
+  } finally {
+    guardando.value = false
   }
-  showModalCrear.value = false
-  toast.add({ title: 'Ciclo creado', color: 'green' })
-  await cargarCicloActivo()
-  await cargarEstimaciones()
 }
 
 const abrirModalEditarFecha = () => {
@@ -550,18 +557,23 @@ const editarFecha = async () => {
   }
   guardando.value = true
   errorModal.value = ''
-  const { error } = await client.rpc('admin_actualizar_fecha_cierre', {
-    p_ciclo_id: cicloActivo.value.id,
-    p_nueva_fecha: formEditarFecha.fecha_cierre,
-  })
-  guardando.value = false
-  if (error) {
-    errorModal.value = error.message
-    return
+
+  try {
+    await $fetch('/api/admin/comisiones/ciclos/fecha', {
+      method: 'PUT',
+      body: {
+        ciclo_id: cicloActivo.value.id,
+        nueva_fecha: formEditarFecha.fecha_cierre,
+      },
+    })
+    showModalEditarFecha.value = false
+    toast.add({ title: 'Fecha actualizada', color: 'green' })
+    await cargarCicloActivo()
+  } catch (err: any) {
+    errorModal.value = err.data?.statusMessage || 'Error al actualizar fecha'
+  } finally {
+    guardando.value = false
   }
-  showModalEditarFecha.value = false
-  toast.add({ title: 'Fecha actualizada', color: 'green' })
-  await cargarCicloActivo()
 }
 
 const abrirModalConfirmarCierre = () => {
@@ -573,38 +585,42 @@ const cerrarCiclo = async () => {
   if (!cicloActivo.value) return
   guardando.value = true
   errorModal.value = ''
-  const { error } = await client.rpc('admin_cerrar_ciclo', {
-    p_ciclo_id: cicloActivo.value.id,
-  })
-  guardando.value = false
-  if (error) {
-    errorModal.value = error.message
-    return
+
+  try {
+    await $fetch('/api/admin/comisiones/ciclos/cerrar', {
+      method: 'POST',
+      body: { ciclo_id: cicloActivo.value.id },
+    })
+    showModalCierre.value = false
+    toast.add({ title: 'Ciclo cerrado correctamente', color: 'green' })
+    cicloActivo.value = null
+    estimaciones.value = []
+    await Promise.all([cargarHistorial(), cargarPagos()])
+  } catch (err: any) {
+    errorModal.value = err.data?.statusMessage || 'Error al cerrar ciclo'
+  } finally {
+    guardando.value = false
   }
-  showModalCierre.value = false
-  toast.add({ title: 'Ciclo cerrado correctamente', color: 'green' })
-  cicloActivo.value = null
-  estimaciones.value = []
-  await Promise.all([cargarHistorial(), cargarPagos()])
 }
 
 const togglePago = async (pago: CicloPago) => {
   const nuevoPagado = !pago.pagado
-  const { error } = await client.rpc('admin_marcar_pago', {
-    p_pago_id: pago.id,
-    p_pagado: nuevoPagado,
-  })
-  if (error) {
-    toast.add({ title: error.message, color: 'red' })
-    return
+
+  try {
+    await $fetch(`/api/admin/comisiones/pagos/${pago.id}`, {
+      method: 'PUT',
+      body: { pagado: nuevoPagado },
+    })
+    // Actualizar localmente
+    const idx = pagos.value.findIndex(p => p.id === pago.id)
+    if (idx !== -1) {
+      pagos.value[idx].pagado = nuevoPagado
+      pagos.value[idx].fecha_pago = nuevoPagado ? new Date().toISOString() : null
+    }
+    toast.add({ title: nuevoPagado ? 'Marcado como pagado' : 'Marcado como pendiente', color: 'green' })
+  } catch (err: any) {
+    toast.add({ title: err.data?.statusMessage || 'Error al actualizar pago', color: 'red' })
   }
-  // Actualizar localmente
-  const idx = pagos.value.findIndex(p => p.id === pago.id)
-  if (idx !== -1) {
-    pagos.value[idx].pagado = nuevoPagado
-    pagos.value[idx].fecha_pago = nuevoPagado ? new Date().toISOString() : null
-  }
-  toast.add({ title: nuevoPagado ? 'Marcado como pagado' : 'Marcado como pendiente', color: 'green' })
 }
 
 const toggleDetalle = (cicloId: string) => {

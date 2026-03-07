@@ -1,15 +1,19 @@
 # Contexto para agentes de código
 
 ## Resumen del proyecto
-- Proyecto: **SupaAuth** (starter de autenticación con Nuxt + Supabase).
-- Stack principal: **Nuxt 4**, **@nuxtjs/supabase**, **Tailwind CSS**, **pnpm**.
-- Objetivo: flujo de autenticación por email/password (login, registro, recuperación y cambio de contraseña).
+- Proyecto: **AMSI SRL CRM** (CRM de ventas con Nuxt + Supabase).
+- Stack principal: **Nuxt 4**, **@nuxtjs/supabase**, **@nuxt/ui v2**, **pnpm**.
+- Objetivo: gestión de ventas, usuarios, comisiones y catálogo con roles (vendedor, líder, oficinista, admin).
 
 ## Estructura relevante
-- `app/pages/`: vistas de auth (`login.vue`, `register.vue`, `forgot-password.vue`, `new-password.vue`, `index.vue`).
+- `app/pages/`: vistas del CRM (dashboard, ventas, admin, auth).
 - `app/layouts/`: layouts (`default.vue`, `auth.vue`).
-- `app/components/`: componentes reutilizables de UI y alertas.
-- `nuxt.config.ts`: módulos, configuración de Supabase y Tailwind.
+- `app/components/`: componentes reutilizables de UI.
+- `app/composables/`: lógica compartida (`useProfile`, `useComisiones`, `useSidebar`).
+- `app/middleware/`: guards de navegación (`role.ts`, `force-password.global.ts`).
+- `server/utils/auth.ts`: funciones de autenticación y autorización server-side.
+- `server/api/`: API routes protegidas (admin, ventas, perfil).
+- `nuxt.config.ts`: módulos y configuración.
 
 ## Comandos del proyecto
 - Instalar dependencias: `pnpm install`
@@ -29,6 +33,9 @@ Crear `.env` con:
 3. Preservar estilo visual actual (Tailwind + componentes existentes).
 4. Evitar agregar dependencias nuevas si no son necesarias.
 5. Si se toca configuración, validar que `pnpm dev` arranque sin errores.
+6. **Todas las mutaciones (insert/update/delete/rpc) deben pasar por API routes en `server/api/`**, nunca desde el cliente directo.
+7. Cada API route debe usar los helpers de `server/utils/auth.ts` (`requireAuth`, `requireAdmin`, `requireRole`).
+8. Las lecturas (SELECT) se mantienen client-side con `useSupabaseClient()` protegidas por RLS de Supabase.
 
 ## Perfil del desarrollador
 - **Frontend**: Mid-senior en Nuxt/Vue. No necesita explicaciones básicas de componentes, composables, stores ni routing.
@@ -37,6 +44,8 @@ Crear `.env` con:
 - **Idioma**: Responder siempre en español.
 
 ## Notas rápidas
-- Módulos Nuxt activos: `@nuxtjs/supabase`, `@nuxtjs/tailwindcss`, `@nuxthub/core`.
+- Módulos Nuxt activos: `@nuxtjs/supabase`, `@nuxt/ui`.
 - `compatibilityVersion` de Nuxt configurado en `4`.
-- Proyecto orientado a despliegue moderno (incluye soporte con `wrangler` en devDependencies).
+- `ssr: false` (SPA). Deploy: Vercel.
+- Seguridad en dos capas: API routes de Nitro (auth + roles) + RLS de Supabase.
+- `server/utils/auth.ts` se auto-importa en todos los event handlers de Nitro.

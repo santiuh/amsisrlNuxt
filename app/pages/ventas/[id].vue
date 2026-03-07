@@ -274,13 +274,19 @@ onMounted(async () => {
       : ''
     gestionForm.nro_cliente = data.nro_cliente ?? ''
     // Marcar venta como leída para este usuario
-    await client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
+    await $fetch('/api/ventas/leida', {
+      method: 'POST',
+      body: { venta_id: route.params.id as string },
+    }).catch(() => {})
   }
 })
 
 // Navegar de vuelta marcando como leída (asegura timestamp actualizado)
 const volver = async () => {
-  await client.rpc('marcar_venta_leida', { p_venta_id: route.params.id as string })
+  await $fetch('/api/ventas/leida', {
+    method: 'POST',
+    body: { venta_id: route.params.id as string },
+  }).catch(() => {})
   await navigateTo('/ventas')
 }
 
@@ -329,19 +335,21 @@ const guardarGestion = async () => {
     nro_cliente: gestionForm.nro_cliente || null,
   }
 
-  const { error } = await client
-    .from('ventas')
-    .update(payload)
-    .eq('id', route.params.id as string)
-
-  if (error) {
-    gestionError.value = error.message
+  try {
+    await $fetch('/api/ventas/gestion', {
+      method: 'PUT',
+      body: {
+        venta_id: route.params.id as string,
+        ...payload,
+      },
+    })
+    toast.add({ title: 'Gestión guardada', color: 'green' })
+    await volver()
+  } catch (err: any) {
+    gestionError.value = err.data?.statusMessage || 'Error al guardar gestión'
+  } finally {
     savingGestion.value = false
-    return
   }
-
-  toast.add({ title: 'Gestión guardada', color: 'green' })
-  await volver()
 }
 
 // Guardar comentario de vendedor/lider en estado en_conflicto
@@ -353,50 +361,35 @@ const guardarComentarioConflicto = async () => {
   }
   savingConflicto.value = true
 
-  const { error } = await client.rpc('vendedor_add_gestion_comment', {
-    p_venta_id: route.params.id as string,
-    p_texto: comentarioConflicto.value.trim(),
-  })
-
-  savingConflicto.value = false
-  if (error) {
-    conflictoError.value = error.message
-    return
+  try {
+    await $fetch('/api/ventas/comentario', {
+      method: 'POST',
+      body: {
+        venta_id: route.params.id as string,
+        texto: comentarioConflicto.value.trim(),
+      },
+    })
+    toast.add({ title: 'Respuesta enviada', color: 'green' })
+    await volver()
+  } catch (err: any) {
+    conflictoError.value = err.data?.statusMessage || 'Error al enviar comentario'
+  } finally {
+    savingConflicto.value = false
   }
-
-  toast.add({ title: 'Respuesta enviada', color: 'green' })
-  await volver()
 }
 
 // Guardar edición completa (solo admin)
 const actualizar = async (data: Record<string, any>) => {
-  const { _extras, extras_ids, profiles, venta_extras, ...ventaData } = data
-
-  const { error } = await client
-    .from('ventas')
-    .update(ventaData)
-    .eq('id', route.params.id as string)
-
-  if (error) {
-    toast.add({ title: 'Error al guardar', description: error.message, color: 'red' })
-    return
+  try {
+    await $fetch(`/api/ventas/${route.params.id}`, {
+      method: 'PUT',
+      body: data,
+    })
+    toast.add({ title: 'Venta actualizada', color: 'green' })
+    await volver()
+  } catch (err: any) {
+    toast.add({ title: 'Error al guardar', description: err.data?.statusMessage || err.message, color: 'red' })
   }
-
-  if (_extras !== undefined) {
-    await client.from('venta_extras').delete().eq('venta_id', route.params.id as string)
-    if ((_extras as any[]).length > 0) {
-      await client.from('venta_extras').insert(
-        (_extras as any[]).map((e: any) => ({
-          venta_id: route.params.id as string,
-          extra_id: e.id,
-          precio_snapshot: e.precio,
-        }))
-      )
-    }
-  }
-
-  toast.add({ title: 'Venta actualizada', color: 'green' })
-  await volver()
 }
 
 const estadoLabel = (e: string) => ({

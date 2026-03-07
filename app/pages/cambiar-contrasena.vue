@@ -153,7 +153,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: false })
 
-const client = useSupabaseClient()
 const profile = useCurrentProfile()
 const toast = useToast()
 
@@ -179,23 +178,23 @@ const guardar = async () => {
 
   loading.value = true
 
-  const { error } = await client.rpc('user_change_password', {
-    p_new_password: form.password,
-  })
+  try {
+    await $fetch('/api/cambiar-contrasena', {
+      method: 'POST',
+      body: { password: form.password },
+    })
 
-  if (error) {
-    errorMsg.value = 'No se pudo cambiar la contraseña. Intentá de nuevo.'
+    if (profile.value) {
+      profile.value.must_change_password = false
+    }
+
+    toast.add({ title: 'Contraseña actualizada', color: 'green' })
     loading.value = false
-    return
+    await navigateTo('/dashboard')
+  } catch (err: any) {
+    errorMsg.value = err.data?.statusMessage || 'No se pudo cambiar la contraseña. Intentá de nuevo.'
+    loading.value = false
   }
-
-  if (profile.value) {
-    profile.value.must_change_password = false
-  }
-
-  toast.add({ title: 'Contraseña actualizada', color: 'green' })
-  loading.value = false
-  await navigateTo('/dashboard')
 }
 
 useHead({ title: 'Cambiar contraseña — AMSI SRL' })

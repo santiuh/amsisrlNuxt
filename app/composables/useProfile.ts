@@ -13,7 +13,6 @@ export const useCurrentProfile = () => {
 }
 
 export const useFetchProfile = async () => {
-  const client = useSupabaseClient()
   const user = useSupabaseUser()
   const profile = useCurrentProfile()
 
@@ -22,13 +21,10 @@ export const useFetchProfile = async () => {
     return
   }
 
-  const { data, error } = await client
-    .from('profiles')
-    .select('*')
-    .eq('id', user.value.id)
-    .single()
-
-  if (!error && data) {
+  try {
+    const data = await $fetch('/api/profile')
     profile.value = data as Profile
+  } catch {
+    profile.value = null
   }
 }

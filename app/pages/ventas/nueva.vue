@@ -15,40 +15,24 @@
 </template>
 
 <script setup lang="ts">
-const client = useSupabaseClient()
-const profile = useCurrentProfile()
 const toast = useToast()
 
 const guardarVenta = async (data: Record<string, any>) => {
-  // Extraer campos que no van en la tabla ventas
-  const { _extras, extras_ids, ...ventaData } = data
+  try {
+    const result = await $fetch('/api/ventas', {
+      method: 'POST',
+      body: data,
+    })
 
-  const { data: ventaCreada, error } = await client
-    .from('ventas')
-    .insert({ ...ventaData, vendedor_id: profile.value!.id })
-    .select('id')
-    .single()
-
-  if (error) {
-    toast.add({ title: 'Error al guardar', description: error.message, color: 'red' })
-    return
-  }
-
-  // Insertar extras seleccionados con snapshot de precio
-  if (_extras && (_extras as any[]).length > 0) {
-    const ventaExtrasRows = (_extras as any[]).map((e: any) => ({
-      venta_id: ventaCreada.id,
-      extra_id: e.id,
-      precio_snapshot: e.precio,
-    }))
-    const { error: errorExtras } = await client.from('venta_extras').insert(ventaExtrasRows)
-    if (errorExtras) {
-      toast.add({ title: 'Venta guardada pero error en extras', description: errorExtras.message, color: 'orange' })
+    if (result.warning) {
+      toast.add({ title: 'Venta guardada pero error en extras', description: result.warning, color: 'orange' })
+    } else {
+      toast.add({ title: 'Venta guardada correctamente', color: 'green' })
     }
+    await navigateTo('/ventas')
+  } catch (err: any) {
+    toast.add({ title: 'Error al guardar', description: err.data?.statusMessage || err.message, color: 'red' })
   }
-
-  toast.add({ title: 'Venta guardada correctamente', color: 'green' })
-  await navigateTo('/ventas')
 }
 
 useHead({ title: 'Nueva Venta — AMSI SRL' })
