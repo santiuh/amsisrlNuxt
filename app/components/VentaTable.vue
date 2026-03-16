@@ -5,6 +5,7 @@
       <div class="flex items-start justify-between gap-3">
         <VentaFilters
           v-model:filters="filters"
+          v-model:remember="recordarFiltros"
           :show-vendedor="showVendedor"
           :vendedores="vendedoresOptions"
           class="flex-1"
@@ -35,17 +36,43 @@
     <!-- Tabla -->
     <div class="overflow-x-auto -mx-4 sm:mx-0">
     <div class="min-w-[700px] sm:min-w-0">
-    <UTable :rows="ventasFiltradas" :columns="columnas" :loading="loading">
+    <UTable
+      :rows="ventasFiltradas"
+      :columns="columnas"
+      :loading="loading"
+      :ui="{ tr: { base: 'cursor-pointer' } }"
+      @select="abrirVenta"
+    >
       <template #estado-data="{ row }">
-        <UBadge :color="estadoColor(row.estado)" :label="estadoLabel(row.estado)" variant="subtle" />
+        <div class="relative inline-flex">
+          <span
+            :class="[
+              'inline-flex h-7 min-w-[11ch] px-2 items-center justify-center rounded-md text-xs font-semibold ring-1 ring-inset whitespace-nowrap',
+              estadoPillClass(row.estado),
+            ]"
+          >
+            {{ estadoLabel(row.estado) }}
+          </span>
+          <span
+            v-if="tieneComentarioNuevo(row)"
+            class="absolute -top-1 -right-1 flex h-2.5 w-2.5"
+            title="Nuevo comentario"
+          >
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500" />
+          </span>
+        </div>
       </template>
 
       <template #telefono-data="{ row }">
         <a
           v-if="row.telefono"
-          :href="`https://wa.me/549${row.telefono.replace(/\D/g, '')}`"
+          :href="buildWhatsappUrl(row)"
           target="_blank"
-          class="flex items-center gap-1 text-green-600 dark:text-green-400 hover:underline text-sm"
+          rel="noopener noreferrer"
+          class="relative z-10 flex items-center gap-1 text-green-600 dark:text-green-400 hover:underline text-sm"
+          @click.stop
+          @mousedown.stop
         >
           <UIcon name="i-heroicons-phone" class="w-4 h-4" />
           {{ row.telefono }}
@@ -58,11 +85,17 @@
       </template>
 
       <template #fecha_carga-data="{ row }">
-        <span class="text-sm text-gray-600 dark:text-gray-300">{{ formatFecha(row.fecha_carga) }}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatFecha(row.fecha_carga) }}</span>
+      </template>
+
+      <template #fecha_coordinacion-data="{ row }">
+        <span class="text-sm text-gray-600 dark:text-gray-300">
+          {{ row.estado === 'coordinado' && row.fecha_coordinacion ? formatFechaHora(row.fecha_coordinacion) : '—' }}
+        </span>
       </template>
 
       <template #paquete-data="{ row }">
-        <span>{{ row.paquete_nombre ?? '—' }}</span>
+        <span>{{ truncateText(row.paquete_nombre, 16) }}</span>
       </template>
 
       <template #forma_pago-data="{ row }">
@@ -70,24 +103,9 @@
       </template>
 
       <template #vendedor-data="{ row }">
-        <span>{{ row.profiles?.nombre ?? '—' }}</span>
+        <span :title="row.profiles?.nombre ?? ''">{{ formatNombreResumido(row.profiles?.nombre) }}</span>
       </template>
 
-      <template #acciones-data="{ row }">
-        <div class="flex items-center gap-1">
-          <span
-            v-if="tieneComentarioNuevo(row)"
-            class="relative flex h-2.5 w-2.5"
-            title="Nuevo comentario"
-          >
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500" />
-          </span>
-          <NuxtLink :to="`/ventas/${row.id}`">
-            <UButton icon="i-heroicons-eye" size="xs" color="gray" variant="ghost" />
-          </NuxtLink>
-        </div>
-      </template>
     </UTable>
     </div>
     </div>
@@ -110,7 +128,10 @@ const props = defineProps<{
   lecturas?: Record<string, string>  // venta_id → ultima_lectura ISO
 }>()
 
-const filters = reactive<VentaFilterState>({
+const STORAGE_REMEMBER_KEY = 'ventas-filtros-recordar'
+const STORAGE_FILTERS_KEY = 'ventas-filtros'
+
+const defaultFilters = (): VentaFilterState => ({
   search: '',
   estado: '',
   fechaDesde: '',
@@ -118,6 +139,10 @@ const filters = reactive<VentaFilterState>({
   vendedor: '',
   formaPago: '',
 })
+
+const recordarFiltros = ref(false)
+
+const filters = reactive<VentaFilterState>(defaultFilters())
 
 const vendedoresOptions = computed(() => {
   const map = new Map<string, string>()
@@ -142,8 +167,8 @@ const columnas = computed(() => {
     { key: 'paquete', label: 'Paquete' },
     { key: 'precio', label: 'Precio' },
     { key: 'forma_pago', label: 'Forma de Pago' },
+    { key: 'fecha_coordinacion', label: 'Hora coordinada' },
     { key: 'estado', label: 'Estado' },
-    { key: 'acciones', label: '' },
   ]
   if (props.showVendedor) {
     base.splice(2, 0, { key: 'vendedor', label: 'Vendedor' })
@@ -172,10 +197,14 @@ const estadoLabel = (e: string) => ({
   rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
 }[e] ?? e)
 
-const estadoColor = (e: string): any => ({
-  pendiente: 'gray', en_proceso: 'yellow', en_conflicto: 'orange',
-  rechazado: 'red', coordinado: 'teal', concretado: 'blue',
-}[e] ?? 'gray')
+const estadoPillClass = (e: string) => ({
+  pendiente: 'bg-gray-100 text-gray-700 ring-gray-300 dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700',
+  en_proceso: 'bg-amber-100 text-amber-800 ring-amber-300 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800',
+  en_conflicto: 'bg-orange-100 text-orange-800 ring-orange-300 dark:bg-orange-900/30 dark:text-orange-200 dark:ring-orange-800',
+  rechazado: 'bg-rose-100 text-rose-800 ring-rose-300 dark:bg-rose-900/30 dark:text-rose-200 dark:ring-rose-800',
+  coordinado: 'bg-cyan-100 text-cyan-800 ring-cyan-300 dark:bg-cyan-900/30 dark:text-cyan-200 dark:ring-cyan-800',
+  concretado: 'bg-emerald-100 text-emerald-800 ring-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800',
+}[e] ?? 'bg-gray-100 text-gray-700 ring-gray-300 dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700')
 
 const tieneComentarioNuevo = (venta: any): boolean => {
   if (!props.lecturas) return false
@@ -192,6 +221,89 @@ const tieneComentarioNuevo = (venta: any): boolean => {
 
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
+
+const truncateText = (value: unknown, max = 16) => {
+  const text = typeof value === 'string' ? value : ''
+  if (!text) return '—'
+  return text.length > max ? `${text.slice(0, max)}…` : text
+}
+
+const normalizePhone = (value: unknown) => {
+  const raw = typeof value === 'string' ? value : ''
+  const digits = raw.replace(/\D/g, '')
+  if (!digits) return ''
+  return digits.startsWith('549') ? digits : `549${digits}`
+}
+
+const buildWhatsappMessage = (row: any) => {
+  const nombre = row?.cliente || '¿cómo estás?'
+  const paquete = row?.paquete_nombre ? ` También te confirmo que el servicio solicitado es ${row.paquete_nombre}.` : ''
+  return `Hola ${nombre}, ¿cómo estás? Te escribo desde Express para coordinar tu turno de instalación.${paquete} Cuando puedas, indicame qué día y franja horaria te queda mejor. ¡Muchas gracias!`
+}
+
+const buildWhatsappUrl = (row: any) => {
+  const phone = normalizePhone(row?.telefono)
+  if (!phone) return '#'
+  const text = encodeURIComponent(buildWhatsappMessage(row))
+  return `https://wa.me/${phone}?text=${text}`
+}
+
+const abrirVenta = (row: any) => {
+  if (!row?.id) return
+  navigateTo(`/ventas/${row.id}`)
+}
+
+const formatNombreResumido = (value: unknown) => {
+  const text = typeof value === 'string' ? value.trim() : ''
+  if (!text) return '—'
+  const parts = text.split(/\s+/).filter(Boolean)
+  if (parts.length < 2) return parts[0]
+  const [nombre, apellido = ''] = parts
+  return `${nombre} ${apellido.charAt(0)}.`
+}
+
+const applySavedFilters = (raw: unknown) => {
+  if (!raw || typeof raw !== 'object') return
+  const candidate = raw as Partial<VentaFilterState>
+  filters.search = typeof candidate.search === 'string' ? candidate.search : ''
+  filters.estado = typeof candidate.estado === 'string' ? candidate.estado : ''
+  filters.fechaDesde = typeof candidate.fechaDesde === 'string' ? candidate.fechaDesde : ''
+  filters.fechaHasta = typeof candidate.fechaHasta === 'string' ? candidate.fechaHasta : ''
+  filters.vendedor = typeof candidate.vendedor === 'string' ? candidate.vendedor : ''
+  filters.formaPago = typeof candidate.formaPago === 'string' ? candidate.formaPago : ''
+}
+
+onMounted(() => {
+  if (!import.meta.client) return
+
+  recordarFiltros.value = localStorage.getItem(STORAGE_REMEMBER_KEY) === '1'
+  if (!recordarFiltros.value) return
+
+  try {
+    const saved = localStorage.getItem(STORAGE_FILTERS_KEY)
+    if (!saved) return
+    applySavedFilters(JSON.parse(saved))
+  } catch {
+    localStorage.removeItem(STORAGE_FILTERS_KEY)
+  }
+})
+
+watch(recordarFiltros, (enabled) => {
+  if (!import.meta.client) return
+  localStorage.setItem(STORAGE_REMEMBER_KEY, enabled ? '1' : '0')
+
+  if (enabled) {
+    localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(filters))
+    return
+  }
+
+  localStorage.removeItem(STORAGE_FILTERS_KEY)
+})
+
+watch(filters, (next) => {
+  if (!import.meta.client || !recordarFiltros.value) return
+  localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(next))
+}, { deep: true })
 
 const handleExport = () => {
   const data = ventasFiltradas.value.map(v => ({

@@ -69,6 +69,12 @@
         variant="ghost"
         @click="limpiarFiltros"
       />
+
+      <UCheckbox
+        v-model="remember"
+        label="Recordar filtros"
+        color="primary"
+      />
     </div>
   </div>
 </template>
@@ -89,6 +95,7 @@ const props = defineProps<{
 }>()
 
 const filters = defineModel<VentaFilterState>('filters', { required: true }) as Ref<VentaFilterState>
+const remember = defineModel<boolean>('remember', { default: false })
 
 const presetActivo = ref('')
 
