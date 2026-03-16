@@ -103,7 +103,15 @@
       </template>
 
       <template #vendedor-data="{ row }">
-        <span :title="row.profiles?.nombre ?? ''">{{ formatNombreResumido(row.profiles?.nombre) }}</span>
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
+            <UserAvatar
+              :config="row.profiles?.avatar_config ?? null"
+              :seed="row.profiles?.nombre ?? ''"
+            />
+          </div>
+          <span :title="row.profiles?.nombre ?? ''">{{ formatNombreResumido(row.profiles?.nombre) }}</span>
+        </div>
       </template>
 
     </UTable>

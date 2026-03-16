@@ -71,6 +71,7 @@ const navItems = computed(() => {
     items.push({ to: '/admin/catalogo', label: 'Catálogo', icon: 'i-heroicons-tag' })
     items.push({ to: '/admin/comisiones', label: 'Comisiones', icon: 'i-heroicons-calculator' })
   }
+  items.push({ to: '/mi-avatar', label: 'Mi Avatar', icon: 'i-heroicons-user-circle' })
   items.push({ to: '/cambiar-contrasena', label: 'Cambiar Contraseña', icon: 'i-heroicons-key' })
   return items
 })

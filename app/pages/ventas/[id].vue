@@ -29,7 +29,11 @@
       <!-- Metadata -->
       <div class="mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-900/70 rounded-lg text-sm text-gray-600 dark:text-gray-300 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
-          <span class="font-medium">Vendedor:</span> {{ venta.profiles?.nombre ?? '—' }}
+          <span class="font-medium">Vendedor:</span>
+          <div class="inline-flex items-center gap-2 ml-1 align-middle">
+            <UserAvatar v-if="venta.profiles?.nombre" :seed="venta.profiles.nombre" class="w-5 h-5 rounded-full overflow-hidden shrink-0" />
+            <span>{{ venta.profiles?.nombre ?? '—' }}</span>
+          </div>
         </div>
         <div>
           <span class="font-medium">Fecha de carga:</span> {{ formatFecha(venta.fecha_carga) }}
@@ -59,7 +63,10 @@
           <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
             <div class="flex items-center gap-2 mb-0.5 flex-wrap">
               <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
-              <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+              <div class="flex items-center gap-1.5">
+                <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+              </div>
               <UBadge
                 v-if="entry.tipo === 'estado'"
                 color="teal"
@@ -139,7 +146,10 @@
                 <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
                   <div class="flex items-center gap-2 mb-0.5 flex-wrap">
                     <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
-                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+                    <div class="flex items-center gap-1.5">
+                      <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
+                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+                    </div>
                     <UBadge
                       v-if="entry.tipo === 'estado'"
                       color="teal"
@@ -197,7 +207,10 @@
                 <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
                   <div class="flex items-center gap-2 mb-0.5 flex-wrap">
                     <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
-                    <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+                    <div class="flex items-center gap-1.5">
+                      <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
+                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+                    </div>
                     <UBadge
                       v-if="entry.tipo === 'estado'"
                       :color="venta.estado === 'en_conflicto' ? 'orange' : 'teal'"

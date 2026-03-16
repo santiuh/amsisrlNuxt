@@ -35,7 +35,7 @@ const lecturas = ref<Record<string, string>>({})
 onMounted(async () => {
   const [{ data }, { data: lecturasData }] = await Promise.all([
     client.from('ventas')
-      .select('*, profiles:vendedor_id(nombre)')
+      .select('*, profiles:vendedor_id(nombre, avatar_config)')
       .order('fecha_carga', { ascending: false }),
     client.from('venta_lecturas')
       .select('venta_id, ultima_lectura'),

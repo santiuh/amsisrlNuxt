@@ -177,7 +177,10 @@
           <div v-for="(entry, i) in logEntradas" :key="i" class="px-3 py-2 text-sm">
             <div class="flex items-center gap-2 mb-0.5 flex-wrap">
               <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFechaLog(entry.fecha_hora) }}</span>
-              <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+              <div class="flex items-center gap-1.5">
+                <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+              </div>
               <UBadge
                 v-if="entry.tipo === 'estado'"
                 color="teal"

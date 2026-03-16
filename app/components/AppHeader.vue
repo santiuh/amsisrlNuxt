@@ -7,9 +7,14 @@
       <h2 class="text-4xl leading-none font-bold text-gray-900 truncate dark:text-white">{{ pageTitle }}</h2>
     </div>
     <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-      <div class="text-right hidden sm:block">
-        <p class="text-xl leading-none font-semibold text-gray-800 dark:text-gray-100">{{ profile?.nombre }}</p>
-        <p class="text-base leading-none mt-1 text-gray-500 capitalize dark:text-gray-400">{{ rolLabel }}</p>
+      <div class="hidden sm:flex items-center gap-3">
+        <NuxtLink to="/mi-avatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 transition-colors shrink-0">
+          <UserAvatar :config="profile?.avatar_config ?? null" :seed="profile?.nombre" />
+        </NuxtLink>
+        <div class="text-right">
+          <p class="text-xl leading-none font-semibold text-gray-800 dark:text-gray-100">{{ profile?.nombre }}</p>
+          <p class="text-base leading-none mt-1 text-gray-500 capitalize dark:text-gray-400">{{ rolLabel }}</p>
+        </div>
       </div>
       <UButton
         icon="i-heroicons-arrow-right-on-rectangle"
@@ -58,6 +63,7 @@ const pageTitle = computed(() => {
     '/ventas/nueva': 'Nueva Venta',
     '/admin/usuarios': 'Gestión de Usuarios',
     '/cambiar-contrasena': 'Cambiar Contraseña',
+    '/mi-avatar': 'Mi Avatar',
   }
   return titles[route.path] ?? 'AMSI SRL'
 })

@@ -1,3 +1,5 @@
+import type { AvatarConfig } from '~/utils/avatar'
+
 export interface Profile {
   id: string
   nombre: string
@@ -6,6 +8,7 @@ export interface Profile {
   grupo_id: string | null
   created_at: string
   must_change_password: boolean
+  avatar_config: AvatarConfig | null
 }
 
 export const useCurrentProfile = () => {
