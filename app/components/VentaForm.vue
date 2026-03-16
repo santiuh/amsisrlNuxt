@@ -114,6 +114,19 @@
         />
       </UFormGroup>
 
+      <!-- CBU (solo débito) -->
+      <UFormGroup v-if="form.forma_pago === 'debito'" label="CBU *" class="md:col-span-2">
+        <UInput v-model="form.cbu" placeholder="22 dígitos del CBU" class="w-full" :disabled="readonly" />
+      </UFormGroup>
+
+      <!-- Tarjeta (solo crédito) -->
+      <UFormGroup v-if="form.forma_pago === 'credito'" label="Número de Tarjeta *">
+        <UInput v-model="form.nro_tarjeta" placeholder="16 dígitos" class="w-full" :disabled="readonly" />
+      </UFormGroup>
+      <UFormGroup v-if="form.forma_pago === 'credito'" label="Vencimiento *">
+        <UInput v-model="form.vencimiento_tarjeta" placeholder="MM/AA" class="w-full" :disabled="readonly" />
+      </UFormGroup>
+
       <!-- Estado: visible en edición (oficinista/admin) o en modo solo lectura -->
       <UFormGroup v-if="!hideGestionFields && (canEditEstado || readonly)" label="Estado">
         <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
@@ -278,6 +291,9 @@ const form = reactive({
   decos: 1,
   bocas: 1,
   forma_pago: '',
+  cbu: '',
+  nro_tarjeta: '',
+  vencimiento_tarjeta: '',
   estado: 'pendiente',
   fecha_coordinacion: '',
   comentarios_venta: '',
@@ -361,6 +377,7 @@ const desgloseBocasDecos = computed(() => {
 
 const formaPagoOptions = [
   { label: 'Débito', value: 'debito' },
+  { label: 'Crédito', value: 'credito' },
   { label: 'Transferencia', value: 'transferencia' },
   { label: 'Efectivo', value: 'efectivo' },
 ]
@@ -380,6 +397,14 @@ const errorMsg = ref('')
 const submit = async () => {
   if (!form.cliente || !form.dni_cuil || !form.paquete_id || !form.forma_pago || !form.dir_calle || !form.dir_localidad) {
     errorMsg.value = 'Por favor completá todos los campos obligatorios (*).'
+    return
+  }
+  if (form.forma_pago === 'debito' && !form.cbu?.trim()) {
+    errorMsg.value = 'El CBU es obligatorio para pagos con débito.'
+    return
+  }
+  if (form.forma_pago === 'credito' && (!form.nro_tarjeta?.trim() || !form.vencimiento_tarjeta?.trim())) {
+    errorMsg.value = 'El número de tarjeta y vencimiento son obligatorios para pagos con crédito.'
     return
   }
   if (form.estado === 'coordinado' && !form.fecha_coordinacion) {

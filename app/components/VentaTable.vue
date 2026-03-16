@@ -166,7 +166,7 @@ const columnas = computed(() => {
     { key: 'telefono', label: 'Teléfono' },
     { key: 'paquete', label: 'Paquete' },
     { key: 'precio', label: 'Precio' },
-    { key: 'forma_pago', label: 'Forma de Pago' },
+    { key: 'forma_pago', label: 'Pago' },
     { key: 'fecha_coordinacion', label: 'Hora coordinada' },
     { key: 'estado', label: 'Estado' },
   ]

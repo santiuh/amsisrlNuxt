@@ -1,8 +1,8 @@
 import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  // Vendedores y líderes pueden agregar comentarios en ventas en conflicto
-  await requireRole(event, ['vendedor', 'lider'])
+  // Todos los roles pueden agregar observaciones en cualquier momento
+  await requireRole(event, ['vendedor', 'lider', 'oficinista', 'admin'])
   const client = await serverSupabaseClient(event)
   const body = await readBody(event)
 
