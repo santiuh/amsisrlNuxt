@@ -4,8 +4,8 @@
     xmlns="http://www.w3.org/2000/svg"
     :class="className"
   >
-    <!-- FONDO SUAVE -->
-    <rect width="200" height="200" :fill="resolvedConfig.clothesColor.value" opacity="0.08" rx="12" />
+    <!-- FONDO -->
+    <rect width="200" height="200" :fill="bgFill" />
 
     <!-- 1. PELO TRASERO (solo pelo largo) -->
     <rect
@@ -75,7 +75,7 @@
     <!-- 7. PELO FRONTAL -->
     <g :fill="resolvedConfig.hairColor.value">
       <!-- Corto -->
-      <path v-if="resolvedConfig.hairStyle === 'corto'" d="M 48 85 C 48 40 152 40 152 85 Q 125 65 100 65 Q 75 65 48 85 Z" />
+      <path v-if="resolvedConfig.hairStyle === 'corto'" d="M 44 88 C 44 34 156 34 156 88 C 148 78 136 67 121 60 C 112 56 106 54 100 54 C 94 54 88 56 79 60 C 64 67 52 78 44 88 Z" />
 
       <!-- Largo -->
       <path v-if="resolvedConfig.hairStyle === 'largo'" d="M 45 85 C 45 30 155 30 155 85 Q 125 60 100 60 Q 75 60 45 85 Z" />
@@ -93,14 +93,15 @@
 
       <!-- Moño -->
       <g v-if="resolvedConfig.hairStyle === 'mono'">
-        <path d="M 48 85 C 48 40 152 40 152 85 Q 125 65 100 65 Q 75 65 48 85 Z" />
-        <circle cx="100" cy="25" r="25" />
+        <path d="M 44 88 C 44 32 156 32 156 88 C 148 78 136 67 121 59 C 111 54 105 52 100 52 C 95 52 89 54 79 59 C 64 67 52 78 44 88 Z" />
+        <ellipse cx="100" cy="31" rx="20" ry="17" />
+        <path d="M 88 43 Q 100 34 112 43 L 108 58 Q 100 53 92 58 Z" />
       </g>
 
       <!-- Puntas -->
       <g v-if="resolvedConfig.hairStyle === 'puntas'">
-        <path d="M 48 85 C 48 50 152 50 152 85 Z" />
-        <path d="M 45 70 L 55 35 L 75 60 L 95 25 L 115 60 L 135 35 L 155 70 Z" />
+        <path d="M 44 88 C 44 40 156 40 156 88 L 146 74 L 132 84 L 118 68 L 102 86 L 86 67 L 70 84 L 56 72 Z" />
+        <path d="M 54 77 L 64 46 L 80 70 L 98 38 L 114 70 L 132 48 L 145 77 L 132 66 L 116 82 L 100 62 L 84 82 L 68 66 Z" opacity="0.9" />
       </g>
     </g>
   </svg>
@@ -108,7 +109,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { type AvatarConfig, generateAvatarFromSeed } from '~/utils/avatar'
+import { type AvatarConfig, BG_COLORS, generateAvatarFromSeed } from '~/utils/avatar'
 
 export type { AvatarConfig }
 
@@ -125,5 +126,9 @@ const props = withDefaults(defineProps<{
 const resolvedConfig = computed<AvatarConfig>(() => {
   if (props.config) return props.config
   return generateAvatarFromSeed(props.seed || 'default')
+})
+
+const bgFill = computed(() => {
+  return resolvedConfig.value.bgColor?.value || BG_COLORS[0]?.value || '#DBEAFE'
 })
 </script>

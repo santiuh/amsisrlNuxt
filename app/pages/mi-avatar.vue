@@ -176,6 +176,27 @@
                     </button>
                   </div>
                 </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Color de Fondo</label>
+                  <div class="flex flex-wrap gap-3">
+                    <button
+                      v-for="color in BG_COLORS"
+                      :key="color.name"
+                      :title="color.name"
+                      class="relative w-10 h-10 rounded-full focus:outline-none transition-all duration-200 shadow-sm border border-black/10 dark:border-white/10"
+                      :class="config.bgColor?.name === color.name ? 'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-gray-900 scale-110' : 'hover:scale-110'"
+                      :style="{ backgroundColor: color.value }"
+                      @click="config.bgColor = color"
+                    >
+                      <UIcon
+                        v-if="config.bgColor?.name === color.name"
+                        name="i-heroicons-check"
+                        class="absolute inset-0 m-auto w-5 h-5 text-gray-600 drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)]"
+                      />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -193,6 +214,7 @@ import {
   HAIR_COLORS,
   EYE_COLORS,
   CLOTHES_COLORS,
+  BG_COLORS,
   HAIR_STYLES,
   SEX_OPTIONS,
   generateAvatarFromSeed,
@@ -227,6 +249,7 @@ const randomize = () => {
   config.eyeColor = EYE_COLORS[randIdx(EYE_COLORS)]
   config.clothesColor = CLOTHES_COLORS[randIdx(CLOTHES_COLORS)]
   config.hairStyle = HAIR_STYLES[randIdx(HAIR_STYLES)].id
+  config.bgColor = BG_COLORS[randIdx(BG_COLORS)]
 }
 
 const guardar = async () => {

@@ -5,6 +5,7 @@ export interface AvatarConfig {
   clothesColor: { name: string; value: string }
   hairStyle: string
   sex: string
+  bgColor?: { name: string; value: string }
 }
 
 export const SKIN_COLORS = [
@@ -47,6 +48,17 @@ export const CLOTHES_COLORS = [
   { name: 'Gris Oscuro', value: '#374151' },
 ]
 
+export const BG_COLORS = [
+  { name: 'Celeste', value: '#DBEAFE' },
+  { name: 'Lavanda', value: '#EDE9FE' },
+  { name: 'Rosa', value: '#FCE7F3' },
+  { name: 'Menta', value: '#D1FAE5' },
+  { name: 'Durazno', value: '#FEF3C7' },
+  { name: 'Cielo', value: '#E0F2FE' },
+  { name: 'Gris', value: '#F3F4F6' },
+  { name: 'Blanco', value: '#FFFFFF' },
+]
+
 export const HAIR_STYLES = [
   { id: 'calvo', name: 'Calvo' },
   { id: 'corto', name: 'Corto' },
@@ -75,5 +87,6 @@ export const generateAvatarFromSeed = (seed: string): AvatarConfig => {
     clothesColor: CLOTHES_COLORS[(hash >> 3) % CLOTHES_COLORS.length],
     hairStyle: hairStyleIds[(hash >> 4) % hairStyleIds.length],
     sex: sexIds[(hash >> 5) % sexIds.length],
+    bgColor: BG_COLORS[(hash >> 6) % BG_COLORS.length],
   }
 }
