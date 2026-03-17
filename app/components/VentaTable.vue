@@ -108,6 +108,7 @@
             <UserAvatar
               :config="row.profiles?.avatar_config ?? null"
               :seed="row.profiles?.nombre ?? ''"
+              class="w-full h-full"
             />
           </div>
           <span :title="row.profiles?.nombre ?? ''">{{ formatNombreResumido(row.profiles?.nombre) }}</span>

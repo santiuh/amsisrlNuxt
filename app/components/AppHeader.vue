@@ -9,7 +9,7 @@
     <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
       <div class="hidden sm:flex items-center gap-3">
         <NuxtLink to="/mi-avatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 transition-colors shrink-0">
-          <UserAvatar :config="profile?.avatar_config ?? null" :seed="profile?.nombre" />
+          <UserAvatar :config="profile?.avatar_config ?? null" :seed="profile?.nombre" class="w-full h-full" />
         </NuxtLink>
         <div class="text-right">
           <p class="text-xl leading-none font-semibold text-gray-800 dark:text-gray-100">{{ profile?.nombre }}</p>

@@ -120,7 +120,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   config: null,
   seed: '',
-  className: 'w-full h-full drop-shadow-sm'
+  className: 'drop-shadow-sm'
 })
 
 const resolvedConfig = computed<AvatarConfig>(() => {
