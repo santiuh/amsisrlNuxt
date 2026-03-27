@@ -1,37 +1,56 @@
 <template>
-  <div class="space-y-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Cliente y contacto -->
-      <UFormGroup label="Cliente *" class="md:col-span-2">
+  <div class="space-y-4 pb-4">
+    <!-- ═══ SECCIÓN: Datos del Cliente ═══ -->
+    <fieldset class="space-y-3">
+      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+        <UIcon name="i-heroicons-user" class="w-3.5 h-3.5" />
+        Datos del cliente
+      </legend>
+
+      <UFormGroup label="Cliente *">
         <div class="flex items-start gap-2">
-          <UInput v-model="form.cliente" placeholder="Nombre completo del cliente" class="w-full" :disabled="readonly" />
+          <UInput v-model="form.cliente" placeholder="Nombre completo" class="w-full" :disabled="readonly" />
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.cliente, 'Cliente')" />
         </div>
       </UFormGroup>
 
-      <UFormGroup label="DNI / CUIL *">
-        <div class="flex items-start gap-2">
-          <UInput v-model="form.dni_cuil" placeholder="20123456789" class="w-full" :disabled="readonly" />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dni_cuil, 'DNI / CUIL')" />
-        </div>
-      </UFormGroup>
+      <div class="grid grid-cols-2 gap-3">
+        <UFormGroup label="DNI / CUIL *">
+          <div class="flex items-start gap-2">
+            <UInput
+              v-model="form.dni_cuil"
+              type="tel"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="off"
+              placeholder="20123456789"
+              class="w-full"
+              :disabled="readonly"
+              @beforeinput="handleDocumentoBeforeInput"
+              @update:model-value="sanitizeDocumento"
+            />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dni_cuil, 'DNI / CUIL')" />
+          </div>
+        </UFormGroup>
 
-      <UFormGroup label="Teléfono">
-        <div class="flex items-start gap-2">
-          <UInput
-            v-model="form.telefono"
-            type="tel"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            autocomplete="tel-national"
-            placeholder="1123456789"
-            class="w-full"
-            :disabled="readonly"
-            @update:model-value="sanitizeTelefono"
-          />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.telefono, 'Teléfono')" />
-        </div>
-      </UFormGroup>
+        <UFormGroup label="Teléfono">
+          <div class="flex items-start gap-2">
+            <UInput
+              v-model="form.telefono"
+              type="tel"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="tel-national"
+              placeholder="1123456789"
+              class="w-full"
+              :disabled="readonly"
+              @beforeinput="handleTelefonoBeforeInput"
+              @update:model-value="sanitizeTelefono"
+            />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.telefono, 'Teléfono')" />
+          </div>
+        </UFormGroup>
+      </div>
 
       <UFormGroup label="Email">
         <div class="flex items-start gap-2">
@@ -39,8 +58,17 @@
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.mail, 'Email')" />
         </div>
       </UFormGroup>
+    </fieldset>
 
-      <!-- Dirección estructurada -->
+    <UDivider />
+
+    <!-- ═══ SECCIÓN: Ubicación ═══ -->
+    <fieldset class="space-y-3">
+      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+        <UIcon name="i-heroicons-map-pin" class="w-3.5 h-3.5" />
+        Ubicación
+      </legend>
+
       <UFormGroup label="Dirección *">
         <div class="flex items-start gap-2">
           <UInput v-model="form.dir_calle" placeholder="Ej: Av. Corrientes 1234" class="w-full" :disabled="readonly" />
@@ -48,25 +76,27 @@
         </div>
       </UFormGroup>
 
-      <UFormGroup label="Entre calles">
-        <div class="flex items-start gap-2">
-          <UInput v-model="form.dir_entre_calles" placeholder="Ej: Callao y Riobamba" class="w-full" :disabled="readonly" />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dir_entre_calles, 'Entre calles')" />
-        </div>
-      </UFormGroup>
+      <div class="grid grid-cols-2 gap-3">
+        <UFormGroup label="Entre calles">
+          <div class="flex items-start gap-2">
+            <UInput v-model="form.dir_entre_calles" placeholder="Callao y Riobamba" class="w-full" :disabled="readonly" />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dir_entre_calles, 'Entre calles')" />
+          </div>
+        </UFormGroup>
 
-      <UFormGroup label="Localidad *">
-        <div class="flex items-start gap-2">
-          <USelect
-            v-model="form.dir_localidad"
-            :options="localidadOptions"
-            placeholder="Seleccionar localidad"
-            class="w-full"
-            :disabled="readonly"
-          />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(localidadLabel, 'Localidad')" />
-        </div>
-      </UFormGroup>
+        <UFormGroup label="Localidad *">
+          <div class="flex items-start gap-2">
+            <USelect
+              v-model="form.dir_localidad"
+              :options="localidadOptions"
+              placeholder="Localidad"
+              class="w-full"
+              :disabled="readonly"
+            />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(localidadLabel, 'Localidad')" />
+          </div>
+        </UFormGroup>
+      </div>
 
       <UFormGroup label="Aclaración">
         <div class="flex items-start gap-2">
@@ -74,9 +104,18 @@
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dir_aclaracion, 'Aclaración')" />
         </div>
       </UFormGroup>
+    </fieldset>
 
-      <!-- Paquete dinámico -->
-      <UFormGroup label="Paquete *" class="md:col-span-2">
+    <UDivider />
+
+    <!-- ═══ SECCIÓN: Paquete y Extras ═══ -->
+    <fieldset class="space-y-3">
+      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+        <UIcon name="i-heroicons-tv" class="w-3.5 h-3.5" />
+        Paquete y extras
+      </legend>
+
+      <UFormGroup label="Paquete *">
         <div class="flex items-start gap-2">
           <USelect
             v-model="form.paquete_id"
@@ -90,73 +129,73 @@
         </div>
       </UFormGroup>
 
-      <!-- Extras -->
-      <UFormGroup v-if="extrasActivos.length > 0" label="Extras" class="md:col-span-2">
-        <div class="flex items-start gap-2 mt-1">
-          <div class="space-y-2 flex-1">
-          <div
-            v-for="extra in extrasActivos"
-            :key="extra.id"
-            class="flex items-center gap-3 py-1"
-          >
-            <input
-              type="checkbox"
-              :id="`extra-${extra.id}`"
-              :value="extra.id"
-              v-model="form.extras_ids"
-              class="w-4 h-4 accent-primary-500"
-              :disabled="readonly"
-            />
-            <label :for="`extra-${extra.id}`" class="text-sm cursor-pointer flex-1 text-gray-800 dark:text-gray-200">
-              {{ extra.nombre }}
+      <!-- Extras como chips/toggles -->
+      <div v-if="extrasActivos.length > 0">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Extras</label>
+        <div class="flex items-start gap-2">
+          <div class="flex-1 space-y-1.5">
+            <label
+              v-for="extra in extrasActivos"
+              :key="extra.id"
+              :for="`extra-${extra.id}`"
+              class="flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors"
+              :class="(form.extras_ids as string[]).includes(extra.id)
+                ? 'border-primary-500 bg-primary-500/10 dark:bg-primary-500/15'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+            >
+              <input
+                type="checkbox"
+                :id="`extra-${extra.id}`"
+                :value="extra.id"
+                v-model="form.extras_ids"
+                class="w-4 h-4 accent-primary-500 shrink-0"
+                :disabled="readonly"
+              />
+              <span class="text-sm flex-1 text-gray-800 dark:text-gray-200">{{ extra.nombre }}</span>
+              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ formatPrecio(extra.precio) }}</span>
             </label>
-            <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatPrecio(extra.precio) }}</span>
-          </div>
           </div>
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(extrasSeleccionadosTexto, 'Extras')" />
         </div>
-      </UFormGroup>
+      </div>
 
-      <!-- Decos -->
-      <UFormGroup label="Decos (decodificadores)">
-        <div class="flex items-start gap-2">
-          <USelect
-            v-model="form.decos"
-            :options="decosOptions"
-            class="w-full"
-            :disabled="readonly"
-          />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(decosLabel, 'Decos')" />
-        </div>
-      </UFormGroup>
-
-      <!-- Bocas -->
-      <UFormGroup label="Bocas (salidas de TV)">
-        <div class="flex items-start gap-2">
-          <USelect
-            v-model="form.bocas"
-            :options="bocasOptions"
-            class="w-full"
-            :disabled="readonly"
-          />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(bocasLabel, 'Bocas')" />
-        </div>
-      </UFormGroup>
-
-      <!-- Precio calculado (read-only) -->
-      <UFormGroup label="Precio Total" class="md:col-span-2">
-        <div class="flex items-center gap-2">
-          <div class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-4xl">
-            <span class="text-gray-800 dark:text-gray-100 font-medium">{{ formatPrecio(precioCalculado) }}</span>
+      <!-- Decos + Bocas lado a lado -->
+      <div class="grid grid-cols-2 gap-3">
+        <UFormGroup label="Decos">
+          <div class="flex items-start gap-2">
+            <USelect
+              v-model="form.decos"
+              :options="decosOptions"
+              class="w-full"
+              :disabled="readonly"
+            />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(decosLabel, 'Decos')" />
           </div>
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(formatPrecio(precioCalculado), 'Precio total')" />
-        </div>
-        <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {{ desgloseBocasDecos }}
-        </p>
-      </UFormGroup>
+        </UFormGroup>
 
-      <!-- Forma de pago -->
+        <UFormGroup label="Bocas">
+          <div class="flex items-start gap-2">
+            <USelect
+              v-model="form.bocas"
+              :options="bocasOptions"
+              class="w-full"
+              :disabled="readonly"
+            />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(bocasLabel, 'Bocas')" />
+          </div>
+        </UFormGroup>
+      </div>
+    </fieldset>
+
+    <UDivider />
+
+    <!-- ═══ SECCIÓN: Pago ═══ -->
+    <fieldset class="space-y-3">
+      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+        <UIcon name="i-heroicons-credit-card" class="w-3.5 h-3.5" />
+        Pago
+      </legend>
+
       <UFormGroup label="Forma de Pago *">
         <div class="flex items-start gap-2">
           <USelect
@@ -171,7 +210,7 @@
       </UFormGroup>
 
       <!-- CBU (solo débito) -->
-      <UFormGroup v-if="form.forma_pago === 'debito'" label="CBU *" class="md:col-span-2">
+      <UFormGroup v-if="form.forma_pago === 'debito'" label="CBU *">
         <div class="flex items-start gap-2">
           <UInput v-model="form.cbu" placeholder="22 dígitos del CBU" class="w-full" :disabled="readonly" />
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.cbu, 'CBU')" />
@@ -179,51 +218,106 @@
       </UFormGroup>
 
       <!-- Tarjeta (solo crédito) -->
-      <UFormGroup v-if="form.forma_pago === 'credito'" label="Número de Tarjeta *">
-        <div class="flex items-start gap-2">
-          <UInput v-model="form.nro_tarjeta" placeholder="16 dígitos" class="w-full" :disabled="readonly" />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_tarjeta, 'Número de tarjeta')" />
-        </div>
-      </UFormGroup>
-      <UFormGroup v-if="form.forma_pago === 'credito'" label="Vencimiento *">
-        <div class="flex items-start gap-2">
-          <UInput v-model="form.vencimiento_tarjeta" placeholder="MM/AA" class="w-full" :disabled="readonly" />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.vencimiento_tarjeta, 'Vencimiento')" />
-        </div>
-      </UFormGroup>
+      <div v-if="form.forma_pago === 'credito'" class="grid grid-cols-2 gap-3">
+        <UFormGroup label="Nro. Tarjeta *">
+          <div class="flex items-start gap-2">
+            <UInput v-model="form.nro_tarjeta" placeholder="16 dígitos" class="w-full" :disabled="readonly" />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_tarjeta, 'Número de tarjeta')" />
+          </div>
+        </UFormGroup>
+        <UFormGroup label="Vencimiento *">
+          <div class="flex items-start gap-2">
+            <UInput v-model="form.vencimiento_tarjeta" placeholder="MM/AA" class="w-full" :disabled="readonly" />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.vencimiento_tarjeta, 'Vencimiento')" />
+          </div>
+        </UFormGroup>
+      </div>
+    </fieldset>
 
-      <!-- Estado: visible en edición (oficinista/admin) o en modo solo lectura -->
-      <UFormGroup v-if="!hideGestionFields && (canEditEstado || readonly)" label="Estado">
-        <div class="flex items-start gap-2">
-          <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(estadoLabelLocal(form.estado), 'Estado')" />
-        </div>
-      </UFormGroup>
+    <!-- ═══ SECCIÓN: Gestión (solo oficinista/admin) ═══ -->
+    <template v-if="!hideGestionFields && (canEditEstado || canEditGestion || readonly)">
+      <UDivider />
 
-      <!-- Fecha de coordinación: obligatoria cuando estado = coordinado -->
-      <UFormGroup
-        v-if="!hideGestionFields && (canEditEstado || readonly) && form.estado === 'coordinado'"
-        label="Fecha y horario de coordinación *"
-        class="md:col-span-2"
-      >
-        <div class="flex items-start gap-2">
-          <UInput
-            v-model="form.fecha_coordinacion"
-            type="datetime-local"
+      <fieldset class="space-y-3">
+        <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+          <UIcon name="i-heroicons-clipboard-document-list" class="w-3.5 h-3.5" />
+          Gestión
+        </legend>
+
+        <UFormGroup v-if="canEditEstado || readonly" label="Estado">
+          <div class="flex items-start gap-2">
+            <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(estadoLabelLocal(form.estado), 'Estado')" />
+          </div>
+        </UFormGroup>
+
+        <!-- Fecha de coordinación -->
+        <UFormGroup
+          v-if="(canEditEstado || readonly) && form.estado === 'coordinado'"
+          label="Fecha y horario de coordinación *"
+        >
+          <div class="flex items-start gap-2">
+            <UInput
+              v-model="form.fecha_coordinacion"
+              type="datetime-local"
+              class="w-full"
+              :disabled="readonly"
+            />
+            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(fechaCoordinacionLabel, 'Fecha de coordinación')" />
+          </div>
+        </UFormGroup>
+
+        <!-- Registro de gestión -->
+        <UFormGroup v-if="canEditGestion && !readonly" label="Registro de Gestión">
+          <div
+            v-if="logEntradas.length > 0"
+            class="mb-3 max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
+          >
+            <div v-for="(entry, i) in logEntradas" :key="i" class="px-3 py-2 text-sm">
+              <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFechaLog(entry.fecha_hora) }}</span>
+                <div class="flex items-center gap-1.5">
+                  <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
+                </div>
+                <UBadge
+                  v-if="entry.tipo === 'estado'"
+                  color="teal"
+                  variant="subtle"
+                  size="xs"
+                  label="Estado"
+                />
+              </div>
+              <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
+            </div>
+          </div>
+          <p v-else class="text-xs text-gray-400 dark:text-gray-500 mb-2 italic">Sin registros de gestión aún.</p>
+
+          <UTextarea
+            v-model="nuevoComentario"
+            placeholder="Agregar comentario de gestión..."
+            :rows="2"
             class="w-full"
-            :disabled="readonly"
           />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(fechaCoordinacionLabel, 'Fecha de coordinación')" />
-        </div>
-      </UFormGroup>
+        </UFormGroup>
+      </fieldset>
+    </template>
 
-      <!-- Comentarios venta -->
-      <UFormGroup label="Comentarios de Venta" class="md:col-span-2">
+    <UDivider />
+
+    <!-- ═══ SECCIÓN: Observaciones ═══ -->
+    <fieldset class="space-y-3">
+      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+        <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="w-3.5 h-3.5" />
+        Observaciones
+      </legend>
+
+      <UFormGroup label="Comentarios de Venta">
         <div class="flex items-start gap-2">
           <UTextarea
             v-model="form.comentarios_venta"
-            placeholder="Observaciones adicionales de la venta..."
-            :rows="3"
+            placeholder="Observaciones adicionales..."
+            :rows="2"
             class="w-full"
             :disabled="readonly"
           />
@@ -231,8 +325,7 @@
         </div>
       </UFormGroup>
 
-      <!-- Número de Cliente -->
-      <UFormGroup label="Número de Cliente" class="md:col-span-2">
+      <UFormGroup label="Nro. de Cliente">
         <div class="flex items-start gap-2">
           <UInput
             v-model="form.nro_cliente"
@@ -243,44 +336,9 @@
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_cliente, 'Número de cliente')" />
         </div>
       </UFormGroup>
+    </fieldset>
 
-      <!-- Registro de gestión: solo oficinista/admin en modo edición -->
-      <UFormGroup v-if="!hideGestionFields && canEditGestion && !readonly" label="Registro de Gestión" class="md:col-span-2">
-        <!-- Entradas existentes -->
-        <div
-          v-if="logEntradas.length > 0"
-          class="mb-3 max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
-        >
-          <div v-for="(entry, i) in logEntradas" :key="i" class="px-3 py-2 text-sm">
-            <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFechaLog(entry.fecha_hora) }}</span>
-              <div class="flex items-center gap-1.5">
-                <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
-                <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
-              </div>
-              <UBadge
-                v-if="entry.tipo === 'estado'"
-                color="teal"
-                variant="subtle"
-                size="xs"
-                label="Estado"
-              />
-            </div>
-            <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
-          </div>
-        </div>
-        <p v-else class="text-xs text-gray-400 dark:text-gray-500 mb-2 italic">Sin registros de gestión aún.</p>
-
-        <!-- Nuevo comentario -->
-        <UTextarea
-          v-model="nuevoComentario"
-          placeholder="Agregar comentario de gestión..."
-          :rows="2"
-          class="w-full"
-        />
-      </UFormGroup>
-    </div>
-
+    <!-- ═══ Error ═══ -->
     <UAlert
       v-if="errorMsg && !readonly"
       icon="i-heroicons-exclamation-circle"
@@ -289,18 +347,36 @@
       :title="errorMsg"
     />
 
-    <div v-if="!readonly" class="flex justify-end gap-3">
+    <!-- ═══ Precio Total ═══ -->
+    <div class="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 px-4 py-3">
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Precio Total</span>
+        <div class="flex items-center gap-2">
+          <span class="text-xl font-bold text-gray-900 dark:text-white md:text-2xl">{{ formatPrecio(precioCalculado) }}</span>
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(formatPrecio(precioCalculado), 'Precio total')" />
+        </div>
+      </div>
+      <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 dark:text-gray-400 text-right mt-0.5">
+        {{ desgloseBocasDecos }}
+      </p>
+    </div>
+
+    <!-- ═══ Botones de acción ═══ -->
+    <div v-if="!readonly" class="flex items-center gap-2 md:justify-end md:gap-3 pt-1">
       <UButton
         v-if="showCancel"
         label="Cancelar"
         color="gray"
         variant="outline"
+        size="sm"
         @click="$emit('cancel')"
       />
       <slot name="extra-actions" :form-data="form" />
       <UButton
         :loading="loading"
         :label="submitLabel ?? 'Guardar'"
+        size="sm"
+        class="flex-1 md:flex-none"
         @click="submit"
       />
     </div>
@@ -393,12 +469,33 @@ const sanitizeTelefono = (value: string | number) => {
   form.telefono = String(value ?? '').replace(/\D/g, '')
 }
 
+const sanitizeDocumento = (value: string | number) => {
+  form.dni_cuil = String(value ?? '').replace(/\D/g, '')
+}
+
+const handleTelefonoBeforeInput = (event: InputEvent) => {
+  if (event.inputType.startsWith('delete')) return
+  if (!event.data) return
+  if (/^\d+$/.test(event.data)) return
+
+  event.preventDefault()
+}
+
+const handleDocumentoBeforeInput = (event: InputEvent) => {
+  if (event.inputType.startsWith('delete')) return
+  if (!event.data) return
+  if (/^\d+$/.test(event.data)) return
+
+  event.preventDefault()
+}
+
 // Normalizar comentarios_gestion a array (por si viene como string de datos legacy)
 if (!Array.isArray(form.comentarios_gestion)) {
   form.comentarios_gestion = []
 }
 
 sanitizeTelefono(form.telefono)
+sanitizeDocumento(form.dni_cuil)
 
 // Normalizar fecha_coordinacion al formato que espera datetime-local (YYYY-MM-DDTHH:MM)
 if (form.fecha_coordinacion) {

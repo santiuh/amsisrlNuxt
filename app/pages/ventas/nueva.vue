@@ -1,10 +1,10 @@
 <template>
   <div class="max-w-3xl mx-auto">
-    <UCard>
+    <UCard :ui="{ body: { padding: 'px-3 py-4 sm:p-5' }, header: { padding: 'px-3 py-3 sm:px-5 sm:py-4' } }">
       <template #header>
         <div class="flex items-center justify-between">
-          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            {{ borradorId ? 'Editar Borrador' : 'Cargar Nueva Venta' }}
+          <h2 class="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100">
+            {{ borradorId ? 'Editar Borrador' : 'Nueva Venta' }}
           </h2>
           <UBadge v-if="borradorId" color="amber" variant="subtle" label="Borrador" />
         </div>
