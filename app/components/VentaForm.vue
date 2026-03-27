@@ -297,6 +297,7 @@
         variant="outline"
         @click="$emit('cancel')"
       />
+      <slot name="extra-actions" :form-data="form" />
       <UButton
         :loading="loading"
         :label="submitLabel ?? 'Guardar'"

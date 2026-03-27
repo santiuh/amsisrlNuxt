@@ -4,13 +4,25 @@
       <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate">
         {{ profile?.rol === 'vendedor' ? 'Mis Ventas' : 'Todas las Ventas' }}
       </h2>
-      <UButton
-        to="/ventas/nueva"
-        icon="i-heroicons-plus"
-        label="Nueva Venta"
-        size="sm"
-        class="flex-shrink-0"
-      />
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <UButton
+          v-if="cantidadBorradores > 0"
+          to="/ventas/borradores"
+          icon="i-heroicons-bookmark"
+          color="amber"
+          variant="outline"
+          size="sm"
+        >
+          Borradores
+          <UBadge color="amber" variant="solid" size="xs" :label="String(cantidadBorradores)" class="ml-1" />
+        </UButton>
+        <UButton
+          to="/ventas/nueva"
+          icon="i-heroicons-plus"
+          label="Nueva Venta"
+          size="sm"
+        />
+      </div>
     </div>
 
     <UCard>
@@ -28,6 +40,7 @@
 <script setup lang="ts">
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
+const { cantidad: cantidadBorradores } = useBorradorVentas()
 const loading = ref(true)
 const ventas = ref<any[]>([])
 const lecturas = ref<Record<string, string>>({})
