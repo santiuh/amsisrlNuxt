@@ -16,12 +16,6 @@
         @update:model-value="filters.estado = $event"
       />
       <USelect
-        :model-value="filters.formaPago"
-        :options="formaPagoOptions"
-        class="w-full sm:w-48"
-        @update:model-value="filters.formaPago = $event"
-      />
-      <USelect
         v-if="showVendedor"
         :model-value="filters.vendedor"
         :options="vendedores"
@@ -86,7 +80,6 @@ export interface VentaFilterState {
   fechaDesde: string
   fechaHasta: string
   vendedor: string
-  formaPago: string
 }
 
 const props = defineProps<{
@@ -109,13 +102,6 @@ const estadoOptions = [
   { label: 'Concretado', value: 'concretado' },
 ]
 
-const formaPagoOptions = [
-  { label: 'Todas las formas', value: '' },
-  { label: 'Débito', value: 'debito' },
-  { label: 'Transferencia', value: 'transferencia' },
-  { label: 'Efectivo', value: 'efectivo' },
-]
-
 const presets = [
   { key: 'hoy', label: 'Hoy' },
   { key: 'semana', label: 'Última semana' },
@@ -125,7 +111,7 @@ const presets = [
 
 const tieneAlgunFiltro = computed(() =>
   filters.value.search || filters.value.estado || filters.value.fechaDesde ||
-  filters.value.fechaHasta || filters.value.vendedor || filters.value.formaPago,
+  filters.value.fechaHasta || filters.value.vendedor,
 )
 
 const yyyy = (d: Date): string => d.toISOString().split('T')[0]!
@@ -178,7 +164,6 @@ function limpiarFiltros() {
   filters.value.fechaDesde = ''
   filters.value.fechaHasta = ''
   filters.value.vendedor = ''
-  filters.value.formaPago = ''
   presetActivo.value = ''
 }
 </script>

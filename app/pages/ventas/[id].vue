@@ -18,7 +18,36 @@
         :label="estadoLabel(venta.estado)"
         variant="subtle"
       />
+      <div class="ml-auto">
+        <UButton
+          v-if="canEdit && venta"
+          icon="i-heroicons-trash"
+          color="red"
+          variant="ghost"
+          size="sm"
+          label="Eliminar"
+          @click="confirmarEliminar = true"
+        />
+      </div>
     </div>
+
+    <!-- Modal de confirmación de borrado -->
+    <UModal v-model="confirmarEliminar">
+      <UCard>
+        <template #header>
+          <p class="font-semibold text-gray-800 dark:text-gray-100">Eliminar venta</p>
+        </template>
+        <p class="text-sm text-gray-600 dark:text-gray-300">
+          ¿Seguro que querés eliminar la venta de <span class="font-semibold">{{ venta?.cliente }}</span>? Esta acción no se puede deshacer.
+        </p>
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <UButton label="Cancelar" color="gray" variant="outline" @click="confirmarEliminar = false" />
+            <UButton label="Eliminar" color="red" :loading="eliminando" @click="eliminarVenta" />
+          </div>
+        </template>
+      </UCard>
+    </UModal>
 
     <!-- Cargando -->
     <div v-if="loading" class="flex justify-center py-12">
@@ -49,7 +78,7 @@
         :initial-data="venta"
         submit-label="Guardar Cambios"
         :show-cancel="true"
-        @submit="actualizar"
+        :on-submit="actualizar"
         @cancel="volver()"
       />
 
@@ -285,6 +314,24 @@ const gestionForm = reactive({
 })
 const savingGestion = ref(false)
 const gestionError = ref('')
+
+// Eliminar venta (solo admin)
+const confirmarEliminar = ref(false)
+const eliminando = ref(false)
+
+const eliminarVenta = async () => {
+  eliminando.value = true
+  try {
+    await $fetch(`/api/ventas/${route.params.id}`, { method: 'DELETE' })
+    toast.add({ title: 'Venta eliminada', color: 'green' })
+    await navigateTo('/ventas')
+  } catch (err: any) {
+    toast.add({ title: 'Error al eliminar', description: err.data?.statusMessage || err.message, color: 'red' })
+    confirmarEliminar.value = false
+  } finally {
+    eliminando.value = false
+  }
+}
 
 // Para observaciones (todos los roles, en cualquier estado)
 const comentarioConflicto = ref('')

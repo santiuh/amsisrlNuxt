@@ -28,7 +28,13 @@
       </UFormGroup>
 
       <UFormGroup label="Localidad *">
-        <UInput v-model="form.dir_localidad" placeholder="Ej: Buenos Aires" class="w-full" :disabled="readonly" />
+        <USelect
+          v-model="form.dir_localidad"
+          :options="localidadOptions"
+          placeholder="Seleccionar localidad"
+          class="w-full"
+          :disabled="readonly"
+        />
       </UFormGroup>
 
       <UFormGroup label="Aclaración">
@@ -236,10 +242,10 @@ const props = defineProps<{
   showCancel?: boolean
   readonly?: boolean
   hideGestionFields?: boolean
+  onSubmit?: (data: Record<string, any>) => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  submit: [data: Record<string, any>]
   cancel: []
 }>()
 
@@ -270,8 +276,8 @@ onMounted(async () => {
   ])
   paquetesActivos.value = paquetesData ?? []
   extrasActivos.value = extrasData ?? []
-  precioBocaExtra.value = Number(configBoca?.valor ?? 0)
-  precioDecoExtra.value = Number(configDeco?.valor ?? 0)
+  precioBocaExtra.value = Number((configBoca as { valor?: number | string } | null)?.valor ?? 0)
+  precioDecoExtra.value = Number((configDeco as { valor?: number | string } | null)?.valor ?? 0)
   loadingCatalogo.value = false
 })
 
@@ -385,6 +391,14 @@ const formaPagoOptions = [
   { label: 'Efectivo', value: 'efectivo' },
 ]
 
+const localidadOptions = [
+  { label: 'Rosario', value: 'Rosario' },
+  { label: 'San Lorenzo', value: 'San Lorenzo' },
+  { label: 'Baigorria', value: 'Baigorria' },
+  { label: 'San Nicolas', value: 'San Nicolas' },
+  { label: 'Perez', value: 'Perez' },
+]
+
 const estadoOptions = [
   { label: 'Pendiente', value: 'pendiente' },
   { label: 'En Proceso', value: 'en_proceso' },
@@ -448,18 +462,21 @@ const submit = async () => {
   const paquete = paquetesActivos.value.find(p => p.id === form.paquete_id)
   const extrasSeleccionados = extrasActivos.value.filter(e => (form.extras_ids as string[]).includes(e.id))
 
-  emit('submit', {
-    ...form,
-    fecha_coordinacion: datetimeLocalToISO(form.fecha_coordinacion),
-    paquete_nombre: paquete?.nombre ?? '',
-    paquete_precio_snapshot: paquete?.precio ?? 0,
-    precio: precioCalculado.value,
-    precio_boca_extra_snapshot: precioBocaExtra.value,
-    precio_deco_extra_snapshot: precioDecoExtra.value,
-    comentarios_gestion: logActualizado,
-    _extras: extrasSeleccionados.map(e => ({ id: e.id, precio: e.precio })),
-  })
-  loading.value = false
+  try {
+    await props.onSubmit?.({
+      ...form,
+      fecha_coordinacion: datetimeLocalToISO(form.fecha_coordinacion),
+      paquete_nombre: paquete?.nombre ?? '',
+      paquete_precio_snapshot: paquete?.precio ?? 0,
+      precio: precioCalculado.value,
+      precio_boca_extra_snapshot: precioBocaExtra.value,
+      precio_deco_extra_snapshot: precioDecoExtra.value,
+      comentarios_gestion: logActualizado,
+      _extras: extrasSeleccionados.map(e => ({ id: e.id, precio: e.precio })),
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const formatPrecio = (n: number) =>

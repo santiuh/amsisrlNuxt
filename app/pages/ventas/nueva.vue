@@ -7,7 +7,7 @@
       <VentaForm
         submit-label="Guardar Venta"
         :show-cancel="true"
-        @submit="guardarVenta"
+        :on-submit="guardarVenta"
         @cancel="navigateTo('/ventas')"
       />
     </UCard>

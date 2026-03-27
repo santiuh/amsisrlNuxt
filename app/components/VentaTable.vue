@@ -98,10 +98,6 @@
         <span>{{ truncateText(row.paquete_nombre, 16) }}</span>
       </template>
 
-      <template #forma_pago-data="{ row }">
-        <span class="capitalize">{{ row.forma_pago }}</span>
-      </template>
-
       <template #vendedor-data="{ row }">
         <div class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
@@ -146,7 +142,6 @@ const defaultFilters = (): VentaFilterState => ({
   fechaDesde: '',
   fechaHasta: '',
   vendedor: '',
-  formaPago: '',
 })
 
 const recordarFiltros = ref(false)
@@ -175,7 +170,6 @@ const columnas = computed(() => {
     { key: 'telefono', label: 'Teléfono' },
     { key: 'paquete', label: 'Paquete' },
     { key: 'precio', label: 'Precio' },
-    { key: 'forma_pago', label: 'Pago' },
     { key: 'fecha_coordinacion', label: 'Hora coordinada' },
     { key: 'estado', label: 'Estado' },
   ]
@@ -196,8 +190,7 @@ const ventasFiltradas = computed(() =>
     const matchFechaDesde = !filters.fechaDesde || fechaVenta >= filters.fechaDesde
     const matchFechaHasta = !filters.fechaHasta || fechaVenta <= filters.fechaHasta
     const matchVendedor = !filters.vendedor || v.vendedor_id === filters.vendedor
-    const matchFormaPago = !filters.formaPago || v.forma_pago === filters.formaPago
-    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor && matchFormaPago
+    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor
   }),
 )
 
@@ -279,7 +272,6 @@ const applySavedFilters = (raw: unknown) => {
   filters.fechaDesde = typeof candidate.fechaDesde === 'string' ? candidate.fechaDesde : ''
   filters.fechaHasta = typeof candidate.fechaHasta === 'string' ? candidate.fechaHasta : ''
   filters.vendedor = typeof candidate.vendedor === 'string' ? candidate.vendedor : ''
-  filters.formaPago = typeof candidate.formaPago === 'string' ? candidate.formaPago : ''
 }
 
 onMounted(() => {

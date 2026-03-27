@@ -31,6 +31,13 @@
           color="orange"
         />
       </div>
+      <DashboardDoughnutChart
+        v-if="ventasPropias.length > 0"
+        title="Distribución de Mis Ventas (Mes)"
+        :labels="distribucionEstadosPropias.labels"
+        :data="distribucionEstadosPropias.data"
+        :colors="distribucionEstadosPropias.colors"
+      />
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
@@ -67,6 +74,13 @@
           :sub="`Comisión + Bonus liderazgo`"
         />
       </div>
+      <DashboardDoughnutChart
+        v-if="ventasPropias.length > 0"
+        title="Distribución de Mis Ventas (Mes)"
+        :labels="distribucionEstadosPropias.labels"
+        :data="distribucionEstadosPropias.data"
+        :colors="distribucionEstadosPropias.colors"
+      />
       <UCard>
         <template #header>
           <h3 class="font-semibold text-gray-800 dark:text-gray-100">Mis Ventas</h3>
@@ -90,6 +104,13 @@
           color="teal"
         />
       </div>
+      <DashboardDoughnutChart
+        v-if="ventasEquipo.length > 0"
+        title="Distribución del Equipo (Mes)"
+        :labels="distribucionEstadosEquipo.labels"
+        :data="distribucionEstadosEquipo.data"
+        :colors="distribucionEstadosEquipo.colors"
+      />
       <UCard>
         <template #header>
           <h3 class="font-semibold text-gray-800 dark:text-gray-100">Ventas de mi Equipo</h3>
@@ -129,6 +150,19 @@
           color="orange"
         />
       </div>
+      <div v-if="ventasMes.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <DashboardDoughnutChart
+          title="Distribución de Estados (Mes)"
+          :labels="distribucionEstados.labels"
+          :data="distribucionEstados.data"
+          :colors="distribucionEstados.colors"
+        />
+        <DashboardBarChart
+          title="Ventas por Semana (Mes)"
+          :labels="ventasPorSemana.labels"
+          :datasets="ventasPorSemana.datasets"
+        />
+      </div>
       <UCard class="shadow-sm ring-1 ring-gray-200 dark:ring-white/10">
         <template #header>
           <h3 class="text-3xl leading-none font-bold text-gray-900 dark:text-gray-100">Todas las Ventas</h3>
@@ -166,6 +200,20 @@
           icon="i-heroicons-calculator"
           color="orange"
           :sub="`Cierre: ${formatFecha(fechaCierrePrevista)}`"
+        />
+      </div>
+
+      <div v-if="ventasMes.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <DashboardDoughnutChart
+          title="Distribución de Estados (Mes)"
+          :labels="distribucionEstados.labels"
+          :data="distribucionEstados.data"
+          :colors="distribucionEstados.colors"
+        />
+        <DashboardBarChart
+          title="Ventas por Semana (Mes)"
+          :labels="ventasPorSemana.labels"
+          :datasets="ventasPorSemana.datasets"
         />
       </div>
 
@@ -366,6 +414,55 @@ const actividadOficinistas = computed(() => {
     }
   })
   return Object.values(map).sort((a, b) => b.gestionadas - a.gestionadas)
+})
+
+// ============ GRÁFICOS ============
+
+const ESTADOS_CONFIG = [
+  { key: 'coordinado',   label: 'Coordinadas',  color: '#06b6d4' },
+  { key: 'concretado',   label: 'Concretadas',  color: '#10b981' },
+  { key: 'rechazado',    label: 'Rechazadas',   color: '#ef4444' },
+  { key: 'en_conflicto', label: 'En Conflicto', color: '#f97316' },
+  { key: 'en_proceso',   label: 'En Proceso',   color: '#3b82f6' },
+  { key: 'pendiente',    label: 'Pendientes',   color: '#94a3b8' },
+]
+
+function buildDistribucion(source: any[]) {
+  const labels = ESTADOS_CONFIG.map(e => e.label)
+  const data = ESTADOS_CONFIG.map(e => source.filter(v => v.estado === e.key).length)
+  const colors = ESTADOS_CONFIG.map(e => e.color)
+  return { labels, data, colors }
+}
+
+const distribucionEstados = computed(() => buildDistribucion(ventasMes.value))
+
+const distribucionEstadosPropias = computed(() =>
+  buildDistribucion(ventasPropias.value.filter(v => v.fecha_carga >= inicioMes))
+)
+
+const distribucionEstadosEquipo = computed(() =>
+  buildDistribucion(ventasEquipo.value.filter(v => v.fecha_carga >= inicioMes))
+)
+
+const ventasPorSemana = computed(() => {
+  const semanas: Record<string, { coordinadas: number; concretadas: number; rechazadas: number }> = {}
+  ventasMes.value.forEach(v => {
+    const dia = new Date(v.fecha_carga).getDate()
+    const sem = `Sem ${Math.ceil(dia / 7)}`
+    if (!semanas[sem]) semanas[sem] = { coordinadas: 0, concretadas: 0, rechazadas: 0 }
+    if (v.estado === 'coordinado') semanas[sem].coordinadas++
+    if (v.estado === 'concretado') semanas[sem].concretadas++
+    if (v.estado === 'rechazado' || v.estado === 'en_conflicto') semanas[sem].rechazadas++
+  })
+  const labels = Object.keys(semanas).sort()
+  return {
+    labels,
+    datasets: [
+      { label: 'Coordinadas',  data: labels.map(s => semanas[s].coordinadas),  backgroundColor: '#06b6d4' },
+      { label: 'Concretadas',  data: labels.map(s => semanas[s].concretadas),  backgroundColor: '#10b981' },
+      { label: 'Rechazadas',   data: labels.map(s => semanas[s].rechazadas),   backgroundColor: '#ef4444' },
+    ],
+  }
 })
 
 useHead({ title: 'Dashboard — AMSI SRL' })
