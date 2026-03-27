@@ -123,6 +123,7 @@
 
 <script setup lang="ts">
 import { exportCsv } from '~/utils/exportCsv'
+import { buildVentaWhatsappUrl } from '~/utils/whatsapp'
 import type { VentaFilterState } from '~/components/VentaFilters.vue'
 
 const props = defineProps<{
@@ -230,24 +231,8 @@ const truncateText = (value: unknown, max = 16) => {
   return text.length > max ? `${text.slice(0, max)}…` : text
 }
 
-const normalizePhone = (value: unknown) => {
-  const raw = typeof value === 'string' ? value : ''
-  const digits = raw.replace(/\D/g, '')
-  if (!digits) return ''
-  return digits.startsWith('549') ? digits : `549${digits}`
-}
-
-const buildWhatsappMessage = (row: any) => {
-  const nombre = row?.cliente || '¿cómo estás?'
-  const paquete = row?.paquete_nombre ? ` También te confirmo que el servicio solicitado es ${row.paquete_nombre}.` : ''
-  return `Hola ${nombre}, ¿cómo estás? Te escribo desde Express para coordinar tu turno de instalación.${paquete} Cuando puedas, indicame qué día y franja horaria te queda mejor. ¡Muchas gracias!`
-}
-
 const buildWhatsappUrl = (row: any) => {
-  const phone = normalizePhone(row?.telefono)
-  if (!phone) return '#'
-  const text = encodeURIComponent(buildWhatsappMessage(row))
-  return `https://wa.me/${phone}?text=${text}`
+  return buildVentaWhatsappUrl(row) || '#'
 }
 
 const abrirVenta = (row: any) => {

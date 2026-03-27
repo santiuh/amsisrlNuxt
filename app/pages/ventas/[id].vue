@@ -10,7 +10,7 @@
         @click="volver()"
       />
       <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-        {{ canEdit ? 'Editar Venta' : 'Detalle de Venta' }}
+        {{ isEditingVenta ? 'Editar Venta' : 'Detalle de Venta' }}
       </h2>
       <UBadge
         v-if="venta"
@@ -20,7 +20,25 @@
       />
       <div class="ml-auto">
         <UButton
+          v-if="canContactByWhatsapp && whatsappUrl"
+          icon="i-simple-icons-whatsapp"
+          color="green"
+          variant="ghost"
+          size="sm"
+          label="WhatsApp"
+          @click="abrirWhatsapp"
+        />
+        <UButton
           v-if="canEdit && venta"
+          :icon="isEditingVenta ? 'i-heroicons-x-mark' : 'i-heroicons-pencil-square'"
+          color="gray"
+          variant="ghost"
+          size="sm"
+          :label="isEditingVenta ? 'Cancelar edición' : 'Editar'"
+          @click="toggleEditarVenta"
+        />
+        <UButton
+          v-if="canEdit && venta && isEditingVenta"
           icon="i-heroicons-trash"
           color="red"
           variant="ghost"
@@ -75,11 +93,13 @@
       <!-- Formulario editable completo (solo admin) -->
       <VentaForm
         v-if="canEdit"
+        :key="ventaFormKey"
         :initial-data="venta"
         submit-label="Guardar Cambios"
-        :show-cancel="true"
+        :show-cancel="isEditingVenta"
+        :readonly="!isEditingVenta"
         :on-submit="actualizar"
-        @cancel="volver()"
+        @cancel="cancelarEdicionVenta"
       />
 
       <!-- Observaciones (admin) -->
@@ -293,17 +313,27 @@
 </template>
 
 <script setup lang="ts">
+import { buildVentaWhatsappUrl } from '~/utils/whatsapp'
+
 const route = useRoute()
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
 const toast = useToast()
 const loading = ref(true)
 const venta = ref<any>(null)
+const isEditingVenta = ref(false)
+const ventaFormKey = ref(0)
 
 // Solo admin puede editar todos los campos
 const canEdit = computed(() => profile.value?.rol === 'admin')
 // Oficinista tiene su propio panel de gestión
 const isOficinistra = computed(() => profile.value?.rol === 'oficinista')
+const canContactByWhatsapp = computed(() => ['admin', 'oficinista'].includes(profile.value?.rol ?? ''))
+const whatsappUrl = computed(() => buildVentaWhatsappUrl({
+  telefono: venta.value?.telefono,
+  cliente: venta.value?.cliente,
+  paquete_nombre: venta.value?.paquete_nombre,
+}))
 
 // Estado reactivo para el panel de gestión del oficinista
 const gestionForm = reactive({
@@ -333,6 +363,29 @@ const eliminarVenta = async () => {
   }
 }
 
+const resetVentaForm = () => {
+  ventaFormKey.value += 1
+}
+
+const cancelarEdicionVenta = () => {
+  isEditingVenta.value = false
+  resetVentaForm()
+}
+
+const toggleEditarVenta = () => {
+  if (isEditingVenta.value) {
+    cancelarEdicionVenta()
+    return
+  }
+
+  isEditingVenta.value = true
+}
+
+const abrirWhatsapp = () => {
+  if (!import.meta.client || !whatsappUrl.value) return
+  window.open(whatsappUrl.value, '_blank', 'noopener,noreferrer')
+}
+
 // Para observaciones (todos los roles, en cualquier estado)
 const comentarioConflicto = ref('')
 const savingConflicto = ref(false)
@@ -353,13 +406,19 @@ const cargarVenta = async () => {
     .select('*, profiles:vendedor_id(nombre, rol), venta_extras(extra_id, precio_snapshot, extras(nombre))')
     .eq('id', route.params.id as string)
     .single()
-  venta.value = data
-  if (data) {
-    gestionForm.estado = data.estado ?? 'pendiente'
-    gestionForm.fecha_coordinacion = data.fecha_coordinacion
-      ? toDatetimeLocalValue(data.fecha_coordinacion)
+  const ventaData = data as Record<string, any> | null
+
+  venta.value = ventaData
+  resetVentaForm()
+  if (ventaData) {
+    gestionForm.estado = ventaData.estado ?? 'pendiente'
+    gestionForm.fecha_coordinacion = ventaData.fecha_coordinacion
+      ? toDatetimeLocalValue(ventaData.fecha_coordinacion)
       : ''
-    gestionForm.nro_cliente = data.nro_cliente ?? ''
+    gestionForm.nro_cliente = ventaData.nro_cliente ?? ''
+    if (!canEdit.value) {
+      isEditingVenta.value = false
+    }
   }
 }
 

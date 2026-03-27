@@ -3,59 +3,97 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Cliente y contacto -->
       <UFormGroup label="Cliente *" class="md:col-span-2">
-        <UInput v-model="form.cliente" placeholder="Nombre completo del cliente" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.cliente" placeholder="Nombre completo del cliente" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.cliente, 'Cliente')" />
+        </div>
       </UFormGroup>
 
       <UFormGroup label="DNI / CUIL *">
-        <UInput v-model="form.dni_cuil" placeholder="20123456789" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.dni_cuil" placeholder="20123456789" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dni_cuil, 'DNI / CUIL')" />
+        </div>
       </UFormGroup>
 
       <UFormGroup label="Teléfono">
-        <UInput v-model="form.telefono" placeholder="1123456789" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput
+            v-model="form.telefono"
+            type="tel"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            autocomplete="tel-national"
+            placeholder="1123456789"
+            class="w-full"
+            :disabled="readonly"
+            @update:model-value="sanitizeTelefono"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.telefono, 'Teléfono')" />
+        </div>
       </UFormGroup>
 
       <UFormGroup label="Email">
-        <UInput v-model="form.mail" type="email" placeholder="cliente@ejemplo.com" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.mail" type="email" placeholder="cliente@ejemplo.com" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.mail, 'Email')" />
+        </div>
       </UFormGroup>
 
       <!-- Dirección estructurada -->
       <UFormGroup label="Dirección *">
-        <UInput v-model="form.dir_calle" placeholder="Ej: Av. Corrientes 1234" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.dir_calle" placeholder="Ej: Av. Corrientes 1234" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dir_calle, 'Dirección')" />
+        </div>
       </UFormGroup>
 
       <UFormGroup label="Entre calles">
-        <UInput v-model="form.dir_entre_calles" placeholder="Ej: Callao y Riobamba" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.dir_entre_calles" placeholder="Ej: Callao y Riobamba" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dir_entre_calles, 'Entre calles')" />
+        </div>
       </UFormGroup>
 
       <UFormGroup label="Localidad *">
-        <USelect
-          v-model="form.dir_localidad"
-          :options="localidadOptions"
-          placeholder="Seleccionar localidad"
-          class="w-full"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <USelect
+            v-model="form.dir_localidad"
+            :options="localidadOptions"
+            placeholder="Seleccionar localidad"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(localidadLabel, 'Localidad')" />
+        </div>
       </UFormGroup>
 
       <UFormGroup label="Aclaración">
-        <UInput v-model="form.dir_aclaracion" placeholder="Piso, dpto, referencia..." class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.dir_aclaracion" placeholder="Piso, dpto, referencia..." class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.dir_aclaracion, 'Aclaración')" />
+        </div>
       </UFormGroup>
 
       <!-- Paquete dinámico -->
       <UFormGroup label="Paquete *" class="md:col-span-2">
-        <USelect
-          v-model="form.paquete_id"
-          :options="opcionesPaquetes"
-          placeholder="Seleccionar paquete"
-          class="w-full"
-          :loading="loadingCatalogo"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <USelect
+            v-model="form.paquete_id"
+            :options="opcionesPaquetes"
+            placeholder="Seleccionar paquete"
+            class="w-full"
+            :loading="loadingCatalogo"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(paqueteLabel, 'Paquete')" />
+        </div>
       </UFormGroup>
 
       <!-- Extras -->
       <UFormGroup v-if="extrasActivos.length > 0" label="Extras" class="md:col-span-2">
-        <div class="space-y-2 mt-1">
+        <div class="flex items-start gap-2 mt-1">
+          <div class="space-y-2 flex-1">
           <div
             v-for="extra in extrasActivos"
             :key="extra.id"
@@ -74,27 +112,35 @@
             </label>
             <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatPrecio(extra.precio) }}</span>
           </div>
+          </div>
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(extrasSeleccionadosTexto, 'Extras')" />
         </div>
       </UFormGroup>
 
       <!-- Decos -->
       <UFormGroup label="Decos (decodificadores)">
-        <USelect
-          v-model="form.decos"
-          :options="decosOptions"
-          class="w-full"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <USelect
+            v-model="form.decos"
+            :options="decosOptions"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(decosLabel, 'Decos')" />
+        </div>
       </UFormGroup>
 
       <!-- Bocas -->
       <UFormGroup label="Bocas (salidas de TV)">
-        <USelect
-          v-model="form.bocas"
-          :options="bocasOptions"
-          class="w-full"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <USelect
+            v-model="form.bocas"
+            :options="bocasOptions"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(bocasLabel, 'Bocas')" />
+        </div>
       </UFormGroup>
 
       <!-- Precio calculado (read-only) -->
@@ -103,6 +149,7 @@
           <div class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80 px-3 py-2 text-4xl">
             <span class="text-gray-800 dark:text-gray-100 font-medium">{{ formatPrecio(precioCalculado) }}</span>
           </div>
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(formatPrecio(precioCalculado), 'Precio total')" />
         </div>
         <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
           {{ desgloseBocasDecos }}
@@ -111,31 +158,46 @@
 
       <!-- Forma de pago -->
       <UFormGroup label="Forma de Pago *">
-        <USelect
-          v-model="form.forma_pago"
-          :options="formaPagoOptions"
-          placeholder="Seleccionar forma de pago"
-          class="w-full"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <USelect
+            v-model="form.forma_pago"
+            :options="formaPagoOptions"
+            placeholder="Seleccionar forma de pago"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(formaPagoLabel, 'Forma de pago')" />
+        </div>
       </UFormGroup>
 
       <!-- CBU (solo débito) -->
       <UFormGroup v-if="form.forma_pago === 'debito'" label="CBU *" class="md:col-span-2">
-        <UInput v-model="form.cbu" placeholder="22 dígitos del CBU" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.cbu" placeholder="22 dígitos del CBU" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.cbu, 'CBU')" />
+        </div>
       </UFormGroup>
 
       <!-- Tarjeta (solo crédito) -->
       <UFormGroup v-if="form.forma_pago === 'credito'" label="Número de Tarjeta *">
-        <UInput v-model="form.nro_tarjeta" placeholder="16 dígitos" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.nro_tarjeta" placeholder="16 dígitos" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_tarjeta, 'Número de tarjeta')" />
+        </div>
       </UFormGroup>
       <UFormGroup v-if="form.forma_pago === 'credito'" label="Vencimiento *">
-        <UInput v-model="form.vencimiento_tarjeta" placeholder="MM/AA" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <UInput v-model="form.vencimiento_tarjeta" placeholder="MM/AA" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.vencimiento_tarjeta, 'Vencimiento')" />
+        </div>
       </UFormGroup>
 
       <!-- Estado: visible en edición (oficinista/admin) o en modo solo lectura -->
       <UFormGroup v-if="!hideGestionFields && (canEditEstado || readonly)" label="Estado">
-        <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
+        <div class="flex items-start gap-2">
+          <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(estadoLabelLocal(form.estado), 'Estado')" />
+        </div>
       </UFormGroup>
 
       <!-- Fecha de coordinación: obligatoria cuando estado = coordinado -->
@@ -144,33 +206,42 @@
         label="Fecha y horario de coordinación *"
         class="md:col-span-2"
       >
-        <UInput
-          v-model="form.fecha_coordinacion"
-          type="datetime-local"
-          class="w-full"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <UInput
+            v-model="form.fecha_coordinacion"
+            type="datetime-local"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(fechaCoordinacionLabel, 'Fecha de coordinación')" />
+        </div>
       </UFormGroup>
 
       <!-- Comentarios venta -->
       <UFormGroup label="Comentarios de Venta" class="md:col-span-2">
-        <UTextarea
-          v-model="form.comentarios_venta"
-          placeholder="Observaciones adicionales de la venta..."
-          :rows="3"
-          class="w-full"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <UTextarea
+            v-model="form.comentarios_venta"
+            placeholder="Observaciones adicionales de la venta..."
+            :rows="3"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.comentarios_venta, 'Comentarios de venta')" />
+        </div>
       </UFormGroup>
 
       <!-- Número de Cliente -->
       <UFormGroup label="Número de Cliente" class="md:col-span-2">
-        <UInput
-          v-model="form.nro_cliente"
-          placeholder="Ej: 123456"
-          class="w-full"
-          :disabled="readonly"
-        />
+        <div class="flex items-start gap-2">
+          <UInput
+            v-model="form.nro_cliente"
+            placeholder="Ej: 123456"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_cliente, 'Número de cliente')" />
+        </div>
       </UFormGroup>
 
       <!-- Registro de gestión: solo oficinista/admin en modo edición -->
@@ -251,6 +322,7 @@ const emit = defineEmits<{
 
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
+const toast = useToast()
 
 const canEditEstado = computed(() =>
   !!props.initialData && ['oficinista', 'admin'].includes(profile.value?.rol ?? '')
@@ -285,6 +357,11 @@ const opcionesPaquetes = computed(() =>
   paquetesActivos.value.map(p => ({ label: `${p.nombre} — ${formatPrecio(p.precio)}`, value: p.id }))
 )
 
+const getOptionLabel = (options: Array<{ label: string, value: string | number }>, value: string | number | null | undefined) => {
+  const option = options.find(option => option.value === value)
+  return option?.label ?? String(value ?? '')
+}
+
 // ——— Formulario ———
 const form = reactive({
   cliente: '',
@@ -311,10 +388,16 @@ const form = reactive({
   ...(props.initialData ?? {}),
 })
 
+const sanitizeTelefono = (value: string | number) => {
+  form.telefono = String(value ?? '').replace(/\D/g, '')
+}
+
 // Normalizar comentarios_gestion a array (por si viene como string de datos legacy)
 if (!Array.isArray(form.comentarios_gestion)) {
   form.comentarios_gestion = []
 }
+
+sanitizeTelefono(form.telefono)
 
 // Normalizar fecha_coordinacion al formato que espera datetime-local (YYYY-MM-DDTHH:MM)
 if (form.fecha_coordinacion) {
@@ -408,8 +491,46 @@ const estadoOptions = [
   { label: 'Concretado', value: 'concretado' },
 ]
 
+const localidadLabel = computed(() => getOptionLabel(localidadOptions, form.dir_localidad))
+const paqueteLabel = computed(() => getOptionLabel(opcionesPaquetes.value, form.paquete_id))
+const decosLabel = computed(() => getOptionLabel(decosOptions, form.decos))
+const bocasLabel = computed(() => getOptionLabel(bocasOptions, form.bocas))
+const formaPagoLabel = computed(() => getOptionLabel(formaPagoOptions, form.forma_pago))
+const fechaCoordinacionLabel = computed(() => {
+  if (!form.fecha_coordinacion) return ''
+  return formatFechaHora(datetimeLocalToISO(form.fecha_coordinacion) ?? form.fecha_coordinacion)
+})
+const extrasSeleccionadosTexto = computed(() => {
+  const extrasSeleccionados = extrasActivos.value
+    .filter(extra => (form.extras_ids as string[]).includes(extra.id))
+    .map(extra => extra.nombre)
+
+  return extrasSeleccionados.join(', ')
+})
+
 const loading = ref(false)
 const errorMsg = ref('')
+
+const copyField = async (value: unknown, label: string) => {
+  const text = String(value ?? '').trim()
+
+  if (!text) {
+    toast.add({ title: `${label} vacío`, color: 'orange' })
+    return
+  }
+
+  if (!navigator?.clipboard) {
+    toast.add({ title: 'No se pudo acceder al portapapeles', color: 'red' })
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(text)
+    toast.add({ title: `${label} copiado`, color: 'green' })
+  } catch {
+    toast.add({ title: `Error al copiar ${label.toLowerCase()}`, color: 'red' })
+  }
+}
 
 const submit = async () => {
   if (!form.cliente || !form.dni_cuil || !form.paquete_id || !form.forma_pago || !form.dir_calle || !form.dir_localidad) {
