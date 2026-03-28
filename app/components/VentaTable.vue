@@ -8,6 +8,7 @@
           v-model:remember="recordarFiltros"
           :show-vendedor="showVendedor"
           :vendedores="vendedoresOptions"
+          :localidades="localidadesOptions"
           class="flex-1"
         />
         <UButton
@@ -94,6 +95,10 @@
         </span>
       </template>
 
+      <template #localidad-data="{ row }">
+        <span class="text-sm">{{ row.dir_localidad || '—' }}</span>
+      </template>
+
       <template #paquete-data="{ row }">
         <span>{{ truncateText(row.paquete_nombre, 16) }}</span>
       </template>
@@ -143,6 +148,7 @@ const defaultFilters = (): VentaFilterState => ({
   fechaDesde: '',
   fechaHasta: '',
   vendedor: '',
+  localidad: '',
 })
 
 const recordarFiltros = ref(false)
@@ -163,12 +169,24 @@ const vendedoresOptions = computed(() => {
   ]
 })
 
+const localidadesOptions = computed(() => {
+  const set = new Set<string>()
+  props.ventas.forEach(v => {
+    if (v.dir_localidad) set.add(v.dir_localidad)
+  })
+  return [
+    { label: 'Todas las localidades', value: '' },
+    ...[...set].sort().map(l => ({ label: l, value: l })),
+  ]
+})
+
 const columnas = computed(() => {
   const base = [
     { key: 'fecha_carga', label: 'Fecha' },
     { key: 'cliente', label: 'Cliente' },
     { key: 'dni_cuil', label: 'DNI/CUIL' },
     { key: 'telefono', label: 'Teléfono' },
+    { key: 'localidad', label: 'Localidad' },
     { key: 'paquete', label: 'Paquete' },
     { key: 'precio', label: 'Precio' },
     { key: 'fecha_coordinacion', label: 'Hora coordinada' },
@@ -191,7 +209,8 @@ const ventasFiltradas = computed(() =>
     const matchFechaDesde = !filters.fechaDesde || fechaVenta >= filters.fechaDesde
     const matchFechaHasta = !filters.fechaHasta || fechaVenta <= filters.fechaHasta
     const matchVendedor = !filters.vendedor || v.vendedor_id === filters.vendedor
-    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor
+    const matchLocalidad = !filters.localidad || v.dir_localidad === filters.localidad
+    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor && matchLocalidad
   }),
 )
 
@@ -257,6 +276,7 @@ const applySavedFilters = (raw: unknown) => {
   filters.fechaDesde = typeof candidate.fechaDesde === 'string' ? candidate.fechaDesde : ''
   filters.fechaHasta = typeof candidate.fechaHasta === 'string' ? candidate.fechaHasta : ''
   filters.vendedor = typeof candidate.vendedor === 'string' ? candidate.vendedor : ''
+  filters.localidad = typeof candidate.localidad === 'string' ? candidate.localidad : ''
 }
 
 onMounted(() => {

@@ -246,8 +246,8 @@
 
         <UFormGroup v-if="canEditEstado || readonly" label="Estado">
           <div class="flex items-start gap-2">
-            <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="readonly" />
-            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(estadoLabelLocal(form.estado), 'Estado')" />
+            <USelect v-model="form.estado" :options="estadoOptions" class="w-full" :disabled="sectionReadonly" />
+            <UButton v-if="sectionReadonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(estadoLabelLocal(form.estado), 'Estado')" />
           </div>
         </UFormGroup>
 
@@ -261,14 +261,14 @@
               v-model="form.fecha_coordinacion"
               type="datetime-local"
               class="w-full"
-              :disabled="readonly"
+              :disabled="sectionReadonly"
             />
-            <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(fechaCoordinacionLabel, 'Fecha de coordinación')" />
+            <UButton v-if="sectionReadonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(fechaCoordinacionLabel, 'Fecha de coordinación')" />
           </div>
         </UFormGroup>
 
         <!-- Registro de gestión -->
-        <UFormGroup v-if="canEditGestion && !readonly" label="Registro de Gestión">
+        <UFormGroup v-if="canEditGestion && !sectionReadonly" label="Registro de Gestión">
           <div
             v-if="logEntradas.length > 0"
             class="mb-3 max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
@@ -319,9 +319,9 @@
             placeholder="Observaciones adicionales..."
             :rows="2"
             class="w-full"
-            :disabled="readonly"
+            :disabled="sectionReadonly"
           />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.comentarios_venta, 'Comentarios de venta')" />
+          <UButton v-if="sectionReadonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.comentarios_venta, 'Comentarios de venta')" />
         </div>
       </UFormGroup>
 
@@ -331,16 +331,16 @@
             v-model="form.nro_cliente"
             placeholder="Ej: 123456"
             class="w-full"
-            :disabled="readonly"
+            :disabled="sectionReadonly"
           />
-          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_cliente, 'Número de cliente')" />
+          <UButton v-if="sectionReadonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_cliente, 'Número de cliente')" />
         </div>
       </UFormGroup>
     </fieldset>
 
     <!-- ═══ Error ═══ -->
     <UAlert
-      v-if="errorMsg && !readonly"
+      v-if="errorMsg && showSubmitActions"
       icon="i-heroicons-exclamation-circle"
       color="red"
       variant="soft"
@@ -362,7 +362,7 @@
     </div>
 
     <!-- ═══ Botones de acción ═══ -->
-    <div v-if="!readonly" class="flex items-center gap-2 md:justify-end md:gap-3 pt-1">
+    <div v-if="showSubmitActions" class="flex items-center gap-2 md:justify-end md:gap-3 pt-1">
       <UButton
         v-if="showCancel"
         label="Cancelar"
@@ -389,6 +389,7 @@ const props = defineProps<{
   submitLabel?: string
   showCancel?: boolean
   readonly?: boolean
+  readonlyMainFieldsOnly?: boolean
   hideGestionFields?: boolean
   onSubmit?: (data: Record<string, any>) => Promise<void>
 }>()
@@ -408,6 +409,8 @@ const canEditGestion = computed(() =>
   ['oficinista', 'admin'].includes(profile.value?.rol ?? '')
 )
 const hideGestionFields = computed(() => !!props.hideGestionFields)
+const sectionReadonly = computed(() => !!props.readonly && !props.readonlyMainFieldsOnly)
+const showSubmitActions = computed(() => !props.readonly || !!props.readonlyMainFieldsOnly)
 
 // ——— Catálogo dinámico ———
 const paquetesActivos = ref<any[]>([])

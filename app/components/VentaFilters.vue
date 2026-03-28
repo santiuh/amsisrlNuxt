@@ -22,6 +22,13 @@
         class="w-full sm:w-48"
         @update:model-value="filters.vendedor = $event"
       />
+      <USelect
+        v-if="localidades?.length > 1"
+        :model-value="filters.localidad"
+        :options="localidades"
+        class="w-full sm:w-48"
+        @update:model-value="filters.localidad = $event"
+      />
     </div>
 
     <!-- Fila 2: presets de fecha + date pickers -->
@@ -80,12 +87,16 @@ export interface VentaFilterState {
   fechaDesde: string
   fechaHasta: string
   vendedor: string
+  localidad: string
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   showVendedor?: boolean
   vendedores: { label: string; value: string }[]
-}>()
+  localidades?: { label: string; value: string }[]
+}>(), {
+  localidades: () => [],
+})
 
 const filters = defineModel<VentaFilterState>('filters', { required: true }) as Ref<VentaFilterState>
 const remember = defineModel<boolean>('remember', { default: false })
@@ -111,7 +122,7 @@ const presets = [
 
 const tieneAlgunFiltro = computed(() =>
   filters.value.search || filters.value.estado || filters.value.fechaDesde ||
-  filters.value.fechaHasta || filters.value.vendedor,
+  filters.value.fechaHasta || filters.value.vendedor || filters.value.localidad,
 )
 
 const yyyy = (d: Date): string => d.toISOString().split('T')[0]!
@@ -164,6 +175,7 @@ function limpiarFiltros() {
   filters.value.fechaDesde = ''
   filters.value.fechaHasta = ''
   filters.value.vendedor = ''
+  filters.value.localidad = ''
   presetActivo.value = ''
 }
 </script>

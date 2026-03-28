@@ -1,10 +1,8 @@
 <template>
-  <UCard>
-    <template #header>
-      <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base">{{ title }}</h3>
-    </template>
+  <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 p-5">
+    <h3 class="text-sm font-semibold text-gray-300 mb-4">{{ title }}</h3>
     <Bar :data="chartData" :options="chartOptions" />
-  </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -22,15 +20,11 @@ const props = defineProps<{
   datasets: Dataset[]
 }>()
 
-const colorMode = useColorMode()
-const textColor = computed(() => colorMode.value === 'dark' ? '#d1d5db' : '#374151')
-const gridColor = computed(() => colorMode.value === 'dark' ? '#374151' : '#e5e7eb')
-
 const chartData = computed(() => ({
   labels: props.labels,
   datasets: props.datasets.map(ds => ({
     ...ds,
-    borderRadius: 4,
+    borderRadius: 6,
     borderSkipped: false,
   })),
 }))
@@ -40,33 +34,36 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: true,
   scales: {
     x: {
-      ticks: { color: textColor.value },
+      ticks: { color: '#6b7280', font: { size: 11 } },
       grid: { display: false },
+      border: { display: false },
     },
     y: {
       beginAtZero: true,
-      ticks: {
-        color: textColor.value,
-        stepSize: 1,
-        precision: 0,
-      },
-      grid: { color: gridColor.value },
+      ticks: { color: '#6b7280', stepSize: 1, precision: 0, font: { size: 11 } },
+      grid: { color: '#1f2937' },
+      border: { display: false },
     },
   },
   plugins: {
     legend: {
       position: 'bottom' as const,
       labels: {
-        color: textColor.value,
-        padding: 16,
+        color: '#9ca3af',
+        padding: 14,
         usePointStyle: true,
-        pointStyleWidth: 10,
-        font: { size: 12 },
+        pointStyleWidth: 8,
+        font: { size: 11, weight: '500' },
       },
     },
     tooltip: {
-      titleColor: '#fff',
-      bodyColor: '#fff',
+      backgroundColor: '#1f2937',
+      titleColor: '#f3f4f6',
+      bodyColor: '#d1d5db',
+      borderColor: '#374151',
+      borderWidth: 1,
+      cornerRadius: 8,
+      padding: 10,
     },
   },
 }))

@@ -1,14 +1,12 @@
 <template>
-  <UCard>
-    <template #header>
-      <h3 class="font-semibold text-gray-800 dark:text-gray-100 text-sm sm:text-base">{{ title }}</h3>
-    </template>
+  <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 p-5">
+    <h3 class="text-sm font-semibold text-gray-300 mb-4">{{ title }}</h3>
     <div class="flex justify-center">
-      <div class="w-full max-w-xs">
+      <div class="w-full max-w-[240px]">
         <Doughnut :data="chartData" :options="chartOptions" />
       </div>
     </div>
-  </UCard>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -21,17 +19,15 @@ const props = defineProps<{
   colors: string[]
 }>()
 
-const colorMode = useColorMode()
-const textColor = computed(() => colorMode.value === 'dark' ? '#d1d5db' : '#374151')
-
 const chartData = computed(() => ({
   labels: props.labels,
   datasets: [
     {
       data: props.data,
       backgroundColor: props.colors,
-      borderColor: colorMode.value === 'dark' ? '#1f2937' : '#ffffff',
+      borderColor: 'transparent',
       borderWidth: 2,
+      hoverOffset: 6,
     },
   ],
 }))
@@ -39,20 +35,26 @@ const chartData = computed(() => ({
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: true,
+  cutout: '68%',
   plugins: {
     legend: {
       position: 'bottom' as const,
       labels: {
-        color: textColor.value,
-        padding: 16,
+        color: '#9ca3af',
+        padding: 14,
         usePointStyle: true,
-        pointStyleWidth: 10,
-        font: { size: 12 },
+        pointStyleWidth: 8,
+        font: { size: 11, weight: '500' },
       },
     },
     tooltip: {
-      titleColor: '#fff',
-      bodyColor: '#fff',
+      backgroundColor: '#1f2937',
+      titleColor: '#f3f4f6',
+      bodyColor: '#d1d5db',
+      borderColor: '#374151',
+      borderWidth: 1,
+      cornerRadius: 8,
+      padding: 10,
       callbacks: {
         label: (ctx: any) => {
           const total = ctx.dataset.data.reduce((a: number, b: number) => a + b, 0)

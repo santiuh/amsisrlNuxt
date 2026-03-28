@@ -95,9 +95,10 @@
         v-if="canEdit"
         :key="ventaFormKey"
         :initial-data="venta"
-        submit-label="Guardar Cambios"
+        :submit-label="ventaSubmitLabel"
         :show-cancel="isEditingVenta"
         :readonly="!isEditingVenta"
+        :readonly-main-fields-only="true"
         :on-submit="actualizar"
         @cancel="cancelarEdicionVenta"
       />
@@ -329,6 +330,9 @@ const canEdit = computed(() => profile.value?.rol === 'admin')
 // Oficinista tiene su propio panel de gestión
 const isOficinistra = computed(() => profile.value?.rol === 'oficinista')
 const canContactByWhatsapp = computed(() => ['admin', 'oficinista'].includes(profile.value?.rol ?? ''))
+const ventaSubmitLabel = computed(() =>
+  isEditingVenta.value ? 'Guardar Cambios' : 'Guardar Gestión y Observaciones'
+)
 const whatsappUrl = computed(() => buildVentaWhatsappUrl({
   telefono: venta.value?.telefono,
   cliente: venta.value?.cliente,
