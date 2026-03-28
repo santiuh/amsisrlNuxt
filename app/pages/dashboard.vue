@@ -48,9 +48,9 @@
         :colors="distribucionEstadosPropias.colors"
       />
 
-      <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-white/5">
-          <h3 class="text-sm font-semibold text-gray-200">Mis Ventas</h3>
+      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
         </div>
         <div class="p-1">
           <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
@@ -66,7 +66,7 @@
           <div class="h-6 w-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
             <UIcon name="i-heroicons-user" class="w-3.5 h-3.5 text-blue-400" />
           </div>
-          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Mis Ventas</h3>
+          <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Mis Ventas</h3>
         </div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatsCard
@@ -107,9 +107,9 @@
         :colors="distribucionEstadosPropias.colors"
       />
 
-      <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-white/5">
-          <h3 class="text-sm font-semibold text-gray-200">Mis Ventas</h3>
+      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
         </div>
         <div class="p-1">
           <VentaTable :ventas="ventasPropias" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
@@ -122,7 +122,7 @@
           <div class="h-6 w-6 rounded-lg bg-orange-500/20 flex items-center justify-center">
             <UIcon name="i-heroicons-users" class="w-3.5 h-3.5 text-orange-400" />
           </div>
-          <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Mi Equipo</h3>
+          <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Mi Equipo</h3>
         </div>
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <StatsCard
@@ -155,9 +155,9 @@
         :colors="distribucionEstadosEquipo.colors"
       />
 
-      <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-white/5">
-          <h3 class="text-sm font-semibold text-gray-200">Ventas de mi Equipo</h3>
+      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ventas de mi Equipo</h3>
         </div>
         <div class="p-1">
           <VentaTable :ventas="ventasEquipo" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
@@ -220,9 +220,9 @@
         />
       </div>
 
-      <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-white/5">
-          <h3 class="text-sm font-semibold text-gray-200">Todas las Ventas</h3>
+      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>
         </div>
         <div class="p-1">
           <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
@@ -279,18 +279,18 @@
 
       <!-- Rankings -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 overflow-hidden">
-          <div class="px-5 py-4 border-b border-white/5">
-            <h3 class="text-sm font-semibold text-gray-200">Ranking de Vendedores (Mes)</h3>
+        <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ranking de Vendedores (Mes)</h3>
           </div>
           <div class="overflow-x-auto p-1">
             <UTable :rows="rankingVendedores" :columns="rankingColumns" />
           </div>
         </div>
 
-        <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 overflow-hidden">
-          <div class="px-5 py-4 border-b border-white/5">
-            <h3 class="text-sm font-semibold text-gray-200">Actividad de Oficinistas</h3>
+        <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Actividad de Oficinistas</h3>
           </div>
           <div class="overflow-x-auto p-1">
             <UTable :rows="actividadOficinistas" :columns="actividadColumns" />
@@ -298,9 +298,9 @@
         </div>
       </div>
 
-      <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-white/5">
-          <h3 class="text-sm font-semibold text-gray-200">Todas las Ventas</h3>
+      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>
         </div>
         <div class="p-1">
           <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
@@ -359,7 +359,7 @@ onMounted(async () => {
   const [{ data }, { data: lecturasData }, { data: cicloData }] = await Promise.all([
     client
       .from('ventas')
-      .select('*, profiles:vendedor_id(nombre, rol)')
+      .select('*, profiles:vendedor_id(nombre, rol, avatar_config)')
       .order('fecha_carga', { ascending: false }),
     client
       .from('venta_lecturas')

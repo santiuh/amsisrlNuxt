@@ -407,7 +407,7 @@ const estadoOptions = [
 const cargarVenta = async () => {
   const { data } = await client
     .from('ventas')
-    .select('*, profiles:vendedor_id(nombre, rol), venta_extras(extra_id, precio_snapshot, extras(nombre))')
+    .select('*, profiles:vendedor_id(nombre, rol, avatar_config), venta_extras(extra_id, precio_snapshot, extras(nombre))')
     .eq('id', route.params.id as string)
     .single()
   const ventaData = data as Record<string, any> | null

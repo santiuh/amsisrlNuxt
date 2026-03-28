@@ -1,6 +1,6 @@
 <template>
-  <div class="rounded-2xl bg-gray-900/50 ring-1 ring-white/5 p-5">
-    <h3 class="text-sm font-semibold text-gray-300 mb-4">{{ title }}</h3>
+  <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 p-5">
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ title }}</h3>
     <Bar :data="chartData" :options="chartOptions" />
   </div>
 </template>
@@ -20,6 +20,9 @@ const props = defineProps<{
   datasets: Dataset[]
 }>()
 
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
+
 const chartData = computed(() => ({
   labels: props.labels,
   datasets: props.datasets.map(ds => ({
@@ -34,14 +37,14 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: true,
   scales: {
     x: {
-      ticks: { color: '#6b7280', font: { size: 11 } },
+      ticks: { color: isDark.value ? '#6b7280' : '#6b7280', font: { size: 11 } },
       grid: { display: false },
       border: { display: false },
     },
     y: {
       beginAtZero: true,
-      ticks: { color: '#6b7280', stepSize: 1, precision: 0, font: { size: 11 } },
-      grid: { color: '#1f2937' },
+      ticks: { color: isDark.value ? '#6b7280' : '#6b7280', stepSize: 1, precision: 0, font: { size: 11 } },
+      grid: { color: isDark.value ? '#1f2937' : '#f3f4f6' },
       border: { display: false },
     },
   },
@@ -49,7 +52,7 @@ const chartOptions = computed(() => ({
     legend: {
       position: 'bottom' as const,
       labels: {
-        color: '#9ca3af',
+        color: isDark.value ? '#9ca3af' : '#4b5563',
         padding: 14,
         usePointStyle: true,
         pointStyleWidth: 8,
@@ -57,10 +60,10 @@ const chartOptions = computed(() => ({
       },
     },
     tooltip: {
-      backgroundColor: '#1f2937',
-      titleColor: '#f3f4f6',
-      bodyColor: '#d1d5db',
-      borderColor: '#374151',
+      backgroundColor: isDark.value ? '#1f2937' : '#ffffff',
+      titleColor: isDark.value ? '#f3f4f6' : '#111827',
+      bodyColor: isDark.value ? '#d1d5db' : '#374151',
+      borderColor: isDark.value ? '#374151' : '#e5e7eb',
       borderWidth: 1,
       cornerRadius: 8,
       padding: 10,
