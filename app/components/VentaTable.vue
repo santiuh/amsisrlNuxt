@@ -216,7 +216,7 @@ const ventasFiltradas = computed(() =>
 
 const estadoLabel = (e: string) => ({
   pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
-  rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
+  rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado', proxima_zona: 'Próxima Zona',
 }[e] ?? e)
 
 const estadoPillClass = (e: string) => ({
@@ -226,6 +226,7 @@ const estadoPillClass = (e: string) => ({
   rechazado: 'bg-rose-100 text-rose-800 ring-rose-300 dark:bg-rose-900/30 dark:text-rose-200 dark:ring-rose-800',
   coordinado: 'bg-cyan-100 text-cyan-800 ring-cyan-300 dark:bg-cyan-900/30 dark:text-cyan-200 dark:ring-cyan-800',
   concretado: 'bg-emerald-100 text-emerald-800 ring-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800',
+  proxima_zona: 'bg-violet-100 text-violet-800 ring-violet-300 dark:bg-violet-900/30 dark:text-violet-200 dark:ring-violet-800',
 }[e] ?? 'bg-gray-100 text-gray-700 ring-gray-300 dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700')
 
 const tieneComentarioNuevo = (venta: any): boolean => {

@@ -514,12 +514,13 @@ const actividadOficinistas = computed(() => {
 // ============ GRÁFICOS ============
 
 const ESTADOS_CONFIG = [
-  { key: 'concretado',   label: 'Concretadas',  color: '#10b981' },
-  { key: 'coordinado',   label: 'Coordinadas',  color: '#06b6d4' },
-  { key: 'en_proceso',   label: 'En Proceso',   color: '#3b82f6' },
-  { key: 'pendiente',    label: 'Pendientes',   color: '#64748b' },
-  { key: 'en_conflicto', label: 'En Conflicto', color: '#f97316' },
-  { key: 'rechazado',    label: 'Rechazadas',   color: '#ef4444' },
+  { key: 'concretado',   label: 'Concretadas',   color: '#10b981' },
+  { key: 'coordinado',   label: 'Coordinadas',   color: '#06b6d4' },
+  { key: 'en_proceso',   label: 'En Proceso',    color: '#3b82f6' },
+  { key: 'pendiente',    label: 'Pendientes',    color: '#64748b' },
+  { key: 'en_conflicto', label: 'En Conflicto',  color: '#f97316' },
+  { key: 'rechazado',    label: 'Rechazadas',    color: '#ef4444' },
+  { key: 'proxima_zona', label: 'Próxima Zona',  color: '#8b5cf6' },
 ]
 
 function buildDistribucion(source: any[]) {

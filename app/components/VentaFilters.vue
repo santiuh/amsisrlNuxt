@@ -111,6 +111,7 @@ const estadoOptions = [
   { label: 'Rechazado', value: 'rechazado' },
   { label: 'Coordinado', value: 'coordinado' },
   { label: 'Concretado', value: 'concretado' },
+  { label: 'Próxima Zona', value: 'proxima_zona' },
 ]
 
 const presets = [

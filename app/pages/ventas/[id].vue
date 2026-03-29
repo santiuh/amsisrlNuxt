@@ -78,7 +78,7 @@
         <div>
           <span class="font-medium">Vendedor:</span>
           <div class="inline-flex items-center gap-2 ml-1 align-middle">
-            <UserAvatar v-if="venta.profiles?.nombre" :seed="venta.profiles.nombre" class="w-5 h-5 rounded-full overflow-hidden shrink-0" />
+            <UserAvatar v-if="venta.profiles?.nombre" :config="venta.profiles.avatar_config ?? avatarMap[venta.profiles.nombre] ?? null" :seed="venta.profiles.nombre" class="w-5 h-5 rounded-full overflow-hidden shrink-0" />
             <span>{{ venta.profiles?.nombre ?? '—' }}</span>
           </div>
         </div>
@@ -99,64 +99,27 @@
         :show-cancel="isEditingVenta"
         :readonly="!isEditingVenta"
         :readonly-main-fields-only="true"
+        :hide-gestion-log="true"
+        :avatar-map="avatarMap"
         :on-submit="actualizar"
         @cancel="cancelarEdicionVenta"
       />
 
-      <!-- Observaciones (admin) -->
-      <div v-if="canEdit" class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-6 space-y-4">
-        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">Observaciones</p>
-        <div
-          v-if="logGestion.length > 0"
-          class="max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
-        >
-          <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
-            <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
-              <div class="flex items-center gap-1.5">
-                <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
-                <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
-              </div>
-              <UBadge
-                v-if="entry.tipo === 'estado'"
-                color="teal"
-                variant="subtle"
-                size="xs"
-                label="Estado"
-              />
-            </div>
-            <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
-          </div>
-        </div>
-        <p v-else class="text-xs text-gray-400 dark:text-gray-500 italic">Sin observaciones aún.</p>
-        <div class="space-y-2">
-          <UTextarea
-            v-model="comentarioConflicto"
-            placeholder="Agregar observación..."
-            :rows="2"
-            class="w-full"
-          />
-          <UAlert
-            v-if="conflictoError"
-            icon="i-heroicons-exclamation-circle"
-            color="red"
-            variant="soft"
-            :title="conflictoError"
-          />
-          <div class="flex justify-end">
-            <UButton
-              label="Agregar Observación"
-              icon="i-heroicons-paper-airplane"
-              :loading="savingConflicto"
-              @click="guardarComentarioConflicto"
-            />
-          </div>
-        </div>
-      </div>
+      <!-- Historial (admin) -->
+      <HistorialGestion
+        v-if="canEdit"
+        v-model="comentarioConflicto"
+        :entries="logGestion"
+        :avatar-map="avatarMap"
+        :loading="savingConflicto"
+        :error="conflictoError"
+        class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-6"
+        @submit="guardarComentarioConflicto"
+      />
 
       <!-- Vista de solo lectura: mismo formato que el formulario de creación -->
       <template v-else>
-        <VentaForm :initial-data="venta" :hide-gestion-fields="isOficinistra" readonly />
+        <VentaForm :initial-data="venta" :hide-gestion-fields="isOficinistra" :avatar-map="avatarMap" readonly />
 
         <!-- Panel de gestión editable (solo oficinista) -->
         <div v-if="isOficinistra" class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-4 space-y-4">
@@ -187,55 +150,33 @@
               </UFormGroup>
             </div>
 
-            <!-- Historial de gestión -->
-            <UFormGroup label="Registro de Gestión" class="sm:col-span-2">
-              <div
-                v-if="logGestion.length > 0"
-                class="mb-3 max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
-              >
-                <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
-                  <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
-                    <div class="flex items-center gap-1.5">
-                      <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
-                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
-                    </div>
-                    <UBadge
-                      v-if="entry.tipo === 'estado'"
-                      color="teal"
-                      variant="subtle"
-                      size="xs"
-                      label="Estado"
-                    />
-                  </div>
-                  <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
-                </div>
-              </div>
-              <p v-else class="text-xs text-gray-400 dark:text-gray-500 mb-2 italic">Sin registros de gestión aún.</p>
-
-              <UTextarea
-                v-model="gestionForm.nuevoComentario"
-                placeholder="Agregar comentario de gestión..."
-                :rows="2"
-                class="w-full"
-              />
-            </UFormGroup>
-
             <UAlert
               v-if="gestionError"
               icon="i-heroicons-exclamation-circle"
               color="red"
               variant="soft"
               :title="gestionError"
+              class="sm:col-span-2"
             />
 
-            <div class="flex justify-end gap-3">
+            <div class="flex justify-end gap-3 sm:col-span-2">
               <UButton label="Cancelar" color="gray" variant="outline" @click="volver()" />
               <UButton label="Guardar Gestión" :loading="savingGestion" @click="guardarGestion" />
             </div>
+
+            <!-- Historial (oficinista) -->
+            <HistorialGestion
+              v-model="comentarioConflicto"
+              :entries="logGestion"
+              :avatar-map="avatarMap"
+              :loading="savingConflicto"
+              :error="conflictoError"
+              class="sm:col-span-2 border-t border-gray-200 dark:border-gray-800 pt-4"
+              @submit="guardarComentarioConflicto"
+            />
         </div>
 
-        <!-- Observaciones (vendedor/lider — siempre visible) -->
+        <!-- Historial (vendedor/lider) -->
         <div v-else class="space-y-4 mt-4">
             <!-- Banner solo si en_conflicto -->
             <div v-if="venta.estado === 'en_conflicto'" class="border-2 border-orange-400 bg-orange-50 rounded-xl p-4 flex gap-3">
@@ -246,60 +187,15 @@
               </div>
             </div>
 
-            <!-- Log de gestión -->
-            <div v-if="logGestion.length > 0" class="space-y-1">
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Registro de Gestión</p>
-              <div
-                :class="venta.estado === 'en_conflicto'
-                  ? 'border border-orange-200 dark:border-orange-900/60 rounded-lg divide-y divide-orange-100 dark:divide-orange-900/40 bg-orange-50 dark:bg-orange-950/40'
-                  : 'border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70'"
-              >
-                <div v-for="(entry, i) in logGestion" :key="i" class="px-3 py-2 text-sm">
-                  <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFecha(entry.fecha_hora) }}</span>
-                    <div class="flex items-center gap-1.5">
-                      <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
-                      <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
-                    </div>
-                    <UBadge
-                      v-if="entry.tipo === 'estado'"
-                      :color="venta.estado === 'en_conflicto' ? 'orange' : 'teal'"
-                      variant="subtle"
-                      size="xs"
-                      label="Estado"
-                    />
-                  </div>
-                  <p class="text-gray-800 dark:text-gray-100">{{ entry.texto }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Textarea para agregar observación -->
-            <div class="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-2">
-              <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Agregar observación</p>
-              <UTextarea
-                v-model="comentarioConflicto"
-                placeholder="Escribí tu observación..."
-                :rows="3"
-                class="w-full"
-              />
-              <UAlert
-                v-if="conflictoError"
-                icon="i-heroicons-exclamation-circle"
-                color="red"
-                variant="soft"
-                :title="conflictoError"
-              />
-              <div class="flex justify-end gap-3">
-                <UButton label="Cancelar" color="gray" variant="outline" @click="volver()" />
-                <UButton
-                  label="Agregar Observación"
-                  icon="i-heroicons-paper-airplane"
-                  :loading="savingConflicto"
-                  @click="guardarComentarioConflicto"
-                />
-              </div>
-            </div>
+            <HistorialGestion
+              v-model="comentarioConflicto"
+              :entries="logGestion"
+              :avatar-map="avatarMap"
+              :loading="savingConflicto"
+              :error="conflictoError"
+              :conflicto-style="venta.estado === 'en_conflicto'"
+              @submit="guardarComentarioConflicto"
+            />
         </div>
       </template>
     </UCard>
@@ -322,6 +218,7 @@ const profile = useCurrentProfile()
 const toast = useToast()
 const loading = ref(true)
 const venta = ref<any>(null)
+const avatarMap = ref<Record<string, any>>({})
 const isEditingVenta = ref(false)
 const ventaFormKey = ref(0)
 
@@ -331,7 +228,7 @@ const canEdit = computed(() => profile.value?.rol === 'admin')
 const isOficinistra = computed(() => profile.value?.rol === 'oficinista')
 const canContactByWhatsapp = computed(() => ['admin', 'oficinista'].includes(profile.value?.rol ?? ''))
 const ventaSubmitLabel = computed(() =>
-  isEditingVenta.value ? 'Guardar Cambios' : 'Guardar Gestión y Observaciones'
+  isEditingVenta.value ? 'Guardar Cambios' : 'Guardar'
 )
 const whatsappUrl = computed(() => buildVentaWhatsappUrl({
   telefono: venta.value?.telefono,
@@ -402,6 +299,7 @@ const estadoOptions = [
   { label: 'Rechazado', value: 'rechazado' },
   { label: 'Coordinado', value: 'coordinado' },
   { label: 'Concretado', value: 'concretado' },
+  { label: 'Próxima Zona', value: 'proxima_zona' },
 ]
 
 const cargarVenta = async () => {
@@ -427,7 +325,14 @@ const cargarVenta = async () => {
 }
 
 onMounted(async () => {
-  await cargarVenta()
+  const [, { data: profilesData }] = await Promise.all([
+    cargarVenta(),
+    client.from('profiles').select('nombre, avatar_config'),
+  ])
+  // Build name → avatar_config lookup for comment avatars
+  ;(profilesData ?? []).forEach((p: any) => {
+    if (p.nombre && p.avatar_config) avatarMap.value[p.nombre] = p.avatar_config
+  })
   loading.value = false
   if (venta.value) {
     // Marcar venta como leída para este usuario
@@ -451,6 +356,10 @@ const volver = async () => {
 const guardarGestion = async () => {
   gestionError.value = ''
 
+  if (gestionForm.estado !== 'pendiente' && !gestionForm.nro_cliente?.trim()) {
+    gestionError.value = 'El Número de Cliente es obligatorio cuando el estado es diferente a Pendiente.'
+    return
+  }
   if (gestionForm.estado === 'coordinado' && !gestionForm.fecha_coordinacion) {
     gestionError.value = 'Debés ingresar la fecha y horario de coordinación.'
     return
@@ -552,12 +461,12 @@ const actualizar = async (data: Record<string, any>) => {
 
 const estadoLabel = (e: string) => ({
   pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
-  rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
+  rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado', proxima_zona: 'Próxima Zona',
 }[e] ?? e)
 
 const estadoColor = (e: string): any => ({
   pendiente: 'gray', en_proceso: 'yellow', en_conflicto: 'orange',
-  rechazado: 'red', coordinado: 'teal', concretado: 'blue',
+  rechazado: 'red', coordinado: 'teal', concretado: 'blue', proxima_zona: 'violet',
 }[e] ?? 'gray')
 
 const formatFecha = (f: unknown) => formatFechaHora(f)

@@ -1,7 +1,7 @@
 import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
-  const user = await requireAuth(event)
+  await requireAuth(event)
   const body = await readBody(event)
 
   if (!body.config || typeof body.config !== 'object') {
@@ -14,10 +14,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const client = await serverSupabaseClient(event)
-  const { error } = await client
-    .from('profiles')
-    .update({ avatar_config: body.config })
-    .eq('id', user.id)
+  const { error } = await client.rpc('update_own_avatar', { p_config: body.config })
 
   if (error) {
     throw createError({ statusCode: 500, statusMessage: 'Error al guardar el avatar' })

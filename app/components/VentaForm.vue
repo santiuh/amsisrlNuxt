@@ -234,6 +234,26 @@
       </div>
     </fieldset>
 
+      <!-- ═══ SECCIÓN: Observaciones ═══ -->
+    <fieldset class="space-y-3">
+      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+        <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="w-3.5 h-3.5" />
+        Observaciones
+      </legend>
+      <UFormGroup label="Comentarios de venta">
+        <div class="flex items-start gap-2">
+          <UTextarea
+            v-model="form.comentarios_venta"
+            placeholder="Observaciones adicionales..."
+            :rows="2"
+            class="w-full"
+            :disabled="readonly"
+          />
+          <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.comentarios_venta, 'Comentarios de venta')" />
+        </div>
+      </UFormGroup>
+    </fieldset>
+
     <!-- ═══ SECCIÓN: Gestión (solo oficinista/admin) ═══ -->
     <template v-if="!hideGestionFields && (canEditEstado || canEditGestion || readonly)">
       <UDivider />
@@ -268,7 +288,7 @@
         </UFormGroup>
 
         <!-- Registro de gestión -->
-        <UFormGroup v-if="canEditGestion && !sectionReadonly" label="Registro de Gestión">
+        <UFormGroup v-if="canEditGestion && !sectionReadonly && !hideGestionLog" label="Registro de Gestión">
           <div
             v-if="logEntradas.length > 0"
             class="mb-3 max-h-52 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-800 bg-gray-50 dark:bg-gray-900/70"
@@ -277,7 +297,7 @@
               <div class="flex items-center gap-2 mb-0.5 flex-wrap">
                 <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatFechaLog(entry.fecha_hora) }}</span>
                 <div class="flex items-center gap-1.5">
-                  <UserAvatar :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
+                  <UserAvatar :config="avatarMap?.[entry.autor] ?? null" :seed="entry.autor" class="w-4 h-4 rounded-full overflow-hidden shrink-0" />
                   <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ entry.autor }}</span>
                 </div>
                 <UBadge
@@ -305,38 +325,7 @@
 
     <UDivider />
 
-    <!-- ═══ SECCIÓN: Observaciones ═══ -->
-    <fieldset class="space-y-3">
-      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-        <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="w-3.5 h-3.5" />
-        Observaciones
-      </legend>
-
-      <UFormGroup label="Comentarios de Venta">
-        <div class="flex items-start gap-2">
-          <UTextarea
-            v-model="form.comentarios_venta"
-            placeholder="Observaciones adicionales..."
-            :rows="2"
-            class="w-full"
-            :disabled="sectionReadonly"
-          />
-          <UButton v-if="sectionReadonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.comentarios_venta, 'Comentarios de venta')" />
-        </div>
-      </UFormGroup>
-
-      <UFormGroup label="Nro. de Cliente">
-        <div class="flex items-start gap-2">
-          <UInput
-            v-model="form.nro_cliente"
-            placeholder="Ej: 123456"
-            class="w-full"
-            :disabled="sectionReadonly"
-          />
-          <UButton v-if="sectionReadonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_cliente, 'Número de cliente')" />
-        </div>
-      </UFormGroup>
-    </fieldset>
+  
 
     <!-- ═══ Error ═══ -->
     <UAlert
@@ -362,7 +351,7 @@
     </div>
 
     <!-- ═══ Botones de acción ═══ -->
-    <div v-if="showSubmitActions" class="flex items-center gap-2 md:justify-end md:gap-3 pt-1">
+    <div v-if="showSubmitActions" class="flex items-center gap-2 justify-center md:justify-end md:gap-3 pt-1">
       <UButton
         v-if="showCancel"
         label="Cancelar"
@@ -375,8 +364,9 @@
       <UButton
         :loading="loading"
         :label="submitLabel ?? 'Guardar'"
+        :disabled="submitDisabled"
         size="sm"
-        class="flex-1 md:flex-none"
+        class="flex w-fit"
         @click="submit"
       />
     </div>
@@ -391,6 +381,8 @@ const props = defineProps<{
   readonly?: boolean
   readonlyMainFieldsOnly?: boolean
   hideGestionFields?: boolean
+  hideGestionLog?: boolean
+  avatarMap?: Record<string, any>
   onSubmit?: (data: Record<string, any>) => Promise<void>
 }>()
 
@@ -409,8 +401,12 @@ const canEditGestion = computed(() =>
   ['oficinista', 'admin'].includes(profile.value?.rol ?? '')
 )
 const hideGestionFields = computed(() => !!props.hideGestionFields)
+const hideGestionLog = computed(() => !!props.hideGestionLog)
 const sectionReadonly = computed(() => !!props.readonly && !props.readonlyMainFieldsOnly)
 const showSubmitActions = computed(() => !props.readonly || !!props.readonlyMainFieldsOnly)
+const submitDisabled = computed(() =>
+  props.readonlyMainFieldsOnly ? form.estado === (props.initialData?.estado ?? 'pendiente') : false
+)
 
 // ——— Catálogo dinámico ———
 const paquetesActivos = ref<any[]>([])
@@ -520,7 +516,7 @@ const logEntradas = computed(() =>
 const formatFechaLog = (value: unknown) => formatFechaHora(value)
 
 const estadoLabelLocal = (e: string) => ({
-  pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
+  pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto', proxima_zona: 'Próxima Zona',
   rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado',
 }[e] ?? e)
 
@@ -590,6 +586,7 @@ const estadoOptions = [
   { label: 'Rechazado', value: 'rechazado' },
   { label: 'Coordinado', value: 'coordinado' },
   { label: 'Concretado', value: 'concretado' },
+  { label: 'Próxima Zona', value: 'proxima_zona' },
 ]
 
 const localidadLabel = computed(() => getOptionLabel(localidadOptions, form.dir_localidad))
@@ -644,6 +641,10 @@ const submit = async () => {
   }
   if (form.forma_pago === 'credito' && (!form.nro_tarjeta?.trim() || !form.vencimiento_tarjeta?.trim())) {
     errorMsg.value = 'El número de tarjeta y vencimiento son obligatorios para pagos con crédito.'
+    return
+  }
+  if (form.estado !== 'pendiente' && !form.nro_cliente?.trim()) {
+    errorMsg.value = 'El Número de Cliente es obligatorio cuando el estado es diferente a Pendiente.'
     return
   }
   if (form.estado === 'coordinado' && !form.fecha_coordinacion) {
