@@ -6,6 +6,12 @@ export interface AvatarConfig {
   hairStyle: string
   sex: string
   bgColor?: { name: string; value: string }
+  eyeStyle?: string
+  mouthStyle?: string
+  glasses?: string
+  earrings?: string
+  hat?: string
+  facialHair?: string
 }
 
 export const SKIN_COLORS = [
@@ -66,11 +72,62 @@ export const HAIR_STYLES = [
   { id: 'rulos', name: 'Rulos' },
   { id: 'mono', name: 'Moño' },
   { id: 'puntas', name: 'Puntas' },
+  { id: 'flequillo', name: 'Flequillo' },
+  { id: 'coleta', name: 'Coleta' },
+  { id: 'ondulado', name: 'Ondulado' },
+  { id: 'afro', name: 'Afro' },
+  { id: 'rapado', name: 'Rapado' },
 ]
 
 export const SEX_OPTIONS = [
   { id: 'femenino', name: 'Femenino' },
   { id: 'masculino', name: 'Masculino' },
+]
+
+export const EYE_STYLES = [
+  { id: 'normal', name: 'Normal' },
+  { id: 'grandes', name: 'Grandes' },
+  { id: 'almendra', name: 'Almendra' },
+  { id: 'somnolientos', name: 'Somnolientos' },
+  { id: 'guino', name: 'Guiño' },
+]
+
+export const MOUTH_STYLES = [
+  { id: 'sonrisa', name: 'Sonrisa' },
+  { id: 'neutral', name: 'Neutral' },
+  { id: 'abierta', name: 'Abierta' },
+  { id: 'triste', name: 'Triste' },
+  { id: 'lengua', name: 'Lengua' },
+]
+
+export const GLASSES_STYLES = [
+  { id: 'ninguno', name: 'Ninguno' },
+  { id: 'redondos', name: 'Redondos' },
+  { id: 'cuadrados', name: 'Cuadrados' },
+  { id: 'sol', name: 'De Sol' },
+]
+
+export const EARRING_STYLES = [
+  { id: 'ninguno', name: 'Ninguno' },
+  { id: 'puntos', name: 'Puntos' },
+  { id: 'aros', name: 'Aros' },
+  { id: 'colgantes', name: 'Colgantes' },
+]
+
+export const HAT_STYLES = [
+  { id: 'ninguno', name: 'Ninguno' },
+  { id: 'gorra', name: 'Gorra' },
+  { id: 'beanie', name: 'Gorro Lana' },
+  { id: 'sombrero', name: 'Sombrero' },
+]
+
+export const FACIAL_HAIR_STYLES = [
+  { id: 'ninguno', name: 'Ninguno' },
+  { id: 'barba_corta', name: 'Barba Corta' },
+  { id: 'barba_larga', name: 'Barba Larga' },
+  { id: 'bigote', name: 'Bigote' },
+  { id: 'candado', name: 'Candado' },
+  { id: 'chiva', name: 'Chiva' },
 ]
 
 export const getAvatarHash = (str: string) =>
@@ -80,13 +137,20 @@ export const generateAvatarFromSeed = (seed: string): AvatarConfig => {
   const hash = getAvatarHash(seed ? seed.toLowerCase() : 'default')
   const hairStyleIds = HAIR_STYLES.map(h => h.id)
   const sexIds = SEX_OPTIONS.map(s => s.id)
+  const sex = sexIds[(hash >> 5) % sexIds.length]
   return {
     skin: SKIN_COLORS[hash % SKIN_COLORS.length],
     hairColor: HAIR_COLORS[(hash >> 1) % HAIR_COLORS.length],
     eyeColor: EYE_COLORS[(hash >> 2) % EYE_COLORS.length],
     clothesColor: CLOTHES_COLORS[(hash >> 3) % CLOTHES_COLORS.length],
     hairStyle: hairStyleIds[(hash >> 4) % hairStyleIds.length],
-    sex: sexIds[(hash >> 5) % sexIds.length],
+    sex,
     bgColor: BG_COLORS[(hash >> 6) % BG_COLORS.length],
+    eyeStyle: EYE_STYLES[(hash >> 7) % EYE_STYLES.length].id,
+    mouthStyle: MOUTH_STYLES[(hash >> 8) % MOUTH_STYLES.length].id,
+    glasses: GLASSES_STYLES[(hash >> 9) % GLASSES_STYLES.length].id,
+    earrings: EARRING_STYLES[(hash >> 10) % EARRING_STYLES.length].id,
+    hat: HAT_STYLES[(hash >> 11) % HAT_STYLES.length].id,
+    facialHair: sex === 'masculino' ? FACIAL_HAIR_STYLES[(hash >> 12) % FACIAL_HAIR_STYLES.length].id : 'ninguno',
   }
 }

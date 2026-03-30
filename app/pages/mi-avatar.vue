@@ -43,13 +43,14 @@
         <UCard>
           <div class="space-y-8 divide-y divide-gray-100 dark:divide-gray-800">
 
-            <!-- Sección: Forma y Estilo -->
+            <!-- Sección: Apariencia -->
             <div class="pt-2">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
                 <UIcon name="i-heroicons-sparkles" class="w-5 h-5 text-primary-500" />
                 Apariencia
               </h3>
               <div class="space-y-6">
+                <!-- Sexo -->
                 <div>
                   <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Sexo</label>
                   <div class="flex gap-2">
@@ -67,17 +68,135 @@
                   </div>
                 </div>
 
+                <!-- Estilo de Pelo -->
                 <div>
                   <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Estilo de Pelo</label>
                   <div class="flex flex-wrap gap-2">
                     <button
                       v-for="style in HAIR_STYLES"
                       :key="style.id"
-                      class="flex-1 min-w-[30%] py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
+                      class="min-w-[30%] flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
                       :class="config.hairStyle === style.id
                         ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
                         : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'"
                       @click="config.hairStyle = style.id"
+                    >
+                      {{ style.name }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Estilo de Ojos -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Estilo de Ojos</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="style in EYE_STYLES"
+                      :key="style.id"
+                      class="min-w-[30%] flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
+                      :class="config.eyeStyle === style.id
+                        ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
+                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                      @click="config.eyeStyle = style.id"
+                    >
+                      {{ style.name }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Estilo de Boca -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Boca</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="style in MOUTH_STYLES"
+                      :key="style.id"
+                      class="min-w-[30%] flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
+                      :class="config.mouthStyle === style.id
+                        ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
+                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                      @click="config.mouthStyle = style.id"
+                    >
+                      {{ style.name }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Barba / Bigote (solo masculino) -->
+                <div v-if="config.sex === 'masculino'">
+                  <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Barba / Bigote</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="style in FACIAL_HAIR_STYLES"
+                      :key="style.id"
+                      class="min-w-[30%] flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
+                      :class="config.facialHair === style.id
+                        ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
+                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                      @click="config.facialHair = style.id"
+                    >
+                      {{ style.name }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección: Accesorios -->
+            <div class="pt-8 mt-8">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+                <UIcon name="i-heroicons-gift" class="w-5 h-5 text-primary-500" />
+                Accesorios
+              </h3>
+              <div class="space-y-6">
+                <!-- Anteojos -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Anteojos</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="style in GLASSES_STYLES"
+                      :key="style.id"
+                      class="min-w-[30%] flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
+                      :class="config.glasses === style.id
+                        ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
+                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                      @click="config.glasses = style.id"
+                    >
+                      {{ style.name }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Aros -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Aros</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="style in EARRING_STYLES"
+                      :key="style.id"
+                      class="min-w-[30%] flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
+                      :class="config.earrings === style.id
+                        ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
+                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                      @click="config.earrings = style.id"
+                    >
+                      {{ style.name }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Sombrero -->
+                <div>
+                  <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Sombrero</label>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="style in HAT_STYLES"
+                      :key="style.id"
+                      class="min-w-[30%] flex-1 py-2.5 px-3 rounded-lg text-sm font-medium transition-all duration-200 border"
+                      :class="config.hat === style.id
+                        ? 'bg-primary-50 dark:bg-primary-500/10 border-primary-500 text-primary-700 dark:text-primary-400 shadow-sm'
+                        : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'"
+                      @click="config.hat = style.id"
                     >
                       {{ style.name }}
                     </button>
@@ -217,6 +336,12 @@ import {
   BG_COLORS,
   HAIR_STYLES,
   SEX_OPTIONS,
+  EYE_STYLES,
+  MOUTH_STYLES,
+  GLASSES_STYLES,
+  EARRING_STYLES,
+  HAT_STYLES,
+  FACIAL_HAIR_STYLES,
   generateAvatarFromSeed,
 } from '~/utils/avatar'
 
@@ -250,6 +375,12 @@ const randomize = () => {
   config.clothesColor = CLOTHES_COLORS[randIdx(CLOTHES_COLORS)]
   config.hairStyle = HAIR_STYLES[randIdx(HAIR_STYLES)].id
   config.bgColor = BG_COLORS[randIdx(BG_COLORS)]
+  config.eyeStyle = EYE_STYLES[randIdx(EYE_STYLES)].id
+  config.mouthStyle = MOUTH_STYLES[randIdx(MOUTH_STYLES)].id
+  config.glasses = GLASSES_STYLES[randIdx(GLASSES_STYLES)].id
+  config.earrings = EARRING_STYLES[randIdx(EARRING_STYLES)].id
+  config.hat = HAT_STYLES[randIdx(HAT_STYLES)].id
+  config.facialHair = config.sex === 'masculino' ? FACIAL_HAIR_STYLES[randIdx(FACIAL_HAIR_STYLES)].id : 'ninguno'
 }
 
 const guardar = async () => {
