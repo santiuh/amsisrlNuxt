@@ -287,6 +287,14 @@
           </div>
         </UFormGroup>
 
+        <!-- Número de cliente -->
+        <UFormGroup v-if="canEditEstado || readonly" label="Nro. de Cliente">
+          <div class="flex items-start gap-2">
+            <UInput v-model="form.nro_cliente" placeholder="Número asignado por la empresa" class="w-full" :disabled="sectionReadonly" />
+            <UButton v-if="sectionReadonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(form.nro_cliente, 'Nro. de Cliente')" />
+          </div>
+        </UFormGroup>
+
         <!-- Registro de gestión -->
         <UFormGroup v-if="canEditGestion && !sectionReadonly && !hideGestionLog" label="Registro de Gestión">
           <div
