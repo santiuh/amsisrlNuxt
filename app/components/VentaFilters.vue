@@ -10,6 +10,12 @@
         @update:model-value="filters.search = $event"
       />
       <USelect
+        :model-value="filters.empresa"
+        :options="empresaOptions"
+        class="w-full sm:w-44"
+        @update:model-value="filters.empresa = $event"
+      />
+      <USelect
         :model-value="filters.estado"
         :options="estadoOptions"
         class="w-full sm:w-48"
@@ -88,6 +94,7 @@ export interface VentaFilterState {
   fechaHasta: string
   vendedor: string
   localidad: string
+  empresa: string
 }
 
 const props = withDefaults(defineProps<{
@@ -102,6 +109,12 @@ const filters = defineModel<VentaFilterState>('filters', { required: true }) as 
 const remember = defineModel<boolean>('remember', { default: false })
 
 const presetActivo = ref('')
+
+const empresaOptions = [
+  { label: 'Todas las empresas', value: '' },
+  { label: 'Express', value: 'express' },
+  { label: 'Ultra', value: 'ultra' },
+]
 
 const estadoOptions = [
   { label: 'Todos los estados', value: '' },
@@ -123,7 +136,8 @@ const presets = [
 
 const tieneAlgunFiltro = computed(() =>
   filters.value.search || filters.value.estado || filters.value.fechaDesde ||
-  filters.value.fechaHasta || filters.value.vendedor || filters.value.localidad,
+  filters.value.fechaHasta || filters.value.vendedor || filters.value.localidad ||
+  filters.value.empresa,
 )
 
 const yyyy = (d: Date): string => d.toISOString().split('T')[0]!
@@ -177,6 +191,7 @@ function limpiarFiltros() {
   filters.value.fechaHasta = ''
   filters.value.vendedor = ''
   filters.value.localidad = ''
+  filters.value.empresa = ''
   presetActivo.value = ''
 }
 </script>

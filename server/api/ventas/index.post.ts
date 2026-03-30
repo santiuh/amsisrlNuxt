@@ -7,6 +7,11 @@ export default defineEventHandler(async (event) => {
 
   const { _extras, extras_ids, ...ventaData } = body
 
+  // Validar permiso Ultra
+  if (ventaData.empresa === 'ultra' && !profile.puede_vender_ultra) {
+    throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Ultra' })
+  }
+
   const { data: ventaCreada, error } = await client
     .from('ventas')
     .insert({ ...ventaData, vendedor_id: profile.id })

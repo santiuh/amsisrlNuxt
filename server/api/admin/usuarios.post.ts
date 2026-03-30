@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   const client = await serverSupabaseClient(event)
   const body = await readBody(event)
 
-  const { email, password, nombre, rol } = body
+  const { email, password, nombre, rol, puede_vender_ultra } = body
 
   if (!email || !password || !nombre || !rol) {
     throw createError({ statusCode: 400, statusMessage: 'Completá todos los campos' })
@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
     p_password: password,
     p_nombre: nombre,
     p_rol: rol,
+    p_puede_vender_ultra: puede_vender_ultra ?? false,
   })
 
   if (error) {

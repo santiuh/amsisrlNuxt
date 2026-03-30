@@ -5,16 +5,20 @@ export default defineEventHandler(async (event) => {
   const client = await serverSupabaseClient(event)
   const body = await readBody(event)
 
-  const { pct_grupo, pct_lider } = body
+  const { pct_grupo, pct_lider, empresa } = body
 
   if (pct_grupo == null || pct_lider == null) {
     throw createError({ statusCode: 400, statusMessage: 'Porcentajes requeridos' })
   }
 
+  if (!empresa || !['express', 'ultra'].includes(empresa)) {
+    throw createError({ statusCode: 400, statusMessage: 'Empresa inválida' })
+  }
+
   const ahora = new Date().toISOString()
   const [{ error: e1 }, { error: e2 }] = await Promise.all([
-    client.from('configuracion').update({ valor: String(pct_grupo), updated_at: ahora }).eq('clave', 'comision_porcentaje_grupo'),
-    client.from('configuracion').update({ valor: String(pct_lider), updated_at: ahora }).eq('clave', 'comision_porcentaje_lider'),
+    client.from('configuracion').update({ valor: String(pct_grupo), updated_at: ahora }).eq('clave', 'comision_porcentaje_grupo').eq('empresa', empresa),
+    client.from('configuracion').update({ valor: String(pct_lider), updated_at: ahora }).eq('clave', 'comision_porcentaje_lider').eq('empresa', empresa),
   ])
 
   if (e1 || e2) {

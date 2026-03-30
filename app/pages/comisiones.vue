@@ -1,6 +1,13 @@
 <template>
   <div class="space-y-6">
-    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Mis Comisiones</h2>
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Mis Comisiones</h2>
+      <USelect
+        v-model="empresaSeleccionada"
+        :options="empresaOptions"
+        class="w-44"
+      />
+    </div>
 
     <!-- Loading -->
     <div v-if="loading" class="flex justify-center py-12">
@@ -132,6 +139,15 @@ import { calcularEstimaciones } from '~/composables/useComisiones'
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
 
+const empresaSeleccionada = ref('express')
+const empresaOptions = computed(() => {
+  const options = [{ label: 'Express', value: 'express' }]
+  if (profile.value?.puede_vender_ultra || profile.value?.rol === 'admin') {
+    options.push({ label: 'Ultra', value: 'ultra' })
+  }
+  return options
+})
+
 const loading = ref(true)
 const cicloActivo = ref<CicloComision | null>(null)
 const misPagos = ref<CicloPago[]>([])
@@ -189,11 +205,18 @@ const misPagosConPeriodo = computed(() => {
 })
 
 // ——— Carga ———
-onMounted(async () => {
+const cargarTodo = async () => {
   if (!profile.value) {
     loading.value = false
     return
   }
+
+  loading.value = true
+  miEstimacion.value = null
+  ventasEquipo.value = []
+  montoTotalEquipo.value = 0
+
+  const empresa = empresaSeleccionada.value
 
   // Cargar ciclo activo, pagos históricos, ciclos cerrados y config en paralelo
   const [
@@ -203,11 +226,11 @@ onMounted(async () => {
     { data: pctLiderData },
     { data: pctGrupoData },
   ] = await Promise.all([
-    client.from('ciclos_comision').select('*').eq('estado', 'activo').maybeSingle(),
-    client.from('ciclo_pagos').select('*').order('created_at', { ascending: false }),
-    client.from('ciclos_comision').select('*').eq('estado', 'cerrado').order('fecha_cierre_real', { ascending: false }),
-    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').single(),
-    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').single(),
+    client.from('ciclos_comision').select('*').eq('estado', 'activo').eq('empresa', empresa).maybeSingle(),
+    client.from('ciclo_pagos').select('*').eq('empresa', empresa).order('created_at', { ascending: false }),
+    client.from('ciclos_comision').select('*').eq('estado', 'cerrado').eq('empresa', empresa).order('fecha_cierre_real', { ascending: false }),
+    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').eq('empresa', empresa).single(),
+    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').eq('empresa', empresa).single(),
   ])
 
   cicloActivo.value = cicloData as CicloComision | null
@@ -223,6 +246,7 @@ onMounted(async () => {
         .from('ventas')
         .select('id, vendedor_id, precio, fecha_carga, profiles:vendedor_id(nombre)')
         .eq('estado', 'concretado')
+        .eq('empresa', empresa)
         .gte('fecha_carga', cicloActivo.value.fecha_inicio)
         .lte('fecha_carga', new Date().toISOString()),
       client.from('profiles').select('id, nombre, rol, grupo_id'),
@@ -252,7 +276,11 @@ onMounted(async () => {
   }
 
   loading.value = false
-})
+}
+
+onMounted(cargarTodo)
+
+watch(empresaSeleccionada, cargarTodo)
 
 useHead({ title: 'Mis Comisiones — AMSI SRL' })
 </script>

@@ -85,6 +85,16 @@
         <div>
           <span class="font-medium">Fecha de carga:</span> {{ formatFecha(venta.fecha_carga) }}
         </div>
+        <div>
+          <span class="font-medium">Empresa:</span>
+          <UBadge
+            :color="venta.empresa === 'ultra' ? 'violet' : 'blue'"
+            variant="subtle"
+            size="xs"
+            :label="venta.empresa === 'ultra' ? 'Ultra' : 'Express'"
+            class="ml-1"
+          />
+        </div>
         <div v-if="venta.nro_cliente">
           <span class="font-medium">Nro. de Cliente:</span> {{ venta.nro_cliente }}
         </div>
@@ -234,6 +244,7 @@ const whatsappUrl = computed(() => buildVentaWhatsappUrl({
   telefono: venta.value?.telefono,
   cliente: venta.value?.cliente,
   paquete_nombre: venta.value?.paquete_nombre,
+  empresa: venta.value?.empresa,
 }))
 
 // Estado reactivo para el panel de gestión del oficinista

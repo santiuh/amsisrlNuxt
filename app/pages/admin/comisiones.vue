@@ -1,13 +1,20 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-3">
       <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Comisiones</h2>
-      <UButton
-        v-if="!cicloActivo"
-        icon="i-heroicons-plus"
-        label="Crear Ciclo"
-        @click="abrirModalCrear"
-      />
+      <div class="flex items-center gap-2">
+        <USelect
+          v-model="empresaSeleccionada"
+          :options="empresaOptions"
+          class="w-44"
+        />
+        <UButton
+          v-if="!cicloActivo"
+          icon="i-heroicons-plus"
+          label="Crear Ciclo"
+          @click="abrirModalCrear"
+        />
+      </div>
     </div>
 
     <!-- Loading -->
@@ -319,6 +326,12 @@ definePageMeta({ middleware: ['role'] })
 const client = useSupabaseClient()
 const toast = useToast()
 
+const empresaSeleccionada = ref('express')
+const empresaOptions = [
+  { label: 'Express', value: 'express' },
+  { label: 'Ultra', value: 'ultra' },
+]
+
 // ——— Estado principal ———
 const loading = ref(true)
 const loadingEstimaciones = ref(false)
@@ -429,6 +442,7 @@ const cargarCicloActivo = async () => {
     .from('ciclos_comision')
     .select('*')
     .eq('estado', 'activo')
+    .eq('empresa', empresaSeleccionada.value)
     .maybeSingle()
   cicloActivo.value = data as CicloComision | null
 }
@@ -438,6 +452,7 @@ const cargarHistorial = async () => {
     .from('ciclos_comision')
     .select('*')
     .eq('estado', 'cerrado')
+    .eq('empresa', empresaSeleccionada.value)
     .order('fecha_cierre_real', { ascending: false })
   historial.value = (data ?? []) as CicloComision[]
 }
@@ -446,14 +461,15 @@ const cargarPagos = async () => {
   const { data } = await client
     .from('ciclo_pagos')
     .select('*, profiles:vendedor_id(nombre)')
+    .eq('empresa', empresaSeleccionada.value)
     .order('monto_total', { ascending: false })
   pagos.value = (data ?? []) as CicloPago[]
 }
 
 const cargarConfig = async () => {
   const [{ data: d1 }, { data: d2 }] = await Promise.all([
-    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').single(),
-    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').single(),
+    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').eq('empresa', empresaSeleccionada.value).single(),
+    client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').eq('empresa', empresaSeleccionada.value).single(),
   ])
   configForm.pct_grupo = Number(d1?.valor ?? 80)
   configForm.pct_lider = Number(d2?.valor ?? 25)
@@ -472,6 +488,7 @@ const cargarEstimaciones = async () => {
       .from('ventas')
       .select('id, vendedor_id, precio, fecha_carga')
       .eq('estado', 'concretado')
+      .eq('empresa', empresaSeleccionada.value)
       .gte('fecha_carga', cicloActivo.value.fecha_inicio)
       .lte('fecha_carga', new Date().toISOString()),
     client.from('profiles').select('id, nombre, rol, grupo_id'),
@@ -502,6 +519,7 @@ const guardarConfig = async () => {
       body: {
         pct_grupo: configForm.pct_grupo,
         pct_lider: configForm.pct_lider,
+        empresa: empresaSeleccionada.value,
       },
     })
     toast.add({ title: 'Porcentajes actualizados', color: 'green' })
@@ -531,7 +549,7 @@ const crearCiclo = async () => {
   try {
     await $fetch('/api/admin/comisiones/ciclos', {
       method: 'POST',
-      body: { fecha_cierre_prevista: formCrear.fecha_cierre },
+      body: { fecha_cierre_prevista: formCrear.fecha_cierre, empresa: empresaSeleccionada.value },
     })
     showModalCrear.value = false
     toast.add({ title: 'Ciclo creado', color: 'green' })
@@ -628,11 +646,16 @@ const toggleDetalle = (cicloId: string) => {
 }
 
 // ——— Init ———
-onMounted(async () => {
+const cargarTodo = async () => {
+  loading.value = true
   await Promise.all([cargarCicloActivo(), cargarHistorial(), cargarPagos(), cargarConfig()])
   await cargarEstimaciones()
   loading.value = false
-})
+}
+
+onMounted(cargarTodo)
+
+watch(empresaSeleccionada, cargarTodo)
 
 useHead({ title: 'Comisiones — AMSI SRL' })
 </script>

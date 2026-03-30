@@ -1,7 +1,12 @@
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-3">
       <h2 class="text-xl font-semibold text-gray-800">Catálogo</h2>
+      <USelect
+        v-model="empresaSeleccionada"
+        :options="empresaOptions"
+        class="w-44"
+      />
     </div>
 
     <UTabs :items="tabs" v-model="tabActivo">
@@ -174,6 +179,12 @@ definePageMeta({ middleware: ['role'] })
 const client = useSupabaseClient()
 const toast = useToast()
 
+const empresaSeleccionada = ref('express')
+const empresaOptions = [
+  { label: 'Express', value: 'express' },
+  { label: 'Ultra', value: 'ultra' },
+]
+
 const tabs = [
   { label: 'Configuración', slot: 'configuracion' },
   { label: 'Paquetes', slot: 'paquetes' },
@@ -188,8 +199,8 @@ const errorConfig = ref('')
 
 const cargarConfig = async () => {
   const [{ data: bocaData }, { data: decoData }] = await Promise.all([
-    client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').single(),
-    client.from('configuracion').select('valor').eq('clave', 'precio_deco_extra').single(),
+    client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').eq('empresa', empresaSeleccionada.value).single(),
+    client.from('configuracion').select('valor').eq('clave', 'precio_deco_extra').eq('empresa', empresaSeleccionada.value).single(),
   ])
   formConfig.precio_boca_extra = Number(bocaData?.valor ?? 0)
   formConfig.precio_deco_extra = Number(decoData?.valor ?? 0)
@@ -209,6 +220,7 @@ const guardarConfig = async () => {
       body: {
         precio_boca_extra: formConfig.precio_boca_extra,
         precio_deco_extra: formConfig.precio_deco_extra,
+        empresa: empresaSeleccionada.value,
       },
     })
     toast.add({ title: 'Configuración guardada', color: 'green' })
@@ -237,7 +249,7 @@ const columnasPaquetes = [
 
 const cargarPaquetes = async () => {
   loadingPaquetes.value = true
-  const { data } = await client.from('paquetes').select('*').order('created_at', { ascending: false })
+  const { data } = await client.from('paquetes').select('*').eq('empresa', empresaSeleccionada.value).order('created_at', { ascending: false })
   paquetes.value = data ?? []
   loadingPaquetes.value = false
 }
@@ -268,7 +280,7 @@ const guardarPaquete = async () => {
     } else {
       await $fetch('/api/admin/catalogo/paquetes', {
         method: 'POST',
-        body: { nombre: formPaquete.nombre, precio: formPaquete.precio },
+        body: { nombre: formPaquete.nombre, precio: formPaquete.precio, empresa: empresaSeleccionada.value },
       })
       toast.add({ title: 'Paquete creado', color: 'green' })
     }
@@ -297,7 +309,7 @@ const columnasExtras = [
 
 const cargarExtras = async () => {
   loadingExtras.value = true
-  const { data } = await client.from('extras').select('*').order('created_at', { ascending: false })
+  const { data } = await client.from('extras').select('*').eq('empresa', empresaSeleccionada.value).order('created_at', { ascending: false })
   extras.value = data ?? []
   loadingExtras.value = false
 }
@@ -328,7 +340,7 @@ const guardarExtra = async () => {
     } else {
       await $fetch('/api/admin/catalogo/extras', {
         method: 'POST',
-        body: { nombre: formExtra.nombre, precio: formExtra.precio },
+        body: { nombre: formExtra.nombre, precio: formExtra.precio, empresa: empresaSeleccionada.value },
       })
       toast.add({ title: 'Extra creado', color: 'green' })
     }
@@ -359,11 +371,15 @@ const toggleActivo = async (tabla: 'paquetes' | 'extras', row: any) => {
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n)
 
-onMounted(() => {
+const cargarTodo = () => {
   cargarConfig()
   cargarPaquetes()
   cargarExtras()
-})
+}
+
+onMounted(cargarTodo)
+
+watch(empresaSeleccionada, cargarTodo)
 
 useHead({ title: 'Catálogo — AMSI SRL' })
 </script>

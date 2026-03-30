@@ -1,5 +1,17 @@
 <template>
   <div class="space-y-8">
+    <!-- Filtro de empresa -->
+    <div class="flex justify-end">
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-500 dark:text-gray-400">Empresa:</span>
+        <USelect
+          v-model="empresaFiltro"
+          :options="empresaFilterOptions"
+          class="w-44"
+        />
+      </div>
+    </div>
+
     <!-- ============ VENDEDOR ============ -->
     <template v-if="profile?.rol === 'vendedor'">
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -53,7 +65,7 @@
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
         </div>
         <div class="p-1">
-          <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
+          <VentaTable :ventas="ventasFiltradas" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
         </div>
       </div>
     </template>
@@ -225,7 +237,7 @@
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>
         </div>
         <div class="p-1">
-          <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
+          <VentaTable :ventas="ventasFiltradas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
         </div>
       </div>
     </template>
@@ -303,7 +315,7 @@
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>
         </div>
         <div class="p-1">
-          <VentaTable :ventas="ventas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
+          <VentaTable :ventas="ventasFiltradas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
         </div>
       </div>
     </template>
@@ -323,6 +335,13 @@ const profile = useCurrentProfile()
 const loading = ref(true)
 const ventas = ref<any[]>([])
 const lecturas = ref<Record<string, string>>({})
+
+const empresaFiltro = ref('')
+const empresaFilterOptions = [
+  { label: 'Todas las empresas', value: '' },
+  { label: 'Express', value: 'express' },
+  { label: 'Ultra', value: 'ultra' },
+]
 
 // Comisiones
 const cicloActivo = ref<any>(null)
@@ -412,26 +431,32 @@ onMounted(async () => {
 const ahora = new Date()
 const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString()
 
+// Ventas filtradas por empresa seleccionada
+const ventasFiltradas = computed(() => {
+  if (!empresaFiltro.value) return ventas.value
+  return ventas.value.filter(v => v.empresa === empresaFiltro.value)
+})
+
 const ventasMes = computed(() =>
-  ventas.value.filter(v => v.fecha_carga >= inicioMes)
+  ventasFiltradas.value.filter(v => v.fecha_carga >= inicioMes)
 )
 const ventasPropias = computed(() =>
-  ventas.value.filter(v => v.vendedor_id === profile.value?.id)
+  ventasFiltradas.value.filter(v => v.vendedor_id === profile.value?.id)
 )
 const ventasPropiasMes = computed(() =>
   ventasPropias.value.filter(v => v.fecha_carga >= inicioMes)
 )
 const ventasEquipo = computed(() =>
-  ventas.value.filter(v => v.vendedor_id !== profile.value?.id)
+  ventasFiltradas.value.filter(v => v.vendedor_id !== profile.value?.id)
 )
 const ventasEquipoMes = computed(() =>
   ventasEquipo.value.filter(v => v.fecha_carga >= inicioMes)
 )
 
 const stats = computed(() => {
-  const propias = ventas.value.filter(v => v.vendedor_id === profile.value?.id)
+  const propias = ventasFiltradas.value.filter(v => v.vendedor_id === profile.value?.id)
   const propiasMes = propias.filter(v => v.fecha_carga >= inicioMes)
-  const equipo = ventas.value.filter(v => v.vendedor_id !== profile.value?.id)
+  const equipo = ventasFiltradas.value.filter(v => v.vendedor_id !== profile.value?.id)
   const equipoMes = equipo.filter(v => v.fecha_carga >= inicioMes)
   const total = ventasMes.value.length
   const aceptadas = ventasMes.value.filter(v => v.estado === 'coordinado').length
@@ -478,7 +503,7 @@ const tieneComentarioNuevo = (venta: any): boolean => {
 }
 
 const ventasConComentariosPendientes = computed(() =>
-  ventas.value.filter(v => tieneComentarioNuevo(v)).length
+  ventasFiltradas.value.filter(v => tieneComentarioNuevo(v)).length
 )
 
 const rankingVendedores = computed(() => {
@@ -501,7 +526,7 @@ const rankingVendedores = computed(() => {
 
 const actividadOficinistas = computed(() => {
   const map: Record<string, { nombre: string; gestionadas: number }> = {}
-  ventas.value.forEach(v => {
+  ventasFiltradas.value.forEach(v => {
     if (v.profiles?.rol === 'oficinista' && v.estado !== 'pendiente') {
       const nombre = v.profiles.nombre
       if (!map[nombre]) map[nombre] = { nombre, gestionadas: 0 }

@@ -71,6 +71,7 @@
               class="w-full"
             />
           </UFormGroup>
+          <UCheckbox v-model="nuevoUsuario.puede_vender_ultra" label="Puede vender Ultra" />
 
           <UAlert
             v-if="createError"
@@ -120,6 +121,7 @@
               class="w-full"
             />
           </UFormGroup>
+          <UCheckbox v-model="usuarioEditando.puede_vender_ultra" label="Puede vender Ultra" />
 
           <UAlert
             v-if="editError"
@@ -164,6 +166,7 @@ const nuevoUsuario = reactive({
   email: '',
   password: '',
   rol: 'vendedor',
+  puede_vender_ultra: false,
 })
 
 const usuarioEditando = reactive({
@@ -171,6 +174,7 @@ const usuarioEditando = reactive({
   nombre: '',
   email: '',
   rol: 'vendedor',
+  puede_vender_ultra: false,
 })
 
 const opcionesRol = [
@@ -204,7 +208,7 @@ const cargarUsuarios = async () => {
 onMounted(cargarUsuarios)
 
 const abrirModalCrear = () => {
-  Object.assign(nuevoUsuario, { nombre: '', email: '', password: '', rol: 'vendedor' })
+  Object.assign(nuevoUsuario, { nombre: '', email: '', password: '', rol: 'vendedor', puede_vender_ultra: false })
   createError.value = ''
   showModalCrear.value = true
 }
@@ -215,6 +219,7 @@ const abrirModalEditar = (row: any) => {
     nombre: row.nombre,
     email: row.email,
     rol: row.rol,
+    puede_vender_ultra: row.puede_vender_ultra ?? false,
   })
   editError.value = ''
   showModalEditar.value = true
@@ -241,6 +246,7 @@ const crearUsuario = async () => {
         password: nuevoUsuario.password,
         nombre: nuevoUsuario.nombre,
         rol: nuevoUsuario.rol,
+        puede_vender_ultra: nuevoUsuario.puede_vender_ultra,
       },
     })
     toast.add({ title: `Usuario ${nuevoUsuario.nombre} creado`, color: 'green' })
@@ -268,6 +274,7 @@ const guardarCambios = async () => {
       body: {
         nombre: usuarioEditando.nombre.trim(),
         rol: usuarioEditando.rol,
+        puede_vender_ultra: usuarioEditando.puede_vender_ultra,
       },
     })
     toast.add({ title: `Usuario ${usuarioEditando.nombre} actualizado`, color: 'green' })

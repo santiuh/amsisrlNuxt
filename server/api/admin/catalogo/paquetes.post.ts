@@ -5,13 +5,17 @@ export default defineEventHandler(async (event) => {
   const client = await serverSupabaseClient(event)
   const body = await readBody(event)
 
-  const { nombre, precio } = body
+  const { nombre, precio, empresa } = body
 
   if (!nombre || precio == null || precio < 0) {
     throw createError({ statusCode: 400, statusMessage: 'Nombre y precio válido requeridos' })
   }
 
-  const { error } = await client.from('paquetes').insert({ nombre, precio })
+  if (!empresa || !['express', 'ultra'].includes(empresa)) {
+    throw createError({ statusCode: 400, statusMessage: 'Empresa inválida' })
+  }
+
+  const { error } = await client.from('paquetes').insert({ nombre, precio, empresa })
 
   if (error) {
     throw createError({ statusCode: 400, statusMessage: error.message })

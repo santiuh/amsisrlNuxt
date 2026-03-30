@@ -8,6 +8,7 @@ export interface Profile {
   grupo_id: string | null
   created_at: string
   must_change_password: boolean
+  puede_vender_ultra: boolean
   avatar_config: AvatarConfig | null
 }
 

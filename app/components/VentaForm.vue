@@ -1,5 +1,33 @@
 <template>
   <div class="space-y-4 pb-4">
+    <!-- ═══ SECCIÓN: Empresa ═══ -->
+    <fieldset v-if="empresaOptions.length > 1 || readonly" class="space-y-3">
+      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
+        <UIcon name="i-heroicons-building-office" class="w-3.5 h-3.5" />
+        Empresa
+      </legend>
+
+      <UFormGroup label="Empresa *">
+        <div class="flex items-start gap-2">
+          <USelect
+            v-model="form.empresa"
+            :options="empresaOptions"
+            placeholder="Seleccionar empresa"
+            class="w-full"
+            :disabled="readonly || !!props.initialData"
+          />
+          <UBadge
+            v-if="readonly"
+            :color="form.empresa === 'ultra' ? 'violet' : 'blue'"
+            variant="subtle"
+            :label="form.empresa === 'ultra' ? 'Ultra' : 'Express'"
+          />
+        </div>
+      </UFormGroup>
+    </fieldset>
+
+    <UDivider v-if="empresaOptions.length > 1 || readonly" />
+
     <!-- ═══ SECCIÓN: Datos del Cliente ═══ -->
     <fieldset class="space-y-3">
       <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
@@ -423,19 +451,30 @@ const loadingCatalogo = ref(true)
 const precioBocaExtra = ref(0)
 const precioDecoExtra = ref(0)
 
-onMounted(async () => {
+const cargarCatalogo = async (empresa: string) => {
+  loadingCatalogo.value = true
   const [{ data: paquetesData }, { data: extrasData }, { data: configBoca }, { data: configDeco }] = await Promise.all([
-    client.from('paquetes').select('*').eq('activo', true).order('nombre'),
-    client.from('extras').select('*').eq('activo', true).order('nombre'),
-    client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').single(),
-    client.from('configuracion').select('valor').eq('clave', 'precio_deco_extra').single(),
+    client.from('paquetes').select('*').eq('activo', true).eq('empresa', empresa).order('nombre'),
+    client.from('extras').select('*').eq('activo', true).eq('empresa', empresa).order('nombre'),
+    client.from('configuracion').select('valor').eq('clave', 'precio_boca_extra').eq('empresa', empresa).single(),
+    client.from('configuracion').select('valor').eq('clave', 'precio_deco_extra').eq('empresa', empresa).single(),
   ])
   paquetesActivos.value = paquetesData ?? []
   extrasActivos.value = extrasData ?? []
   precioBocaExtra.value = Number((configBoca as { valor?: number | string } | null)?.valor ?? 0)
   precioDecoExtra.value = Number((configDeco as { valor?: number | string } | null)?.valor ?? 0)
   loadingCatalogo.value = false
-})
+}
+
+// Recargar catálogo cuando cambia la empresa
+watch(() => form.empresa, (newEmpresa, oldEmpresa) => {
+  if (oldEmpresa && newEmpresa !== oldEmpresa) {
+    // Resetear selecciones de catálogo al cambiar de empresa
+    form.paquete_id = ''
+    form.extras_ids = []
+  }
+  cargarCatalogo(newEmpresa)
+}, { immediate: true })
 
 const opcionesPaquetes = computed(() =>
   paquetesActivos.value.map(p => ({ label: `${p.nombre} — ${formatPrecio(p.precio)}`, value: p.id }))
@@ -446,8 +485,22 @@ const getOptionLabel = (options: Array<{ label: string, value: string | number }
   return option?.label ?? String(value ?? '')
 }
 
+// ——— Opciones de empresa ———
+const empresaOptions = computed(() => {
+  const options = [{ label: 'Express', value: 'express' }]
+  if (profile.value?.puede_vender_ultra || profile.value?.rol === 'admin') {
+    options.push({ label: 'Ultra', value: 'ultra' })
+  }
+  // En modo edición, asegurar que la empresa original aparezca
+  if (props.initialData?.empresa === 'ultra' && !options.find(o => o.value === 'ultra')) {
+    options.push({ label: 'Ultra', value: 'ultra' })
+  }
+  return options
+})
+
 // ——— Formulario ———
 const form = reactive({
+  empresa: empresaOptions.value.length === 1 ? empresaOptions.value[0].value : (props.initialData?.empresa ?? 'express'),
   cliente: '',
   dni_cuil: '',
   telefono: '',

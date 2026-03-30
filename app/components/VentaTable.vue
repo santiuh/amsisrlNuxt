@@ -44,6 +44,15 @@
       :ui="{ tr: { base: 'cursor-pointer' } }"
       @select="abrirVenta"
     >
+      <template #empresa-data="{ row }">
+        <UBadge
+          :color="row.empresa === 'ultra' ? 'violet' : 'blue'"
+          variant="subtle"
+          size="xs"
+          :label="row.empresa === 'ultra' ? 'Ultra' : 'Express'"
+        />
+      </template>
+
       <template #estado-data="{ row }">
         <div class="relative inline-flex">
           <span
@@ -149,6 +158,7 @@ const defaultFilters = (): VentaFilterState => ({
   fechaHasta: '',
   vendedor: '',
   localidad: '',
+  empresa: '',
 })
 
 const recordarFiltros = ref(false)
@@ -183,6 +193,7 @@ const localidadesOptions = computed(() => {
 const columnas = computed(() => {
   const base = [
     { key: 'fecha_carga', label: 'Fecha' },
+    { key: 'empresa', label: 'Empresa' },
     { key: 'cliente', label: 'Cliente' },
     { key: 'dni_cuil', label: 'DNI/CUIL' },
     { key: 'telefono', label: 'Teléfono' },
@@ -210,7 +221,8 @@ const ventasFiltradas = computed(() =>
     const matchFechaHasta = !filters.fechaHasta || fechaVenta <= filters.fechaHasta
     const matchVendedor = !filters.vendedor || v.vendedor_id === filters.vendedor
     const matchLocalidad = !filters.localidad || v.dir_localidad === filters.localidad
-    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor && matchLocalidad
+    const matchEmpresa = !filters.empresa || v.empresa === filters.empresa
+    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor && matchLocalidad && matchEmpresa
   }),
 )
 
@@ -278,6 +290,7 @@ const applySavedFilters = (raw: unknown) => {
   filters.fechaHasta = typeof candidate.fechaHasta === 'string' ? candidate.fechaHasta : ''
   filters.vendedor = typeof candidate.vendedor === 'string' ? candidate.vendedor : ''
   filters.localidad = typeof candidate.localidad === 'string' ? candidate.localidad : ''
+  filters.empresa = typeof candidate.empresa === 'string' ? candidate.empresa : ''
 }
 
 onMounted(() => {
@@ -315,6 +328,7 @@ watch(filters, (next) => {
 const handleExport = () => {
   const data = ventasFiltradas.value.map(v => ({
     Fecha: formatFecha(v.fecha_carga),
+    Empresa: v.empresa === 'ultra' ? 'Ultra' : 'Express',
     Cliente: v.cliente,
     'DNI/CUIL': v.dni_cuil,
     Dirección: v.dir_calle ?? '',
