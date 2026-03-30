@@ -643,7 +643,7 @@ const submit = async () => {
     errorMsg.value = 'El número de tarjeta y vencimiento son obligatorios para pagos con crédito.'
     return
   }
-  if (form.estado !== 'pendiente' && !form.nro_cliente?.trim()) {
+  if (form.estado !== 'pendiente' && form.estado !== 'proxima_zona' && !form.nro_cliente?.trim()) {
     errorMsg.value = 'El Número de Cliente es obligatorio cuando el estado es diferente a Pendiente.'
     return
   }
