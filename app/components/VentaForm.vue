@@ -466,16 +466,6 @@ const cargarCatalogo = async (empresa: string) => {
   loadingCatalogo.value = false
 }
 
-// Recargar catálogo cuando cambia la empresa
-watch(() => form.empresa, (newEmpresa, oldEmpresa) => {
-  if (oldEmpresa && newEmpresa !== oldEmpresa) {
-    // Resetear selecciones de catálogo al cambiar de empresa
-    form.paquete_id = ''
-    form.extras_ids = []
-  }
-  cargarCatalogo(newEmpresa)
-}, { immediate: true })
-
 const opcionesPaquetes = computed(() =>
   paquetesActivos.value.map(p => ({ label: `${p.nombre} — ${formatPrecio(p.precio)}`, value: p.id }))
 )
@@ -524,6 +514,16 @@ const form = reactive({
   nro_cliente: '',
   ...(props.initialData ?? {}),
 })
+
+// Recargar catálogo cuando cambia la empresa
+watch(() => form.empresa, (newEmpresa, oldEmpresa) => {
+  if (oldEmpresa && newEmpresa !== oldEmpresa) {
+    // Resetear selecciones de catálogo al cambiar de empresa
+    form.paquete_id = ''
+    form.extras_ids = []
+  }
+  cargarCatalogo(newEmpresa)
+}, { immediate: true })
 
 const sanitizeTelefono = (value: string | number) => {
   form.telefono = String(value ?? '').replace(/\D/g, '')
