@@ -45,6 +45,7 @@ interface VentaConcretada {
   id: string
   vendedor_id: string
   precio: number
+  precio_concretado: number | null
   fecha_carga: string
 }
 
@@ -86,7 +87,7 @@ export function calcularEstimaciones(
     // Ventas concretadas propias (ya filtradas por fecha del ciclo)
     const ventasPropias = ventas.filter(v => v.vendedor_id === perfil.id)
     const cantidad = ventasPropias.length
-    const montoTotal = ventasPropias.reduce((sum, v) => sum + Number(v.precio), 0)
+    const montoTotal = ventasPropias.reduce((sum, v) => sum + Number(v.precio_concretado ?? v.precio), 0)
 
     // Determinar porcentaje
     let pct: number
@@ -111,7 +112,7 @@ export function calcularEstimaciones(
           .filter(p => p.grupo_id === grupo.id && p.rol === 'vendedor')
           .map(p => p.id)
         const ventasEquipo = ventas.filter(v => miembrosIds.includes(v.vendedor_id))
-        const montoEquipo = ventasEquipo.reduce((sum, v) => sum + Number(v.precio), 0)
+        const montoEquipo = ventasEquipo.reduce((sum, v) => sum + Number(v.precio_concretado ?? v.precio), 0)
         liderazgo = Math.round(montoEquipo * config.pct_lider) / 100
       }
     }

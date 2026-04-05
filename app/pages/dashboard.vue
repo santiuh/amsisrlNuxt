@@ -17,14 +17,14 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatsCard
           label="Concretadas"
-          :value="stats.misConcretadasMes"
+          :value="stats.misConcretadas"
           icon="i-heroicons-banknotes"
           color="green"
-          :sub="stats.misConcretadasMes > 0 ? formatCompact(stats.misIngresosMes) + ' en ingresos' : 'Sin concretadas aún'"
+          :sub="stats.misConcretadas > 0 ? formatCompact(stats.misIngresos) + ' en ingresos' : 'Sin concretadas aún'"
         />
         <StatsCard
-          label="Ventas del Mes"
-          :value="stats.misVentasMes"
+          label="Ventas del Ciclo"
+          :value="stats.misVentasCiclo"
           icon="i-heroicons-chart-bar"
           color="blue"
         />
@@ -53,8 +53,8 @@
       </div>
 
       <DashboardDoughnutChart
-        v-if="ventasPropiasMes.length > 0"
-        title="Distribución de Mis Ventas (Mes)"
+        v-if="ventasPropiasCiclo.length > 0"
+        title="Distribución de Mis Ventas (Ciclo)"
         :labels="distribucionEstadosPropias.labels"
         :data="distribucionEstadosPropias.data"
         :colors="distribucionEstadosPropias.colors"
@@ -83,14 +83,14 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatsCard
             label="Concretadas"
-            :value="stats.misConcretadasMes"
+            :value="stats.misConcretadas"
             icon="i-heroicons-banknotes"
             color="green"
-            :sub="stats.misConcretadasMes > 0 ? formatCompact(stats.misIngresosMes) + ' en ingresos' : undefined"
+            :sub="stats.misConcretadas > 0 ? formatCompact(stats.misIngresos) + ' en ingresos' : undefined"
           />
           <StatsCard
-            label="Ventas del Mes"
-            :value="stats.misVentasMes"
+            label="Ventas del Ciclo"
+            :value="stats.misVentasCiclo"
             icon="i-heroicons-chart-bar"
             color="blue"
           />
@@ -112,8 +112,8 @@
       </div>
 
       <DashboardDoughnutChart
-        v-if="ventasPropiasMes.length > 0"
-        title="Distribución de Mis Ventas (Mes)"
+        v-if="ventasPropiasCiclo.length > 0"
+        title="Distribución de Mis Ventas (Ciclo)"
         :labels="distribucionEstadosPropias.labels"
         :data="distribucionEstadosPropias.data"
         :colors="distribucionEstadosPropias.colors"
@@ -145,8 +145,8 @@
             :sub="stats.equipoConcretadas > 0 ? formatCompact(stats.equipoIngresos) + ' en ingresos' : undefined"
           />
           <StatsCard
-            label="Ventas del Mes"
-            :value="stats.equipoMes"
+            label="Ventas del Ciclo"
+            :value="stats.equipoCiclo"
             icon="i-heroicons-users"
             color="orange"
           />
@@ -160,8 +160,8 @@
       </div>
 
       <DashboardDoughnutChart
-        v-if="ventasEquipoMes.length > 0"
-        title="Distribución del Equipo (Mes)"
+        v-if="ventasEquipoCiclo.length > 0"
+        title="Distribución del Equipo (Ciclo)"
         :labels="distribucionEstadosEquipo.labels"
         :data="distribucionEstadosEquipo.data"
         :colors="distribucionEstadosEquipo.colors"
@@ -185,11 +185,11 @@
           :value="stats.concretadas"
           icon="i-heroicons-banknotes"
           color="green"
-          :sub="stats.concretadas > 0 ? formatCompact(stats.ingresosMes) + ' en ingresos' : undefined"
+          :sub="stats.concretadas > 0 ? formatCompact(stats.ingresos) + ' en ingresos' : undefined"
         />
         <StatsCard
-          label="Ventas del Mes"
-          :value="stats.totalMes"
+          label="Ventas del Ciclo"
+          :value="stats.totalCiclo"
           icon="i-heroicons-chart-bar"
           color="blue"
         />
@@ -218,15 +218,15 @@
         />
       </div>
 
-      <div v-if="ventasMes.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div v-if="ventasCiclo.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DashboardDoughnutChart
-          title="Distribución de Estados (Mes)"
+          title="Distribución de Estados (Ciclo)"
           :labels="distribucionEstados.labels"
           :data="distribucionEstados.data"
           :colors="distribucionEstados.colors"
         />
         <DashboardBarChart
-          title="Ventas por Semana (Mes)"
+          title="Ventas por Semana (Ciclo)"
           :labels="ventasPorSemana.labels"
           :datasets="ventasPorSemana.datasets"
         />
@@ -247,14 +247,14 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatsCard
           label="Ingresos Concretados"
-          :value="formatCompact(stats.ingresosMes)"
+          :value="formatCompact(stats.ingresos)"
           icon="i-heroicons-banknotes"
           color="green"
           :sub="`${stats.concretadas} ventas concretadas`"
         />
         <StatsCard
-          label="Ventas del Mes"
-          :value="stats.totalMes"
+          label="Ventas del Ciclo"
+          :value="stats.totalCiclo"
           icon="i-heroicons-chart-bar"
           color="blue"
         />
@@ -263,7 +263,7 @@
           :value="`${stats.porcentajeConversion}%`"
           icon="i-heroicons-arrow-trending-up"
           color="teal"
-          :sub="`${stats.aceptadas} coord. / ${stats.totalMes} total`"
+          :sub="`${stats.aceptadas} coord. / ${stats.totalCiclo} total`"
         />
         <StatsCard
           v-if="cicloActivo"
@@ -275,15 +275,15 @@
         />
       </div>
 
-      <div v-if="ventasMes.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div v-if="ventasCiclo.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DashboardDoughnutChart
-          title="Distribución de Estados (Mes)"
+          title="Distribución de Estados (Ciclo)"
           :labels="distribucionEstados.labels"
           :data="distribucionEstados.data"
           :colors="distribucionEstados.colors"
         />
         <DashboardBarChart
-          title="Ventas por Semana (Mes)"
+          title="Ventas por Semana (Ciclo)"
           :labels="ventasPorSemana.labels"
           :datasets="ventasPorSemana.datasets"
         />
@@ -293,7 +293,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
           <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ranking de Vendedores (Mes)</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ranking de Vendedores (Ciclo)</h3>
           </div>
           <div class="overflow-x-auto p-1">
             <UTable :rows="rankingVendedores" :columns="rankingColumns" />
@@ -397,15 +397,17 @@ onMounted(async () => {
 
   if (cicloData && profile.value) {
     fechaCierrePrevista.value = cicloData.fecha_cierre_prevista
+    const empresaCiclo = cicloData.empresa ?? 'express'
     const [{ data: ventasCicloData }, { data: profilesData }, { data: gruposData }, { data: pctGrupoData }, { data: pctLiderData }] = await Promise.all([
-      client.from('ventas').select('id, vendedor_id, precio, fecha_carga')
+      client.from('ventas').select('id, vendedor_id, precio, precio_concretado, fecha_carga')
         .eq('estado', 'concretado')
+        .eq('empresa', empresaCiclo)
         .gte('fecha_carga', cicloData.fecha_inicio)
         .lte('fecha_carga', new Date().toISOString()),
       client.from('profiles').select('id, nombre, rol, grupo_id'),
       client.from('grupos').select('id, lider_id'),
-      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').single(),
-      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').single(),
+      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').eq('empresa', empresaCiclo).single(),
+      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').eq('empresa', empresaCiclo).single(),
     ])
     const pctGrupo = Number(pctGrupoData?.valor ?? 80)
     const pctLider = Number(pctLiderData?.valor ?? 25)
@@ -428,8 +430,11 @@ onMounted(async () => {
   loading.value = false
 })
 
-const ahora = new Date()
-const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1).toISOString()
+// Inicio del período: fecha_inicio del ciclo activo, o inicio del mes si no hay ciclo
+const inicioPeriodo = computed(() => {
+  if (cicloActivo.value?.fecha_inicio) return cicloActivo.value.fecha_inicio
+  return new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+})
 
 // Ventas filtradas por empresa seleccionada
 const ventasFiltradas = computed(() => {
@@ -437,54 +442,52 @@ const ventasFiltradas = computed(() => {
   return ventas.value.filter(v => v.empresa === empresaFiltro.value)
 })
 
-const ventasMes = computed(() =>
-  ventasFiltradas.value.filter(v => v.fecha_carga >= inicioMes)
+const ventasCiclo = computed(() =>
+  ventasFiltradas.value.filter(v => v.fecha_carga >= inicioPeriodo.value)
 )
 const ventasPropias = computed(() =>
   ventasFiltradas.value.filter(v => v.vendedor_id === profile.value?.id)
 )
-const ventasPropiasMes = computed(() =>
-  ventasPropias.value.filter(v => v.fecha_carga >= inicioMes)
+const ventasPropiasCiclo = computed(() =>
+  ventasPropias.value.filter(v => v.fecha_carga >= inicioPeriodo.value)
 )
 const ventasEquipo = computed(() =>
   ventasFiltradas.value.filter(v => v.vendedor_id !== profile.value?.id)
 )
-const ventasEquipoMes = computed(() =>
-  ventasEquipo.value.filter(v => v.fecha_carga >= inicioMes)
+const ventasEquipoCiclo = computed(() =>
+  ventasEquipo.value.filter(v => v.fecha_carga >= inicioPeriodo.value)
 )
 
 const stats = computed(() => {
-  const propias = ventasFiltradas.value.filter(v => v.vendedor_id === profile.value?.id)
-  const propiasMes = propias.filter(v => v.fecha_carga >= inicioMes)
-  const equipo = ventasFiltradas.value.filter(v => v.vendedor_id !== profile.value?.id)
-  const equipoMes = equipo.filter(v => v.fecha_carga >= inicioMes)
-  const total = ventasMes.value.length
-  const aceptadas = ventasMes.value.filter(v => v.estado === 'coordinado').length
-  const concretadas = ventasMes.value.filter(v => v.estado === 'concretado').length
-  const ingresosMes = ventasMes.value
+  const propiasCiclo = ventasPropiasCiclo.value
+  const equipoCiclo = ventasEquipoCiclo.value
+  const total = ventasCiclo.value.length
+  const aceptadas = ventasCiclo.value.filter(v => v.estado === 'coordinado').length
+  const concretadas = ventasCiclo.value.filter(v => v.estado === 'concretado').length
+  const ingresos = ventasCiclo.value
     .filter(v => v.estado === 'concretado')
     .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
-  const misConcretadasMes = propiasMes.filter(v => v.estado === 'concretado').length
-  const misIngresosMes = propiasMes
+  const misConcretadas = propiasCiclo.filter(v => v.estado === 'concretado').length
+  const misIngresos = propiasCiclo
     .filter(v => v.estado === 'concretado')
     .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
-  const equipoConcretadas = equipoMes.filter(v => v.estado === 'concretado').length
-  const equipoIngresos = equipoMes
+  const equipoConcretadas = equipoCiclo.filter(v => v.estado === 'concretado').length
+  const equipoIngresos = equipoCiclo
     .filter(v => v.estado === 'concretado')
     .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
 
   return {
-    misVentasMes: propiasMes.length,
-    misAceptadas: propias.filter(v => v.estado === 'coordinado').length,
-    misConcretadasMes,
-    misIngresosMes,
-    totalMes: total,
+    misVentasCiclo: propiasCiclo.length,
+    misAceptadas: ventasPropias.value.filter(v => v.estado === 'coordinado').length,
+    misConcretadas,
+    misIngresos,
+    totalCiclo: total,
     aceptadas,
     concretadas,
-    ingresosMes,
+    ingresos,
     porcentajeConversion: total > 0 ? Math.round((aceptadas / total) * 100) : 0,
-    equipoMes: equipoMes.length,
-    equipoAceptadas: equipoMes.filter(v => v.estado === 'coordinado').length,
+    equipoCiclo: equipoCiclo.length,
+    equipoAceptadas: equipoCiclo.filter(v => v.estado === 'coordinado').length,
     equipoConcretadas,
     equipoIngresos,
   }
@@ -508,7 +511,7 @@ const ventasConComentariosPendientes = computed(() =>
 
 const rankingVendedores = computed(() => {
   const map: Record<string, { nombre: string; total: number; concretadas: number; ingresos: string }> = {}
-  ventasMes.value.forEach(v => {
+  ventasCiclo.value.forEach(v => {
     const nombre = v.profiles?.nombre ?? 'Desconocido'
     if (!map[nombre]) map[nombre] = { nombre, total: 0, concretadas: 0, ingresos: '' }
     map[nombre].total++
@@ -516,7 +519,7 @@ const rankingVendedores = computed(() => {
   })
   const result = Object.values(map)
   result.forEach(r => {
-    const ingreso = ventasMes.value
+    const ingreso = ventasCiclo.value
       .filter(v => (v.profiles?.nombre ?? 'Desconocido') === r.nombre && v.estado === 'concretado')
       .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
     r.ingresos = formatCompact(ingreso)
@@ -555,13 +558,13 @@ function buildDistribucion(source: any[]) {
   return { labels, data, colors }
 }
 
-const distribucionEstados = computed(() => buildDistribucion(ventasMes.value))
-const distribucionEstadosPropias = computed(() => buildDistribucion(ventasPropiasMes.value))
-const distribucionEstadosEquipo = computed(() => buildDistribucion(ventasEquipoMes.value))
+const distribucionEstados = computed(() => buildDistribucion(ventasCiclo.value))
+const distribucionEstadosPropias = computed(() => buildDistribucion(ventasPropiasCiclo.value))
+const distribucionEstadosEquipo = computed(() => buildDistribucion(ventasEquipoCiclo.value))
 
 const ventasPorSemana = computed(() => {
   const semanas: Record<string, { coordinadas: number; concretadas: number; rechazadas: number }> = {}
-  ventasMes.value.forEach(v => {
+  ventasCiclo.value.forEach(v => {
     const dia = new Date(v.fecha_carga).getDate()
     const sem = `Sem ${Math.ceil(dia / 7)}`
     if (!semanas[sem]) semanas[sem] = { coordinadas: 0, concretadas: 0, rechazadas: 0 }

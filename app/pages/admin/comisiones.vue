@@ -486,7 +486,7 @@ const cargarEstimaciones = async () => {
   const [{ data: ventasData }, { data: profilesData }, { data: gruposData }] = await Promise.all([
     client
       .from('ventas')
-      .select('id, vendedor_id, precio, fecha_carga')
+      .select('id, vendedor_id, precio, precio_concretado, fecha_carga')
       .eq('estado', 'concretado')
       .eq('empresa', empresaSeleccionada.value)
       .gte('fecha_carga', cicloActivo.value.fecha_inicio)

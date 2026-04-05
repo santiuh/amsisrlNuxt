@@ -227,7 +227,7 @@ const cargarTodo = async () => {
     { data: pctGrupoData },
   ] = await Promise.all([
     client.from('ciclos_comision').select('*').eq('estado', 'activo').eq('empresa', empresa).maybeSingle(),
-    client.from('ciclo_pagos').select('*').eq('empresa', empresa).order('created_at', { ascending: false }),
+    client.from('ciclo_pagos').select('*').eq('empresa', empresa).eq('vendedor_id', profile.value!.id).order('created_at', { ascending: false }),
     client.from('ciclos_comision').select('*').eq('estado', 'cerrado').eq('empresa', empresa).order('fecha_cierre_real', { ascending: false }),
     client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').eq('empresa', empresa).single(),
     client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').eq('empresa', empresa).single(),
@@ -244,7 +244,7 @@ const cargarTodo = async () => {
     const [{ data: ventasData }, { data: profilesData }, { data: gruposData }] = await Promise.all([
       client
         .from('ventas')
-        .select('id, vendedor_id, precio, fecha_carga, profiles:vendedor_id(nombre)')
+        .select('id, vendedor_id, precio, precio_concretado, fecha_carga, profiles:vendedor_id(nombre)')
         .eq('estado', 'concretado')
         .eq('empresa', empresa)
         .gte('fecha_carga', cicloActivo.value.fecha_inicio)
