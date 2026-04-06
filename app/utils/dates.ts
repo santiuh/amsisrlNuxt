@@ -46,6 +46,13 @@ export const formatFecha = (value: unknown): string => {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`
 }
 
+/** Formato HH:MM */
+export const formatHora = (value: unknown): string => {
+  const d = parseBackendDate(value)
+  if (!d) return '—'
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 /** Formato DD/MM/AAAA HH:MM */
 export const formatFechaHora = (value: unknown): string => {
   const d = parseBackendDate(value)

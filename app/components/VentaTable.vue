@@ -95,13 +95,16 @@
       </template>
 
       <template #fecha_carga-data="{ row }">
-        <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatFecha(row.fecha_carga) }}</span>
+        <span class="block text-sm text-gray-600 dark:text-gray-300">{{ formatFecha(row.fecha_carga) }}</span>
+        <span class="block text-xs text-gray-400 dark:text-gray-500">{{ formatHora(row.fecha_carga) }}</span>
       </template>
 
       <template #fecha_coordinacion-data="{ row }">
-        <span class="text-sm text-gray-600 dark:text-gray-300">
-          {{ row.estado === 'coordinado' && row.fecha_coordinacion ? formatFechaHora(row.fecha_coordinacion) : '—' }}
-        </span>
+        <template v-if="row.estado === 'coordinado' && row.fecha_coordinacion">
+          <span class="block text-sm text-gray-600 dark:text-gray-300">{{ formatFecha(row.fecha_coordinacion) }}</span>
+          <span class="block text-xs text-gray-400 dark:text-gray-500">{{ formatHora(row.fecha_coordinacion) }}</span>
+        </template>
+        <span v-else class="text-sm text-gray-600 dark:text-gray-300">—</span>
       </template>
 
       <template #localidad-data="{ row }">
@@ -200,7 +203,7 @@ const columnas = computed(() => {
     { key: 'localidad', label: 'Localidad' },
     { key: 'paquete', label: 'Paquete' },
     { key: 'precio', label: 'Precio' },
-    { key: 'fecha_coordinacion', label: 'Hora coordinada' },
+    { key: 'fecha_coordinacion', label: 'Turno' },
     { key: 'estado', label: 'Estado' },
   ]
   if (props.showVendedor) {

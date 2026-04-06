@@ -441,7 +441,7 @@ const hideGestionLog = computed(() => !!props.hideGestionLog)
 const sectionReadonly = computed(() => !!props.readonly && !props.readonlyMainFieldsOnly)
 const showSubmitActions = computed(() => !props.readonly || !!props.readonlyMainFieldsOnly)
 const submitDisabled = computed(() =>
-  props.readonlyMainFieldsOnly ? form.estado === (props.initialData?.estado ?? 'pendiente') : false
+  props.readonly && props.readonlyMainFieldsOnly ? form.estado === (props.initialData?.estado ?? 'pendiente') : false
 )
 
 // ——— Catálogo dinámico ———
