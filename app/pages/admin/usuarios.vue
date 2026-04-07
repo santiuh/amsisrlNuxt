@@ -25,14 +25,24 @@
           {{ formatFecha(row.created_at) }}
         </template>
         <template #acciones-data="{ row }">
-          <UButton
-            icon="i-heroicons-pencil-square"
-            size="xs"
-            color="gray"
-            variant="ghost"
-            label="Editar"
-            @click="abrirModalEditar(row)"
-          />
+          <div class="flex gap-1">
+            <UButton
+              icon="i-heroicons-pencil-square"
+              size="xs"
+              color="gray"
+              variant="ghost"
+              label="Editar"
+              @click="abrirModalEditar(row)"
+            />
+            <UButton
+              icon="i-heroicons-key"
+              size="xs"
+              color="orange"
+              variant="ghost"
+              label="Resetear clave"
+              @click="abrirModalReset(row)"
+            />
+          </div>
         </template>
       </UTable>
       </div>
@@ -86,6 +96,77 @@
           <div class="flex justify-end gap-3">
             <UButton label="Cancelar" color="gray" variant="outline" @click="showModalCrear = false" />
             <UButton label="Crear Usuario" :loading="creating" @click="crearUsuario" />
+          </div>
+        </template>
+      </UCard>
+    </UModal>
+
+    <!-- Modal resetear contraseña -->
+    <UModal v-model="showModalReset">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-gray-800">Resetear Contraseña</h3>
+            <UButton
+              icon="i-heroicons-x-mark"
+              color="gray"
+              variant="ghost"
+              size="xs"
+              @click="showModalReset = false"
+            />
+          </div>
+        </template>
+
+        <div class="space-y-4">
+          <template v-if="!resetDone">
+            <UAlert
+              icon="i-heroicons-information-circle"
+              color="orange"
+              variant="soft"
+              title="Se generará una contraseña temporal. El usuario será obligado a cambiarla en su próximo inicio de sesión."
+            />
+            <UFormGroup label="Usuario">
+              <UInput :model-value="`${usuarioReseteando.nombre} (${usuarioReseteando.email})`" disabled class="w-full" />
+            </UFormGroup>
+
+            <UAlert
+              v-if="resetError"
+              icon="i-heroicons-exclamation-circle"
+              color="red"
+              variant="soft"
+              :title="resetError"
+            />
+          </template>
+
+          <template v-else>
+            <UAlert
+              icon="i-heroicons-check-circle"
+              color="green"
+              variant="soft"
+              title="Contraseña reseteada correctamente"
+            />
+            <UFormGroup label="Contraseña temporal generada">
+              <div class="flex gap-2">
+                <UInput :model-value="resetPassword" readonly class="w-full font-mono" />
+                <UButton
+                  icon="i-heroicons-clipboard-document"
+                  color="gray"
+                  variant="solid"
+                  @click="copiarClave"
+                />
+              </div>
+            </UFormGroup>
+            <p class="text-sm text-gray-500">Copiá esta contraseña y pasásela al usuario. No se volverá a mostrar.</p>
+          </template>
+        </div>
+
+        <template #footer>
+          <div class="flex justify-end gap-3">
+            <template v-if="!resetDone">
+              <UButton label="Cancelar" color="gray" variant="outline" @click="showModalReset = false" />
+              <UButton label="Generar nueva contraseña" color="orange" :loading="resetting" @click="resetearContrasena" />
+            </template>
+            <UButton v-else label="Cerrar" color="gray" variant="outline" @click="showModalReset = false" />
           </div>
         </template>
       </UCard>
@@ -160,6 +241,19 @@ const createError = ref('')
 const showModalEditar = ref(false)
 const saving = ref(false)
 const editError = ref('')
+
+// Modal resetear contraseña
+const showModalReset = ref(false)
+const resetting = ref(false)
+const resetError = ref('')
+const resetPassword = ref('')
+const resetDone = ref(false)
+const usuarioReseteando = reactive({ id: '', email: '', nombre: '' })
+
+const generarPassword = () => {
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789'
+  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+}
 
 const nuevoUsuario = reactive({
   nombre: '',
@@ -257,6 +351,38 @@ const crearUsuario = async () => {
   } finally {
     creating.value = false
   }
+}
+
+const abrirModalReset = (row: any) => {
+  Object.assign(usuarioReseteando, { id: row.id, email: row.email, nombre: row.nombre })
+  resetPassword.value = ''
+  resetError.value = ''
+  resetDone.value = false
+  showModalReset.value = true
+}
+
+const resetearContrasena = async () => {
+  resetting.value = true
+  resetError.value = ''
+  const tempPassword = generarPassword()
+
+  try {
+    await $fetch(`/api/admin/usuarios/${usuarioReseteando.id}`, {
+      method: 'PATCH',
+      body: { password: tempPassword },
+    })
+    resetPassword.value = tempPassword
+    resetDone.value = true
+  } catch (err: any) {
+    resetError.value = err.data?.statusMessage || 'Error al resetear contraseña'
+  } finally {
+    resetting.value = false
+  }
+}
+
+const copiarClave = async () => {
+  await navigator.clipboard.writeText(resetPassword.value)
+  toast.add({ title: 'Contraseña copiada al portapapeles', color: 'green' })
 }
 
 const guardarCambios = async () => {
