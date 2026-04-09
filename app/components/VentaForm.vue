@@ -7,23 +7,11 @@
         Empresa
       </legend>
 
-      <UFormGroup label="Empresa *">
-        <div class="flex items-start gap-2">
-          <USelect
-            v-model="form.empresa"
-            :options="empresaOptions"
-            placeholder="Seleccionar empresa"
-            class="w-full"
-            :disabled="readonly || !!props.initialData"
-          />
-          <UBadge
-            v-if="readonly"
-            :color="form.empresa === 'ultra' ? 'violet' : 'blue'"
-            variant="subtle"
-            :label="form.empresa === 'ultra' ? 'Ultra' : 'Express'"
-          />
-        </div>
-      </UFormGroup>
+      <EmpresaToggle
+        v-model="form.empresa"
+        :options="empresaOptions"
+        :disabled="readonly || !!props.initialData"
+      />
     </fieldset>
 
     <UDivider v-if="empresaOptions.length > 1 || readonly" />
@@ -521,6 +509,11 @@ watch(() => form.empresa, (newEmpresa, oldEmpresa) => {
     // Resetear selecciones de catálogo al cambiar de empresa
     form.paquete_id = ''
     form.extras_ids = []
+    // Resetear localidad si no existe en la nueva empresa
+    const nuevasLocalidades = newEmpresa === 'ultra' ? localidadesUltra : localidadesExpress
+    if (!nuevasLocalidades.some(l => l.value === form.dir_localidad)) {
+      form.dir_localidad = ''
+    }
   }
   cargarCatalogo(newEmpresa)
 }, { immediate: true })
@@ -632,13 +625,30 @@ const formaPagoOptions = [
   { label: 'Efectivo', value: 'efectivo' },
 ]
 
-const localidadOptions = [
+const localidadesExpress = [
   { label: 'Rosario', value: 'Rosario' },
   { label: 'San Lorenzo', value: 'San Lorenzo' },
   { label: 'Baigorria', value: 'Baigorria' },
   { label: 'San Nicolas', value: 'San Nicolas' },
   { label: 'Perez', value: 'Perez' },
 ]
+
+const localidadesUltra = [
+  { label: 'Baigorria', value: 'Baigorria' },
+  { label: 'C. Bermudez', value: 'C. Bermudez' },
+  { label: 'F. L. Beltran', value: 'F. L. Beltran' },
+  { label: 'Monjes', value: 'Monjes' },
+  { label: 'Maciel', value: 'Maciel' },
+  { label: 'Gaboto', value: 'Gaboto' },
+  { label: 'Oliveros', value: 'Oliveros' },
+  { label: 'Andino', value: 'Andino' },
+  { label: 'Timbues', value: 'Timbues' },
+  { label: 'Pto Gral San Martin', value: 'Pto Gral San Martin' },
+]
+
+const localidadOptions = computed(() =>
+  form.empresa === 'ultra' ? localidadesUltra : localidadesExpress
+)
 
 const estadoOptions = [
   { label: 'Pendiente', value: 'pendiente' },
@@ -650,7 +660,7 @@ const estadoOptions = [
   { label: 'Próxima Zona', value: 'proxima_zona' },
 ]
 
-const localidadLabel = computed(() => getOptionLabel(localidadOptions, form.dir_localidad))
+const localidadLabel = computed(() => getOptionLabel(localidadOptions.value, form.dir_localidad))
 const paqueteLabel = computed(() => getOptionLabel(opcionesPaquetes.value, form.paquete_id))
 const decosLabel = computed(() => getOptionLabel(decosOptions, form.decos))
 const bocasLabel = computed(() => getOptionLabel(bocasOptions, form.bocas))

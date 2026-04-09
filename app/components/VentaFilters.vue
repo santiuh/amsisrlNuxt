@@ -9,10 +9,9 @@
         class="w-full sm:w-72"
         @update:model-value="filters.search = $event"
       />
-      <USelect
+      <EmpresaToggle
         :model-value="filters.empresa"
-        :options="empresaOptions"
-        class="w-full sm:w-44"
+        :show-todas="true"
         @update:model-value="filters.empresa = $event"
       />
       <USelect
@@ -109,12 +108,6 @@ const filters = defineModel<VentaFilterState>('filters', { required: true }) as 
 const remember = defineModel<boolean>('remember', { default: false })
 
 const presetActivo = ref('')
-
-const empresaOptions = [
-  { label: 'Todas las empresas', value: '' },
-  { label: 'Express', value: 'express' },
-  { label: 'Ultra', value: 'ultra' },
-]
 
 const estadoOptions = [
   { label: 'Todos los estados', value: '' },

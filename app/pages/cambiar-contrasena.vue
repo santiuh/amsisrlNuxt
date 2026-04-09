@@ -1,7 +1,7 @@
 <template>
   <NuxtLayout :name="esPrimerLogin ? 'auth' : 'default'">
     <!-- Forzado: pantalla completa -->
-    <div v-if="esPrimerLogin" class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div v-if="esPrimerLogin" class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#081226]">
       <div class="w-full max-w-md px-4">
         <UCard class="shadow-lg">
           <template #header>
@@ -34,6 +34,7 @@
                     variant="link"
                     color="gray"
                     :padded="false"
+                    class="pointer-events-auto"
                     @click="showPassword = !showPassword"
                   />
                 </template>
@@ -54,6 +55,7 @@
                     variant="link"
                     color="gray"
                     :padded="false"
+                    class="pointer-events-auto"
                     @click="showConfirm = !showConfirm"
                   />
                 </template>
@@ -104,6 +106,7 @@
                   variant="link"
                   color="gray"
                   :padded="false"
+                  class="pointer-events-auto"
                   @click="showPassword = !showPassword"
                 />
               </template>
@@ -124,6 +127,7 @@
                   variant="link"
                   color="gray"
                   :padded="false"
+                  class="pointer-events-auto"
                   @click="showConfirm = !showConfirm"
                 />
               </template>

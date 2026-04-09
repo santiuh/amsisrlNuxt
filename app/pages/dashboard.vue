@@ -2,14 +2,7 @@
   <div class="space-y-8">
     <!-- Filtro de empresa -->
     <div class="flex justify-end">
-      <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-500 dark:text-gray-400">Empresa:</span>
-        <USelect
-          v-model="empresaFiltro"
-          :options="empresaFilterOptions"
-          class="w-44"
-        />
-      </div>
+      <EmpresaToggle v-model="empresaFiltro" :show-todas="true" />
     </div>
 
     <!-- ============ VENDEDOR ============ -->
@@ -337,11 +330,6 @@ const ventas = ref<any[]>([])
 const lecturas = ref<Record<string, string>>({})
 
 const empresaFiltro = ref('')
-const empresaFilterOptions = [
-  { label: 'Todas las empresas', value: '' },
-  { label: 'Express', value: 'express' },
-  { label: 'Ultra', value: 'ultra' },
-]
 
 // Comisiones
 const cicloActivo = ref<any>(null)
