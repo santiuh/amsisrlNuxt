@@ -115,6 +115,10 @@
         <span>{{ truncateText(row.paquete_nombre, 16) }}</span>
       </template>
 
+      <template #cliente-data="{ row }">
+        <span :title="row.cliente">{{ truncateText(row.cliente, 14) }}</span>
+      </template>
+
       <template #vendedor-data="{ row }">
         <div class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">

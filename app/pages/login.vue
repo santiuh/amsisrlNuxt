@@ -13,7 +13,7 @@
           alt="AMSI SRL"
           class="mx-auto h-24 w-auto object-contain"
         />
-        <h1 class="mt-2 text-5xl leading-none font-extrabold tracking-tight text-[#17355b] dark:text-white/85">AMSI.SRL</h1>
+        <h1 class="mt-2 text-5xl leading-none font-extrabold tracking-tight text-[#17355b] drop-shadow-[0_0_20px_rgba(6,182,212,0.35)] dark:text-white/90 dark:drop-shadow-[0_0_25px_rgba(6,182,212,0.45)]">AMSI S.R.L.</h1>
         <p class="mt-5 text-2xl leading-tight font-semibold text-[#0f172a] dark:text-white/70">Iniciar Sesión</p>
       </div>
 
@@ -80,16 +80,9 @@
         </button>
       </form>
 
-      <p class="mt-8 text-center text-sm text-gray-500 dark:text-white/55">
-        © 2026 AMSI SRL.
-      </p>
-
-      <p class="mt-2 text-center text-xs text-gray-400 dark:text-white/45">
-        Desarrollado por
-        <a href="https://soldemayosoft.com.ar" target="_blank" class="hover:underline text-gray-500 dark:text-white/60">
-          SolDeMayoSoft
-        </a>
-      </p>
+      <a href="https://soldemayosoft.com.ar" target="_blank" class="mt-8 block text-center">
+        <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-14 mx-auto" />
+      </a>
     </div>
   </div>
 </template>

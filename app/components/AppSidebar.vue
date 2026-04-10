@@ -35,13 +35,10 @@
     </nav>
 
     <!-- Footer -->
-    <div class="px-6 py-5 border-t border-gray-200 dark:border-[#22314d]">
-      <p class="text-xs text-gray-500 dark:text-gray-400">
-        Desarrollado por
-        <a href="https://soldemayosoft.com.ar" target="_blank" class="text-gray-700 hover:underline dark:text-gray-200">
-          SolDeMayoSoft
-        </a>
-      </p>
+    <div class="px-6 py-5 border-t border-gray-200 dark:border-[#22314d] flex justify-center">
+      <a href="https://soldemayosoft.com.ar" target="_blank">
+        <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-10" />
+      </a>
     </div>
   </aside>
 </template>
