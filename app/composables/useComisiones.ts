@@ -46,7 +46,7 @@ interface VentaConcretada {
   vendedor_id: string
   precio: number
   precio_concretado: number | null
-  fecha_carga: string
+  fecha_concretado: string
 }
 
 interface ProfileBasico {

@@ -12,11 +12,30 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'venta_id es requerido' })
   }
 
+  // Leer estado actual para manejar transiciones
+  const { data: current } = await client
+    .from('ventas')
+    .select('estado, precio, precio_concretado')
+    .eq('id', venta_id)
+    .single()
+
   const payload: Record<string, any> = {
     estado,
     fecha_coordinacion: fecha_coordinacion || null,
     comentarios_gestion,
     nro_cliente: nro_cliente || null,
+  }
+
+  // Snapshot de precio al entrar en en_proceso (una sola vez, nunca se sobreescribe)
+  if (estado === 'en_proceso' && current && current.precio_concretado == null) {
+    payload.precio_concretado = current.precio
+  }
+
+  // Registrar fecha_concretado al pasar a concretado
+  if (estado === 'concretado' && current && current.estado !== 'concretado') {
+    payload.fecha_concretado = new Date().toISOString()
+  } else if (estado !== 'concretado' && current?.estado === 'concretado') {
+    payload.fecha_concretado = null
   }
 
   const { error } = await client

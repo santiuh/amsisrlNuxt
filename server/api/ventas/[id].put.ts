@@ -9,6 +9,32 @@ export default defineEventHandler(async (event) => {
 
   const { _extras, extras_ids, profiles, venta_extras, ...ventaData } = body
 
+  // precio_concretado es gestionado exclusivamente server-side, ignorar valor del cliente
+  delete ventaData.precio_concretado
+
+  // Manejar transiciones de estado para precio_concretado y fecha_concretado
+  if (ventaData.estado !== undefined) {
+    const { data: current } = await client
+      .from('ventas')
+      .select('estado, precio, precio_concretado')
+      .eq('id', id)
+      .single()
+
+    if (current) {
+      // Snapshot de precio al entrar en en_proceso (una sola vez)
+      if (ventaData.estado === 'en_proceso' && current.precio_concretado == null) {
+        ventaData.precio_concretado = current.precio
+      }
+
+      // Registrar fecha_concretado al pasar a concretado
+      if (ventaData.estado === 'concretado' && current.estado !== 'concretado') {
+        ventaData.fecha_concretado = new Date().toISOString()
+      } else if (ventaData.estado !== 'concretado' && current.estado === 'concretado') {
+        ventaData.fecha_concretado = null
+      }
+    }
+  }
+
   const { error } = await client
     .from('ventas')
     .update(ventaData)

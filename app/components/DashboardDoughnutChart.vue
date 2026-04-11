@@ -1,9 +1,18 @@
 <template>
   <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 p-5">
     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ title }}</h3>
-    <div class="flex justify-center">
-      <div class="w-full max-w-[240px]">
+    <div class="flex flex-col sm:flex-row items-center gap-6">
+      <div class="w-40 h-40 shrink-0">
         <Doughnut :data="chartData" :options="chartOptions" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <template v-for="(label, i) in labels" :key="i">
+          <div v-if="data[i] > 0" class="flex items-center gap-2 text-sm">
+            <span class="w-3 h-3 rounded-full shrink-0" :style="{ backgroundColor: colors[i] }" />
+            <span class="text-gray-600 dark:text-gray-400">{{ label }}</span>
+            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ data[i] }}</span>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -41,14 +50,7 @@ const chartOptions = computed(() => ({
   cutout: '68%',
   plugins: {
     legend: {
-      position: 'bottom' as const,
-      labels: {
-        color: isDark.value ? '#9ca3af' : '#4b5563',
-        padding: 14,
-        usePointStyle: true,
-        pointStyleWidth: 8,
-        font: { size: 11, weight: '500' },
-      },
+      display: false,
     },
     tooltip: {
       backgroundColor: isDark.value ? '#1f2937' : '#ffffff',

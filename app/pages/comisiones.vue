@@ -187,7 +187,7 @@ const resumenEquipo = computed(() => {
     const nombre = v.profiles?.nombre ?? 'Desconocido'
     if (!map[v.vendedor_id]) map[v.vendedor_id] = { nombre, ventas: 0, monto: 0 }
     map[v.vendedor_id].ventas++
-    map[v.vendedor_id].monto += Number(v.precio)
+    map[v.vendedor_id].monto += Number(v.precio_concretado ?? v.precio)
   })
   return Object.values(map).sort((a, b) => b.monto - a.monto)
 })
@@ -244,11 +244,11 @@ const cargarTodo = async () => {
     const [{ data: ventasData }, { data: profilesData }, { data: gruposData }] = await Promise.all([
       client
         .from('ventas')
-        .select('id, vendedor_id, precio, precio_concretado, fecha_carga, profiles:vendedor_id(nombre)')
+        .select('id, vendedor_id, precio, precio_concretado, fecha_concretado, profiles:vendedor_id(nombre)')
         .eq('estado', 'concretado')
         .eq('empresa', empresa)
-        .gte('fecha_carga', cicloActivo.value.fecha_inicio)
-        .lte('fecha_carga', new Date().toISOString()),
+        .gte('fecha_concretado', cicloActivo.value.fecha_inicio)
+        .lte('fecha_concretado', new Date().toISOString()),
       client.from('profiles').select('id, nombre, rol, grupo_id'),
       client.from('grupos').select('id, lider_id'),
     ])
@@ -270,7 +270,7 @@ const cargarTodo = async () => {
           .filter((p: any) => p.grupo_id === miGrupo.id && p.rol === 'vendedor')
           .map((p: any) => p.id)
         ventasEquipo.value = (ventasData ?? []).filter((v: any) => miembrosIds.includes(v.vendedor_id))
-        montoTotalEquipo.value = ventasEquipo.value.reduce((sum: number, v: any) => sum + Number(v.precio), 0)
+        montoTotalEquipo.value = ventasEquipo.value.reduce((sum: number, v: any) => sum + Number(v.precio_concretado ?? v.precio), 0)
       }
     }
   }

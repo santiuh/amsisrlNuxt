@@ -127,7 +127,7 @@ Vinculada a `auth.users`. Almacena rol y datos del usuario.
 - **Badges de estado:** colores por estado (gris/amarillo/rojo/verde/azul)
 - **Exportar CSV:** JavaScript nativo, exporta tabla filtrada
 - **Buscador:** por DNI/CUIL o nombre de cliente, en tiempo real
-- **Footer:** link a `soldemayosoft.com.ar` como desarrollador
+- **Footer:** link a `soldemayosoft.com` como desarrollador
 
 ## Usuario Admin Inicial
 

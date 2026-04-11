@@ -1,53 +1,26 @@
 <template>
   <div class="space-y-8">
-    <!-- Filtro de empresa -->
-    <div class="flex justify-end">
-      <EmpresaToggle v-model="empresaFiltro" :show-todas="true" />
+    <!-- Cards de ciclo por empresa (compartido entre roles) -->
+    <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CicloCard
+        v-for="cc in ciclosComisiones"
+        :key="cc.empresa"
+        :empresa="cc.empresa"
+        :label="cc.label"
+        :fecha-inicio="cc.fechaInicio"
+        :fecha-cierre="cc.fechaCierre"
+        :ingresos="cc.ingresos"
+        :concretadas="cc.concretadas"
+        :ventas-creadas="cc.ventasCreadas"
+        :ultimo-ciclo="cc.ultimoCiclo"
+      />
     </div>
 
     <!-- ============ VENDEDOR ============ -->
     <template v-if="profile?.rol === 'vendedor'">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatsCard
-          label="Concretadas"
-          :value="stats.misConcretadas"
-          icon="i-heroicons-banknotes"
-          color="green"
-          :sub="stats.misConcretadas > 0 ? formatCompact(stats.misIngresos) + ' en ingresos' : 'Sin concretadas aún'"
-        />
-        <StatsCard
-          label="Ventas del Ciclo"
-          :value="stats.misVentasCiclo"
-          icon="i-heroicons-chart-bar"
-          color="blue"
-        />
-        <StatsCard
-          label="Coordinadas"
-          :value="stats.misAceptadas"
-          icon="i-heroicons-check-circle"
-          color="teal"
-        />
-        <StatsCard
-          v-if="cicloActivo"
-          label="Estimado Ciclo"
-          :value="formatCompact(estimadoTotal)"
-          icon="i-heroicons-calculator"
-          color="purple"
-          :sub="`${ventasConcretadasCiclo} concretadas`"
-        />
-        <StatsCard
-          v-if="ventasConComentariosPendientes > 0"
-          label="Comentarios"
-          :value="ventasConComentariosPendientes"
-          icon="i-heroicons-chat-bubble-left-ellipsis"
-          color="orange"
-          sub="Pendientes de lectura"
-        />
-      </div>
-
       <DashboardDoughnutChart
         v-if="ventasPropiasCiclo.length > 0"
-        title="Distribución de Mis Ventas (Ciclo)"
+        title="Estados de mis ventas del ciclo"
         :labels="distribucionEstadosPropias.labels"
         :data="distribucionEstadosPropias.data"
         :colors="distribucionEstadosPropias.colors"
@@ -65,48 +38,9 @@
 
     <!-- ============ LIDER ============ -->
     <template v-else-if="profile?.rol === 'lider'">
-      <!-- Mis Ventas -->
-      <div>
-        <div class="flex items-center gap-2 mb-3">
-          <div class="h-6 w-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
-            <UIcon name="i-heroicons-user" class="w-3.5 h-3.5 text-blue-400" />
-          </div>
-          <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Mis Ventas</h3>
-        </div>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <StatsCard
-            label="Concretadas"
-            :value="stats.misConcretadas"
-            icon="i-heroicons-banknotes"
-            color="green"
-            :sub="stats.misConcretadas > 0 ? formatCompact(stats.misIngresos) + ' en ingresos' : undefined"
-          />
-          <StatsCard
-            label="Ventas del Ciclo"
-            :value="stats.misVentasCiclo"
-            icon="i-heroicons-chart-bar"
-            color="blue"
-          />
-          <StatsCard
-            label="Coordinadas"
-            :value="stats.misAceptadas"
-            icon="i-heroicons-check-circle"
-            color="teal"
-          />
-          <StatsCard
-            v-if="cicloActivo"
-            label="Estimado Ciclo"
-            :value="formatCompact(estimadoTotal)"
-            icon="i-heroicons-calculator"
-            color="purple"
-            sub="Comisión + Bonus"
-          />
-        </div>
-      </div>
-
       <DashboardDoughnutChart
         v-if="ventasPropiasCiclo.length > 0"
-        title="Distribución de Mis Ventas (Ciclo)"
+        title="Estados de mis ventas del ciclo"
         :labels="distribucionEstadosPropias.labels"
         :data="distribucionEstadosPropias.data"
         :colors="distribucionEstadosPropias.colors"
@@ -121,40 +55,9 @@
         </div>
       </div>
 
-      <!-- Mi Equipo -->
-      <div class="pt-2">
-        <div class="flex items-center gap-2 mb-3">
-          <div class="h-6 w-6 rounded-lg bg-orange-500/20 flex items-center justify-center">
-            <UIcon name="i-heroicons-users" class="w-3.5 h-3.5 text-orange-400" />
-          </div>
-          <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Mi Equipo</h3>
-        </div>
-        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          <StatsCard
-            label="Concretadas"
-            :value="stats.equipoConcretadas"
-            icon="i-heroicons-banknotes"
-            color="green"
-            :sub="stats.equipoConcretadas > 0 ? formatCompact(stats.equipoIngresos) + ' en ingresos' : undefined"
-          />
-          <StatsCard
-            label="Ventas del Ciclo"
-            :value="stats.equipoCiclo"
-            icon="i-heroicons-users"
-            color="orange"
-          />
-          <StatsCard
-            label="Coordinadas"
-            :value="stats.equipoAceptadas"
-            icon="i-heroicons-check-badge"
-            color="teal"
-          />
-        </div>
-      </div>
-
       <DashboardDoughnutChart
         v-if="ventasEquipoCiclo.length > 0"
-        title="Distribución del Equipo (Ciclo)"
+        title="Estados de ventas del equipo"
         :labels="distribucionEstadosEquipo.labels"
         :data="distribucionEstadosEquipo.data"
         :colors="distribucionEstadosEquipo.colors"
@@ -172,56 +75,17 @@
 
     <!-- ============ OFICINISTA ============ -->
     <template v-else-if="profile?.rol === 'oficinista'">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatsCard
-          label="Concretadas"
-          :value="stats.concretadas"
-          icon="i-heroicons-banknotes"
-          color="green"
-          :sub="stats.concretadas > 0 ? formatCompact(stats.ingresos) + ' en ingresos' : undefined"
-        />
-        <StatsCard
-          label="Ventas del Ciclo"
-          :value="stats.totalCiclo"
-          icon="i-heroicons-chart-bar"
-          color="blue"
-        />
-        <StatsCard
-          label="Coordinadas"
-          :value="stats.aceptadas"
-          icon="i-heroicons-check-circle"
-          color="teal"
-          :sub="`${stats.porcentajeConversion}% conversión`"
-        />
-        <StatsCard
-          v-if="ventasConComentariosPendientes > 0"
-          label="Comentarios"
-          :value="ventasConComentariosPendientes"
-          icon="i-heroicons-chat-bubble-left-ellipsis"
-          color="orange"
-          sub="Pendientes de lectura"
-        />
-        <StatsCard
-          v-if="cicloActivo"
-          label="Estimado Ciclo"
-          :value="formatCompact(estimadoTotal)"
-          icon="i-heroicons-calculator"
-          color="purple"
-          :sub="`${ventasConcretadasCiclo} concretadas`"
-        />
-      </div>
-
       <div v-if="ventasCiclo.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DashboardDoughnutChart
-          title="Distribución de Estados (Ciclo)"
+          title="Estados de las ventas del ciclo"
           :labels="distribucionEstados.labels"
           :data="distribucionEstados.data"
           :colors="distribucionEstados.colors"
         />
         <DashboardBarChart
-          title="Ventas por Semana (Ciclo)"
-          :labels="ventasPorSemana.labels"
-          :datasets="ventasPorSemana.datasets"
+          title="Ventas por ciclo"
+          :labels="ventasPorCiclo.labels"
+          :datasets="ventasPorCiclo.datasets"
         />
       </div>
 
@@ -237,48 +101,17 @@
 
     <!-- ============ ADMIN ============ -->
     <template v-else-if="profile?.rol === 'admin'">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatsCard
-          label="Ingresos Concretados"
-          :value="formatCompact(stats.ingresos)"
-          icon="i-heroicons-banknotes"
-          color="green"
-          :sub="`${stats.concretadas} ventas concretadas`"
-        />
-        <StatsCard
-          label="Ventas del Ciclo"
-          :value="stats.totalCiclo"
-          icon="i-heroicons-chart-bar"
-          color="blue"
-        />
-        <StatsCard
-          label="Conversión"
-          :value="`${stats.porcentajeConversion}%`"
-          icon="i-heroicons-arrow-trending-up"
-          color="teal"
-          :sub="`${stats.aceptadas} coord. / ${stats.totalCiclo} total`"
-        />
-        <StatsCard
-          v-if="cicloActivo"
-          label="Comisiones Ciclo"
-          :value="formatCompact(totalComisionesCiclo)"
-          icon="i-heroicons-calculator"
-          color="purple"
-          :sub="`Cierre: ${formatFecha(fechaCierrePrevista)}`"
-        />
-      </div>
-
       <div v-if="ventasCiclo.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <DashboardDoughnutChart
-          title="Distribución de Estados (Ciclo)"
+          title="Estados de las ventas del ciclo"
           :labels="distribucionEstados.labels"
           :data="distribucionEstados.data"
           :colors="distribucionEstados.colors"
         />
         <DashboardBarChart
-          title="Ventas por Semana (Ciclo)"
-          :labels="ventasPorSemana.labels"
-          :datasets="ventasPorSemana.datasets"
+          title="Ventas por ciclo"
+          :labels="ventasPorCiclo.labels"
+          :datasets="ventasPorCiclo.datasets"
         />
       </div>
 
@@ -331,14 +164,33 @@ const lecturas = ref<Record<string, string>>({})
 
 const empresaFiltro = ref('')
 
-// Comisiones
-const cicloActivo = ref<any>(null)
-const estimadoComision = ref(0)
-const estimadoTotal = ref(0)
-const ventasConcretadasCiclo = ref(0)
-const estimadoBonus = ref(0)
-const totalComisionesCiclo = ref(0)
-const fechaCierrePrevista = ref('')
+// Comisiones — una entrada por empresa con ciclo activo
+interface CicloComisionData {
+  empresa: string
+  label: string
+  color: string
+  fechaInicio: string
+  fechaCierre: string
+  // Stats role-appropriate (admin: totales, otros: personales)
+  ingresos: number
+  concretadas: number
+  ventasCreadas: number
+  // Commission estimates
+  estimadoComision: number
+  estimadoTotal: number
+  ventasConcretadas: number
+  estimadoBonus: number
+  totalComisiones: number
+  // Equipo stats (lider only)
+  equipoVentasCreadas: number
+  equipoConcretadas: number
+  equipoIngresos: number
+  // Último ciclo cerrado
+  ultimoCiclo: { ingresos: number; concretadas: number; creadas: number } | null
+  // Historial de ciclos cerrados (para bar chart)
+  historialCiclos: { label: string; concretadas: number }[]
+}
+const ciclosComisiones = ref<CicloComisionData[]>([])
 
 const formatCompact = (n: number) => {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
@@ -362,8 +214,218 @@ const actividadColumns = [
   { key: 'gestionadas', label: 'Gestionadas' },
 ]
 
+// Cargar comisiones de TODAS las empresas con ciclo activo
+const EMPRESAS_CONFIG: Record<string, { label: string; color: string }> = {
+  express: { label: 'Express', color: 'purple' },
+  ultra: { label: 'Ultra', color: 'violet' },
+}
+
+const cargarComisiones = async () => {
+  ciclosComisiones.value = []
+  if (!profile.value) return
+
+  const isGlobal = ['admin', 'oficinista'].includes(profile.value.rol)
+  const myId = profile.value.id
+
+  // Obtener todos los ciclos activos (uno por empresa max)
+  const { data: ciclosData } = await client
+    .from('ciclos_comision')
+    .select('*')
+    .eq('estado', 'activo')
+
+  if (!ciclosData || ciclosData.length === 0) return
+
+  // Datos compartidos
+  const [{ data: profilesData }, { data: gruposData }] = await Promise.all([
+    client.from('profiles').select('id, nombre, rol, grupo_id'),
+    client.from('grupos').select('id, lider_id'),
+  ])
+
+  // Determinar miembros del equipo para lider
+  const isLider = profile.value.rol === 'lider'
+  let equipoMemberIds: string[] = []
+  if (isLider && gruposData && profilesData) {
+    const miGrupo = gruposData.find((g: any) => g.lider_id === myId)
+    if (miGrupo) {
+      equipoMemberIds = profilesData
+        .filter((p: any) => p.grupo_id === miGrupo.id && p.id !== myId)
+        .map((p: any) => p.id)
+    }
+  }
+
+  // Procesar cada ciclo en paralelo
+  const resultados = await Promise.all(
+    ciclosData.map(async (ciclo) => {
+      const empresa = ciclo.empresa ?? 'express'
+
+      // Fetch: concretadas del ciclo + config + último ciclo cerrado
+      const [
+        { data: ventasCicloData },
+        { data: pctGrupoData },
+        { data: pctLiderData },
+        { data: lastCicloData },
+      ] = await Promise.all([
+        client.from('ventas').select('id, vendedor_id, precio, precio_concretado, fecha_concretado')
+          .eq('estado', 'concretado')
+          .eq('empresa', empresa)
+          .gte('fecha_concretado', ciclo.fecha_inicio)
+          .lte('fecha_concretado', new Date().toISOString()),
+        client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').eq('empresa', empresa).single(),
+        client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').eq('empresa', empresa).single(),
+        client.from('ciclos_comision').select('id, fecha_inicio, fecha_cierre_real')
+          .eq('empresa', empresa)
+          .eq('estado', 'cerrado')
+          .order('fecha_cierre_real', { ascending: false })
+          .limit(4),
+      ])
+
+      // Calcular comisiones
+      const pctGrupo = Number(pctGrupoData?.valor ?? 80)
+      const pctLider = Number(pctLiderData?.valor ?? 25)
+      const estimaciones = calcularEstimaciones(
+        ventasCicloData ?? [],
+        profilesData ?? [],
+        gruposData ?? [],
+        { pct_grupo: pctGrupo, pct_lider: pctLider },
+      )
+      const miEstimacion = estimaciones.find(e => e.vendedor_id === myId)
+      const cfg = EMPRESAS_CONFIG[empresa] ?? { label: empresa, color: 'gray' }
+
+      // Stats del ciclo actual (según rol)
+      const allConcretadas = ventasCicloData ?? []
+      const myConcretadas = allConcretadas.filter(v => v.vendedor_id === myId)
+
+      const ingresos = isGlobal
+        ? allConcretadas.reduce((sum, v) => sum + Number(v.precio_concretado ?? v.precio), 0)
+        : myConcretadas.reduce((sum, v) => sum + Number(v.precio_concretado ?? v.precio), 0)
+      const concretadas = isGlobal ? allConcretadas.length : myConcretadas.length
+
+      // Ventas creadas en el período del ciclo (desde ventas ya cargadas)
+      const ventasCreadas = ventas.value.filter(v =>
+        v.empresa === empresa &&
+        v.fecha_carga >= ciclo.fecha_inicio &&
+        (isGlobal || v.vendedor_id === myId),
+      ).length
+
+      // Equipo stats para lider
+      let equipoVentasCreadas = 0
+      let equipoConcretadasCount = 0
+      let equipoIngresosAmount = 0
+      if (isLider && equipoMemberIds.length > 0) {
+        const equipoConcretadasList = allConcretadas.filter(v => equipoMemberIds.includes(v.vendedor_id))
+        equipoConcretadasCount = equipoConcretadasList.length
+        equipoIngresosAmount = equipoConcretadasList.reduce((sum, v) => sum + Number(v.precio_concretado ?? v.precio), 0)
+        equipoVentasCreadas = ventas.value.filter(v =>
+          v.empresa === empresa &&
+          v.fecha_carga >= ciclo.fecha_inicio &&
+          equipoMemberIds.includes(v.vendedor_id),
+        ).length
+      }
+
+      // Ciclos cerrados — historial + último ciclo
+      let ultimoCiclo: CicloComisionData['ultimoCiclo'] = null
+      const historialCiclos: CicloComisionData['historialCiclos'] = []
+      const closedCiclos = lastCicloData ?? []
+
+      if (closedCiclos.length > 0) {
+        // Fetch pagos de todos los ciclos cerrados en una sola query
+        const closedIds = closedCiclos.map((c: any) => c.id)
+        const { data: allPagos } = await client
+          .from('ciclo_pagos')
+          .select('ciclo_id, cantidad_ventas, monto_total_ventas, vendedor_id')
+          .in('ciclo_id', closedIds)
+        const pagosAll = allPagos ?? []
+
+        // Último ciclo cerrado (para CicloCard)
+        const lastClosed = closedCiclos[0]
+        const lastPagos = pagosAll.filter((p: any) => p.ciclo_id === lastClosed.id)
+
+        if (isGlobal) {
+          ultimoCiclo = {
+            ingresos: lastPagos.reduce((sum: number, p: any) => sum + (p.monto_total_ventas || 0), 0),
+            concretadas: lastPagos.reduce((sum: number, p: any) => sum + (p.cantidad_ventas || 0), 0),
+            creadas: ventas.value.filter(v =>
+              v.empresa === empresa &&
+              v.fecha_carga >= lastClosed.fecha_inicio &&
+              lastClosed.fecha_cierre_real && v.fecha_carga <= lastClosed.fecha_cierre_real,
+            ).length,
+          }
+        } else {
+          const miPago = lastPagos.find((p: any) => p.vendedor_id === myId)
+          if (miPago) {
+            ultimoCiclo = {
+              ingresos: miPago.monto_total_ventas || 0,
+              concretadas: miPago.cantidad_ventas || 0,
+              creadas: ventas.value.filter(v =>
+                v.empresa === empresa &&
+                v.vendedor_id === myId &&
+                v.fecha_carga >= lastClosed.fecha_inicio &&
+                lastClosed.fecha_cierre_real && v.fecha_carga <= lastClosed.fecha_cierre_real,
+              ).length,
+            }
+          }
+        }
+
+        // Historial de concretadas por ciclo (para bar chart)
+        for (const cc of closedCiclos) {
+          const ccPagos = pagosAll.filter((p: any) => p.ciclo_id === cc.id)
+          const totalConc = isGlobal
+            ? ccPagos.reduce((sum: number, p: any) => sum + (p.cantidad_ventas || 0), 0)
+            : (ccPagos.find((p: any) => p.vendedor_id === myId)?.cantidad_ventas ?? 0)
+          const fInicio = new Date(cc.fecha_inicio).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
+          const fCierre = cc.fecha_cierre_real
+            ? new Date(cc.fecha_cierre_real).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
+            : '?'
+          historialCiclos.push({ label: `${fInicio} - ${fCierre}`, concretadas: totalConc })
+        }
+        // Orden cronológico (más antiguo primero)
+        historialCiclos.reverse()
+      }
+
+      return {
+        empresa,
+        label: cfg.label,
+        color: cfg.color,
+        fechaInicio: ciclo.fecha_inicio,
+        fechaCierre: ciclo.fecha_cierre_prevista,
+        ingresos,
+        concretadas,
+        ventasCreadas,
+        equipoVentasCreadas,
+        equipoConcretadas: equipoConcretadasCount,
+        equipoIngresos: equipoIngresosAmount,
+        estimadoComision: miEstimacion?.monto_comision ?? 0,
+        estimadoTotal: miEstimacion?.monto_total ?? 0,
+        ventasConcretadas: miEstimacion?.cantidad_ventas ?? 0,
+        estimadoBonus: miEstimacion?.monto_liderazgo ?? 0,
+        totalComisiones: estimaciones.reduce((sum, e) => sum + e.monto_total, 0),
+        ultimoCiclo,
+        historialCiclos,
+      } satisfies CicloComisionData
+    }),
+  )
+
+  // Ordenar Express primero
+  ciclosComisiones.value = resultados.sort((a, b) => a.empresa === 'express' ? -1 : 1)
+}
+
+// Totales agregados desde ciclosComisiones (respeta filtro de empresa y fechas por ciclo)
+const statsCicloTotal = computed(() => {
+  const ciclos = empresaFiltro.value
+    ? ciclosComisiones.value.filter(c => c.empresa === empresaFiltro.value)
+    : ciclosComisiones.value
+  return {
+    ventasCreadas: ciclos.reduce((sum, c) => sum + c.ventasCreadas, 0),
+    concretadas: ciclos.reduce((sum, c) => sum + c.concretadas, 0),
+    ingresos: ciclos.reduce((sum, c) => sum + c.ingresos, 0),
+    equipoVentasCreadas: ciclos.reduce((sum, c) => sum + (c.equipoVentasCreadas ?? 0), 0),
+    equipoConcretadas: ciclos.reduce((sum, c) => sum + (c.equipoConcretadas ?? 0), 0),
+    equipoIngresos: ciclos.reduce((sum, c) => sum + (c.equipoIngresos ?? 0), 0),
+  }
+})
+
 onMounted(async () => {
-  const [{ data }, { data: lecturasData }, { data: cicloData }] = await Promise.all([
+  const [{ data }, { data: lecturasData }] = await Promise.all([
     client
       .from('ventas')
       .select('*, profiles:vendedor_id(nombre, rol, avatar_config)')
@@ -371,56 +433,23 @@ onMounted(async () => {
     client
       .from('venta_lecturas')
       .select('venta_id, ultima_lectura'),
-    client
-      .from('ciclos_comision')
-      .select('*')
-      .eq('estado', 'activo')
-      .maybeSingle(),
   ])
   ventas.value = data ?? []
   lecturas.value = Object.fromEntries(
     (lecturasData ?? []).map((l: any) => [l.venta_id, l.ultima_lectura])
   )
-  cicloActivo.value = cicloData
 
-  if (cicloData && profile.value) {
-    fechaCierrePrevista.value = cicloData.fecha_cierre_prevista
-    const empresaCiclo = cicloData.empresa ?? 'express'
-    const [{ data: ventasCicloData }, { data: profilesData }, { data: gruposData }, { data: pctGrupoData }, { data: pctLiderData }] = await Promise.all([
-      client.from('ventas').select('id, vendedor_id, precio, precio_concretado, fecha_carga')
-        .eq('estado', 'concretado')
-        .eq('empresa', empresaCiclo)
-        .gte('fecha_carga', cicloData.fecha_inicio)
-        .lte('fecha_carga', new Date().toISOString()),
-      client.from('profiles').select('id, nombre, rol, grupo_id'),
-      client.from('grupos').select('id, lider_id'),
-      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_grupo').eq('empresa', empresaCiclo).single(),
-      client.from('configuracion').select('valor').eq('clave', 'comision_porcentaje_lider').eq('empresa', empresaCiclo).single(),
-    ])
-    const pctGrupo = Number(pctGrupoData?.valor ?? 80)
-    const pctLider = Number(pctLiderData?.valor ?? 25)
-    const estimaciones = calcularEstimaciones(
-      ventasCicloData ?? [],
-      profilesData ?? [],
-      gruposData ?? [],
-      { pct_grupo: pctGrupo, pct_lider: pctLider },
-    )
-    const miEstimacion = estimaciones.find(e => e.vendedor_id === profile.value!.id)
-    if (miEstimacion) {
-      estimadoComision.value = miEstimacion.monto_comision
-      estimadoTotal.value = miEstimacion.monto_total
-      ventasConcretadasCiclo.value = miEstimacion.cantidad_ventas
-      estimadoBonus.value = miEstimacion.monto_liderazgo
-    }
-    totalComisionesCiclo.value = estimaciones.reduce((sum, e) => sum + e.monto_total, 0)
-  }
-
+  await cargarComisiones()
   loading.value = false
 })
 
-// Inicio del período: fecha_inicio del ciclo activo, o inicio del mes si no hay ciclo
+// Inicio del período: fecha más temprana de ciclos activos, o inicio del mes si no hay ciclo
 const inicioPeriodo = computed(() => {
-  if (cicloActivo.value?.fecha_inicio) return cicloActivo.value.fecha_inicio
+  if (ciclosComisiones.value.length > 0) {
+    return ciclosComisiones.value
+      .map(c => c.fechaInicio)
+      .sort()[0] // más antiguo
+  }
   return new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 })
 
@@ -430,20 +459,24 @@ const ventasFiltradas = computed(() => {
   return ventas.value.filter(v => v.empresa === empresaFiltro.value)
 })
 
+const enCiclo = (v: any) => {
+  const ciclo = ciclosComisiones.value.find(c => c.empresa === v.empresa)
+  return ciclo && v.fecha_carga >= ciclo.fechaInicio
+}
 const ventasCiclo = computed(() =>
-  ventasFiltradas.value.filter(v => v.fecha_carga >= inicioPeriodo.value)
+  ventasFiltradas.value.filter(enCiclo)
 )
 const ventasPropias = computed(() =>
   ventasFiltradas.value.filter(v => v.vendedor_id === profile.value?.id)
 )
 const ventasPropiasCiclo = computed(() =>
-  ventasPropias.value.filter(v => v.fecha_carga >= inicioPeriodo.value)
+  ventasPropias.value.filter(enCiclo)
 )
 const ventasEquipo = computed(() =>
   ventasFiltradas.value.filter(v => v.vendedor_id !== profile.value?.id)
 )
 const ventasEquipoCiclo = computed(() =>
-  ventasEquipo.value.filter(v => v.fecha_carga >= inicioPeriodo.value)
+  ventasEquipo.value.filter(enCiclo)
 )
 
 const stats = computed(() => {
@@ -454,15 +487,15 @@ const stats = computed(() => {
   const concretadas = ventasCiclo.value.filter(v => v.estado === 'concretado').length
   const ingresos = ventasCiclo.value
     .filter(v => v.estado === 'concretado')
-    .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
+    .reduce((sum: number, v: any) => sum + (Number(v.precio_concretado ?? v.precio) || 0), 0)
   const misConcretadas = propiasCiclo.filter(v => v.estado === 'concretado').length
   const misIngresos = propiasCiclo
     .filter(v => v.estado === 'concretado')
-    .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
+    .reduce((sum: number, v: any) => sum + (Number(v.precio_concretado ?? v.precio) || 0), 0)
   const equipoConcretadas = equipoCiclo.filter(v => v.estado === 'concretado').length
   const equipoIngresos = equipoCiclo
     .filter(v => v.estado === 'concretado')
-    .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
+    .reduce((sum: number, v: any) => sum + (Number(v.precio_concretado ?? v.precio) || 0), 0)
 
   return {
     misVentasCiclo: propiasCiclo.length,
@@ -509,7 +542,7 @@ const rankingVendedores = computed(() => {
   result.forEach(r => {
     const ingreso = ventasCiclo.value
       .filter(v => (v.profiles?.nombre ?? 'Desconocido') === r.nombre && v.estado === 'concretado')
-      .reduce((sum: number, v: any) => sum + (Number(v.precio) || 0), 0)
+      .reduce((sum: number, v: any) => sum + (Number(v.precio_concretado ?? v.precio) || 0), 0)
     r.ingresos = formatCompact(ingreso)
   })
   return result.sort((a, b) => b.concretadas - a.concretadas || b.total - a.total)
@@ -550,23 +583,31 @@ const distribucionEstados = computed(() => buildDistribucion(ventasCiclo.value))
 const distribucionEstadosPropias = computed(() => buildDistribucion(ventasPropiasCiclo.value))
 const distribucionEstadosEquipo = computed(() => buildDistribucion(ventasEquipoCiclo.value))
 
-const ventasPorSemana = computed(() => {
-  const semanas: Record<string, { coordinadas: number; concretadas: number; rechazadas: number }> = {}
-  ventasCiclo.value.forEach(v => {
-    const dia = new Date(v.fecha_carga).getDate()
-    const sem = `Sem ${Math.ceil(dia / 7)}`
-    if (!semanas[sem]) semanas[sem] = { coordinadas: 0, concretadas: 0, rechazadas: 0 }
-    if (v.estado === 'coordinado') semanas[sem].coordinadas++
-    if (v.estado === 'concretado') semanas[sem].concretadas++
-    if (v.estado === 'rechazado' || v.estado === 'en_conflicto') semanas[sem].rechazadas++
-  })
-  const labels = Object.keys(semanas).sort()
+const ventasPorCiclo = computed(() => {
+  if (ciclosComisiones.value.length === 0) return { labels: [], datasets: [] }
+
+  const labels: string[] = []
+  const data: number[] = []
+
+  // Ciclos cerrados (historial) — usar labels del primer empresa, sumar across all
+  const ref = ciclosComisiones.value[0]
+  for (let i = 0; i < ref.historialCiclos.length; i++) {
+    labels.push(ref.historialCiclos[i].label)
+    const total = ciclosComisiones.value.reduce((sum, cc) =>
+      sum + (cc.historialCiclos[i]?.concretadas ?? 0), 0)
+    data.push(total)
+  }
+
+  // Ciclo actual
+  const fI = new Date(ref.fechaInicio).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
+  const fC = new Date(ref.fechaCierre).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
+  labels.push(`${fI} - ${fC} *`)
+  data.push(ciclosComisiones.value.reduce((sum, cc) => sum + cc.concretadas, 0))
+
   return {
     labels,
     datasets: [
-      { label: 'Concretadas',  data: labels.map(s => semanas[s].concretadas),  backgroundColor: '#10b981' },
-      { label: 'Coordinadas',  data: labels.map(s => semanas[s].coordinadas),  backgroundColor: '#06b6d4' },
-      { label: 'Rechazadas',   data: labels.map(s => semanas[s].rechazadas),   backgroundColor: '#ef4444' },
+      { label: 'Concretadas', data, backgroundColor: '#10b981' },
     ],
   }
 })

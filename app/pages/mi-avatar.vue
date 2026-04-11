@@ -144,7 +144,7 @@
 
             <!-- Sección: Accesorios -->
             <div class="pt-8 mt-8">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2 cursor-pointer select-none" @click="onAccesoriosClick">
                 <UIcon name="i-heroicons-gift" class="w-5 h-5 text-primary-500" />
                 Accesorios
               </h3>
@@ -323,6 +323,8 @@
         </UCard>
       </div>
     </div>
+
+    <ArcadeEasterEgg v-model="showArcade" />
   </div>
 </template>
 
@@ -348,6 +350,21 @@ import {
 const profile = useCurrentProfile()
 const toast = useToast()
 const saving = ref(false)
+
+// Easter egg: 6 clicks en "Accesorios" abre el arcade
+const easterEggClicks = ref(0)
+const showArcade = ref(false)
+let easterEggTimer: ReturnType<typeof setTimeout> | null = null
+
+const onAccesoriosClick = () => {
+  easterEggClicks.value++
+  if (easterEggTimer) clearTimeout(easterEggTimer)
+  easterEggTimer = setTimeout(() => { easterEggClicks.value = 0 }, 2000)
+  if (easterEggClicks.value >= 6) {
+    easterEggClicks.value = 0
+    showArcade.value = true
+  }
+}
 
 const rolLabel = computed(() => {
   const labels: Record<string, string> = {

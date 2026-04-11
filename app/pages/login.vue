@@ -80,7 +80,7 @@
         </button>
       </form>
 
-      <a href="https://soldemayosoft.com.ar" target="_blank" class="mt-8 block text-center">
+      <a href="https://soldemayosoft.com" target="_blank" class="mt-8 block text-center">
         <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-14 mx-auto" />
       </a>
     </div>

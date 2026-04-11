@@ -36,7 +36,7 @@
 
     <!-- Footer -->
     <div class="px-6 py-5 border-t border-gray-200 dark:border-[#22314d] flex justify-center">
-      <a href="https://soldemayosoft.com.ar" target="_blank">
+      <a href="https://soldemayosoft.com" target="_blank">
         <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-10" />
       </a>
     </div>

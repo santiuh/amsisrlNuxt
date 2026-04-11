@@ -455,7 +455,7 @@ git commit -m "feat: add role-based route middleware"
     <div class="px-6 py-4 border-t border-gray-700">
       <p class="text-xs text-gray-500">
         Desarrollado por
-        <a href="https://soldemayosoft.com.ar" target="_blank" class="text-primary-400 hover:underline">
+        <a href="https://soldemayosoft.com" target="_blank" class="text-primary-400 hover:underline">
           SolDeMayoSoft
         </a>
       </p>
@@ -637,7 +637,7 @@ git commit -m "feat: add dashboard layout with sidebar and header"
 
       <p class="text-center text-xs text-gray-400 mt-4">
         Desarrollado por
-        <a href="https://soldemayosoft.com.ar" target="_blank" class="hover:underline">SolDeMayoSoft</a>
+        <a href="https://soldemayosoft.com" target="_blank" class="hover:underline">SolDeMayoSoft</a>
       </p>
     </div>
   </div>

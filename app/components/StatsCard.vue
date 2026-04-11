@@ -24,7 +24,7 @@ const props = defineProps<{
   value: string | number
   icon: string
   sub?: string
-  color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple' | 'orange' | 'teal'
+  color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple' | 'violet' | 'orange' | 'teal'
 }>()
 
 const valueSizeClass = computed(() => {
@@ -91,6 +91,15 @@ const colorThemes: Record<string, {
     value: 'text-red-700 dark:text-red-300',
     sub: 'text-red-600/60 dark:text-red-400/60',
     iconBg: 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400',
+  },
+  violet: {
+    cardBg: 'bg-violet-50 ring-1 ring-violet-200 dark:bg-violet-950/40 dark:ring-violet-500/20',
+    gradient: 'bg-gradient-to-br from-violet-500 to-violet-700',
+    glow: 'bg-violet-500',
+    label: 'text-violet-700/70 dark:text-violet-400/80',
+    value: 'text-violet-700 dark:text-violet-300',
+    sub: 'text-violet-600/60 dark:text-violet-400/60',
+    iconBg: 'bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400',
   },
   yellow: {
     cardBg: 'bg-yellow-50 ring-1 ring-yellow-200 dark:bg-yellow-950/40 dark:ring-yellow-500/20',
