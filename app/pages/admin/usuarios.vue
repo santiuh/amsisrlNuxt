@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between gap-3">
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate">Gestión de Usuarios</h2>
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate dark:text-white">Gestión de Usuarios</h2>
       <UButton
         icon="i-heroicons-plus"
         label="Nuevo Usuario"
@@ -53,7 +53,7 @@
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">Crear Nuevo Usuario</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-white">Crear Nuevo Usuario</h3>
             <UButton
               icon="i-heroicons-x-mark"
               color="gray"
@@ -106,7 +106,7 @@
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">Resetear Contraseña</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-white">Resetear Contraseña</h3>
             <UButton
               icon="i-heroicons-x-mark"
               color="gray"
@@ -177,7 +177,7 @@
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">Editar Usuario</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-white">Editar Usuario</h3>
             <UButton
               icon="i-heroicons-x-mark"
               color="gray"

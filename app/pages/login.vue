@@ -11,7 +11,7 @@
         <img
           src="/img/logo.png"
           alt="AMSI SRL"
-          class="mx-auto h-24 w-auto object-contain"
+          class="mx-auto h-28 w-auto object-contain"
         />
         <h1 class="mt-2 text-5xl leading-none font-extrabold tracking-tight text-[#17355b] drop-shadow-[0_0_20px_rgba(6,182,212,0.35)] dark:text-white/90 dark:drop-shadow-[0_0_25px_rgba(6,182,212,0.45)]">AMSI S.R.L.</h1>
         <p class="mt-5 text-2xl leading-tight font-semibold text-[#0f172a] dark:text-white/70">Iniciar Sesión</p>
@@ -81,7 +81,7 @@
       </form>
 
       <a href="https://soldemayosoft.com" target="_blank" class="mt-8 block text-center">
-        <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-14 mx-auto" />
+        <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-14 mx-auto brightness-0 opacity-40 dark:brightness-100 dark:opacity-100" />
       </a>
     </div>
   </div>

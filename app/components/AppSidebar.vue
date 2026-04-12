@@ -1,43 +1,53 @@
 <template>
   <aside
-    class="fixed inset-y-0 left-0 z-40 w-64 bg-white text-gray-700 flex flex-col border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 lg:z-auto dark:bg-[#0c162b] dark:text-gray-200 dark:border-[#22314d]"
+    class="fixed inset-y-0 left-0 z-40 w-[260px] flex flex-col transform transition-transform duration-200 ease-out lg:static lg:translate-x-0 lg:z-auto bg-[#0f172a] text-slate-400 shadow-sidebar"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
   >
     <!-- Logo -->
-    <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between dark:border-[#22314d]">
+    <div class="px-5 h-16 flex items-center justify-between shrink-0 border-b border-white/[0.06]">
       <div class="flex items-center gap-3">
-        <img src="/img/logo.png" alt="AMSI SRL" class="h-11 w-11 rounded-xl shadow-sm object-contain bg-[#1e293b] p-1" />
+        <div class="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center ring-1 ring-emerald-500/20">
+          <img src="/img/logo.png" alt="AMSI SRL" class="h-6 w-6 object-contain" />
+        </div>
         <div>
-          <h1 class="text-3xl leading-none font-extrabold tracking-tight text-gray-800 dark:text-gray-100">AMSI SRL</h1>
-          <p class="text-sm text-gray-500 mt-1 dark:text-gray-400">Gestión de Ventas</p>
+          <h1 class="text-[15px] leading-none font-bold tracking-tight text-white">AMSI SRL</h1>
+          <p class="text-[11px] text-slate-500 mt-0.5 font-medium">Gestión de Ventas</p>
         </div>
       </div>
-      <button class="lg:hidden text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200" @click="sidebarOpen = false">
+      <button class="lg:hidden p-1 rounded-md text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors" @click="sidebarOpen = false">
         <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
       </button>
     </div>
 
     <!-- Nav -->
-    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+    <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
       <NuxtLink
         v-for="item in navItems"
         :key="item.to"
         :to="item.to"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-base leading-none font-medium transition-all"
-        :class="$route.path === item.to
-          ? 'bg-gradient-to-r from-[#0ea777] to-[#19c58e] text-white shadow-sm'
-          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-300 dark:hover:bg-[#14213b] dark:hover:text-white'"
+        class="group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150"
+        :class="isActive(item.to)
+          ? 'bg-emerald-500/[0.12] text-emerald-400'
+          : 'text-slate-400 hover:bg-white/[0.04] hover:text-slate-200'"
         @click="sidebarOpen = false"
       >
-        <UIcon :name="item.icon" class="w-5 h-5 flex-shrink-0" :class="$route.path === item.to ? 'text-white' : 'text-gray-500 dark:text-gray-400'" />
-        {{ item.label }}
+        <UIcon
+          :name="item.icon"
+          class="w-[18px] h-[18px] shrink-0 transition-colors duration-150"
+          :class="isActive(item.to) ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-400'"
+        />
+        <span>{{ item.label }}</span>
+        <div
+          v-if="isActive(item.to)"
+          class="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400"
+        />
       </NuxtLink>
     </nav>
 
     <!-- Footer -->
-    <div class="px-6 py-5 border-t border-gray-200 dark:border-[#22314d] flex justify-center">
-      <a href="https://soldemayosoft.com" target="_blank">
-        <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-10" />
+    <div class="px-5 py-4 border-t border-white/[0.06] flex justify-center">
+      <a href="https://soldemayosoft.com" target="_blank" class="opacity-70 hover:opacity-100 transition-opacity">
+        <img src="/img/logo-soldemayosoft.png" alt="SolDeMayoSoft" class="h-8" />
       </a>
     </div>
   </aside>
@@ -47,6 +57,8 @@
 const sidebarOpen = useSidebarOpen()
 const profile = useCurrentProfile()
 const route = useRoute()
+
+const isActive = (path: string) => route.path === path
 
 const navItems = computed(() => {
   const rol = profile.value?.rol

@@ -1,23 +1,23 @@
 <template>
-  <div class="h-screen overflow-hidden bg-[#f3f4f6] text-gray-900 dark:bg-[#081226] dark:text-gray-100">
-    <div class="flex h-full overflow-hidden bg-[#f7f8fa] dark:bg-transparent">
-    <!-- Overlay backdrop (mobile only) -->
-    <Transition name="fade">
-      <div
-        v-if="sidebarOpen"
-        class="fixed inset-0 bg-black/40 z-30 lg:hidden"
-        @click="sidebarOpen = false"
-      />
-    </Transition>
+  <div class="h-screen overflow-hidden bg-[#f4f6f8] text-gray-900 dark:bg-[#080e1a] dark:text-gray-100">
+    <div class="flex h-full overflow-hidden">
+      <!-- Overlay backdrop (mobile only) -->
+      <Transition name="fade">
+        <div
+          v-if="sidebarOpen"
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+          @click="sidebarOpen = false"
+        />
+      </Transition>
 
-    <AppSidebar />
+      <AppSidebar />
 
-    <div class="flex-1 flex flex-col overflow-hidden w-0">
-      <AppHeader />
-      <main class="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 bg-transparent">
-        <slot />
-      </main>
-    </div>
+      <div class="flex-1 flex flex-col overflow-hidden w-0">
+        <AppHeader />
+        <main class="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6">
+          <slot />
+        </main>
+      </div>
     </div>
   </div>
 </template>

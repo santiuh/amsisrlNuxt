@@ -1,12 +1,12 @@
 <template>
   <NuxtLayout :name="esPrimerLogin ? 'auth' : 'default'">
     <!-- Forzado: pantalla completa -->
-    <div v-if="esPrimerLogin" class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#081226]">
+    <div v-if="esPrimerLogin" class="min-h-screen flex items-center justify-center bg-[#f4f6f8] dark:bg-[#080e1a]">
       <div class="w-full max-w-md px-4">
         <UCard class="shadow-lg">
           <template #header>
             <div class="text-center py-2">
-              <h1 class="text-2xl font-bold text-gray-900">AMSI SRL</h1>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">AMSI SRL</h1>
               <p class="text-sm text-gray-500 mt-1">Cambiar contraseña</p>
             </div>
           </template>
@@ -87,7 +87,7 @@
         <template #header>
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-key" class="w-5 h-5 text-primary-500" />
-            <h2 class="text-lg font-semibold text-gray-900">Cambiar contraseña</h2>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Cambiar contraseña</h2>
           </div>
         </template>
 

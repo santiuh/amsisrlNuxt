@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 p-5">
+  <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 p-5 dark:bg-white/[0.03] dark:ring-white/[0.06]">
     <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{{ title }}</h3>
     <Bar :data="chartData" :options="chartOptions" />
   </div>
@@ -37,14 +37,14 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: true,
   scales: {
     x: {
-      ticks: { color: isDark.value ? '#6b7280' : '#6b7280', font: { size: 11 } },
+      ticks: { color: isDark.value ? '#64748b' : '#94a3b8', font: { size: 11 } },
       grid: { display: false },
       border: { display: false },
     },
     y: {
       beginAtZero: true,
-      ticks: { color: isDark.value ? '#6b7280' : '#6b7280', stepSize: 1, precision: 0, font: { size: 11 } },
-      grid: { color: isDark.value ? '#1f2937' : '#f3f4f6' },
+      ticks: { color: isDark.value ? '#64748b' : '#94a3b8', stepSize: 1, precision: 0, font: { size: 11 } },
+      grid: { color: isDark.value ? 'rgba(51,65,85,0.3)' : 'rgba(226,232,240,0.5)' },
       border: { display: false },
     },
   },
@@ -52,7 +52,7 @@ const chartOptions = computed(() => ({
     legend: {
       position: 'bottom' as const,
       labels: {
-        color: isDark.value ? '#9ca3af' : '#4b5563',
+        color: isDark.value ? '#94a3b8' : '#64748b',
         padding: 14,
         usePointStyle: true,
         pointStyleWidth: 8,
@@ -60,12 +60,12 @@ const chartOptions = computed(() => ({
       },
     },
     tooltip: {
-      backgroundColor: isDark.value ? '#1f2937' : '#ffffff',
-      titleColor: isDark.value ? '#f3f4f6' : '#111827',
-      bodyColor: isDark.value ? '#d1d5db' : '#374151',
-      borderColor: isDark.value ? '#374151' : '#e5e7eb',
+      backgroundColor: isDark.value ? '#1e293b' : '#ffffff',
+      titleColor: isDark.value ? '#f1f5f9' : '#0f172a',
+      bodyColor: isDark.value ? '#94a3b8' : '#475569',
+      borderColor: isDark.value ? '#334155' : '#e2e8f0',
       borderWidth: 1,
-      cornerRadius: 8,
+      cornerRadius: 10,
       padding: 10,
     },
   },

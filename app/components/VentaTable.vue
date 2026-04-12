@@ -248,14 +248,14 @@ const estadoLabel = (e: string) => ({
 }[e] ?? e)
 
 const estadoPillClass = (e: string) => ({
-  pendiente: 'bg-gray-100 text-gray-700 ring-gray-300 dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700',
-  en_proceso: 'bg-amber-100 text-amber-800 ring-amber-300 dark:bg-amber-900/30 dark:text-amber-200 dark:ring-amber-800',
-  en_conflicto: 'bg-orange-100 text-orange-800 ring-orange-300 dark:bg-orange-900/30 dark:text-orange-200 dark:ring-orange-800',
-  rechazado: 'bg-rose-100 text-rose-800 ring-rose-300 dark:bg-rose-900/30 dark:text-rose-200 dark:ring-rose-800',
-  coordinado: 'bg-cyan-100 text-cyan-800 ring-cyan-300 dark:bg-cyan-900/30 dark:text-cyan-200 dark:ring-cyan-800',
-  concretado: 'bg-emerald-100 text-emerald-800 ring-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-200 dark:ring-emerald-800',
-  proxima_zona: 'bg-violet-100 text-violet-800 ring-violet-300 dark:bg-violet-900/30 dark:text-violet-200 dark:ring-violet-800',
-}[e] ?? 'bg-gray-100 text-gray-700 ring-gray-300 dark:bg-gray-800/80 dark:text-gray-200 dark:ring-gray-700')
+  pendiente: 'bg-gray-100 text-gray-600 ring-gray-200 dark:bg-slate-700/40 dark:text-slate-300 dark:ring-slate-600/40',
+  en_proceso: 'bg-amber-50 text-amber-700 ring-amber-200/60 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20',
+  en_conflicto: 'bg-orange-50 text-orange-700 ring-orange-200/60 dark:bg-orange-500/10 dark:text-orange-300 dark:ring-orange-500/20',
+  rechazado: 'bg-rose-50 text-rose-700 ring-rose-200/60 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20',
+  coordinado: 'bg-cyan-50 text-cyan-700 ring-cyan-200/60 dark:bg-cyan-500/10 dark:text-cyan-300 dark:ring-cyan-500/20',
+  concretado: 'bg-emerald-50 text-emerald-700 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+  proxima_zona: 'bg-violet-50 text-violet-700 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20',
+}[e] ?? 'bg-gray-100 text-gray-600 ring-gray-200 dark:bg-slate-700/40 dark:text-slate-300 dark:ring-slate-600/40')
 
 const tieneComentarioNuevo = (venta: any): boolean => {
   if (!props.lecturas) return false

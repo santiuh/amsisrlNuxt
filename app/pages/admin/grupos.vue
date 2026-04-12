@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between gap-3">
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate">Gestión de Grupos</h2>
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate dark:text-white">Gestión de Grupos</h2>
       <UButton
         icon="i-heroicons-plus"
         label="Nuevo Grupo"
@@ -41,7 +41,7 @@
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">Nuevo Grupo</h3>
+            <h3 class="font-semibold text-gray-800 dark:text-white">Nuevo Grupo</h3>
             <UButton icon="i-heroicons-x-mark" color="gray" variant="ghost" size="xs" @click="showModalCrear = false" />
           </div>
         </template>
@@ -82,7 +82,7 @@
       <UCard>
         <template #header>
           <div class="flex items-center justify-between">
-            <h3 class="font-semibold text-gray-800">
+            <h3 class="font-semibold text-gray-800 dark:text-white">
               Miembros — {{ grupoSeleccionado?.lider?.nombre }}
             </h3>
             <UButton icon="i-heroicons-x-mark" color="gray" variant="ghost" size="xs" @click="showModalMiembros = false" />

@@ -28,6 +28,22 @@ body, html {
 body {
   @apply text-base m-0 leading-[1.6]
 }
+
+/* Custom scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148,163,184,0.25) transparent;
+}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.25); border-radius: 9px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
+.dark ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.3); }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.5); }
+
+/* Selection */
+::selection { background: rgba(16,185,129,0.2); }
+.dark ::selection { background: rgba(52,211,153,0.25); }
 .buJnuC {
   @apply bg-fcfcfc text-12161e h-full;
   font-family: 'Inter', sans-serif;

@@ -5,50 +5,37 @@
 </template>
 
 <style lang="postcss">
-@keyframes fadeIn {
-  0% {
-    opacity: 0.001;
-  }
-  100% {
-    opacity: 1;
-  }
+/* Page transitions */
+.page-enter-active {
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
 }
-@keyframes fadeOut {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.001;
-  }
+.page-leave-active {
+  transition: opacity 150ms ease-in;
 }
-.page-enter-active,
-.page-leave-active,
-.layout-enter-active,
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.page-leave-to {
+  opacity: 0;
+}
+
+/* Layout transitions */
+.layout-enter-active {
+  transition: opacity 250ms ease-out;
+}
 .layout-leave-active {
-  transition: opacity 250ms;
+  transition: opacity 150ms ease-in;
 }
-.page-enter,
-.page-leave-to,
-.layout-enter,
+.layout-enter-from,
 .layout-leave-to {
   opacity: 0;
 }
-.page-enter-active,
-.layout-enter-active {
-  animation-duration: 250ms;
-  animation-name: fadeIn;
-  animation-timing-function: linear;
-  backface-visibility: hidden;
-}
-.page-leave-active,
-.layout-leave-active {
-  animation-name: fadeOut;
-  animation-duration: 0.25s;
-}
+
 /* Scale Y */
 .scale-y-enter-active,
 .scale-y-leave-active {
-  transition: all 300ms linear;
+  transition: all 300ms ease;
   will-change: max-height, opacity;
   max-height: 160px;
   overflow: hidden;

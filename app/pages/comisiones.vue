@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between gap-3">
-      <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Mis Comisiones</h2>
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Mis Comisiones</h2>
       <USelect
         v-model="empresaSeleccionada"
         :options="empresaOptions"

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between gap-3">
-      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate">
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-800 truncate dark:text-white">
         {{ profile?.rol === 'vendedor' ? 'Mis Ventas' : 'Todas las Ventas' }}
       </h2>
       <div class="flex items-center gap-2 flex-shrink-0">

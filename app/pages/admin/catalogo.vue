@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between gap-3">
-      <h2 class="text-xl font-semibold text-gray-800">Catálogo</h2>
+      <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Catálogo</h2>
       <USelect
         v-model="empresaSeleccionada"
         :options="empresaOptions"

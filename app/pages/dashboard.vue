@@ -26,8 +26,8 @@
         :colors="distribucionEstadosPropias.colors"
       />
 
-      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
         </div>
         <div class="p-1">
@@ -46,8 +46,8 @@
         :colors="distribucionEstadosPropias.colors"
       />
 
-      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
         </div>
         <div class="p-1">
@@ -63,8 +63,8 @@
         :colors="distribucionEstadosEquipo.colors"
       />
 
-      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ventas de mi Equipo</h3>
         </div>
         <div class="p-1">
@@ -89,8 +89,8 @@
         />
       </div>
 
-      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>
         </div>
         <div class="p-1">
@@ -117,8 +117,8 @@
 
       <!-- Rankings -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+        <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
             <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ranking de Vendedores (Ciclo)</h3>
           </div>
           <div class="overflow-x-auto p-1">
@@ -126,8 +126,8 @@
           </div>
         </div>
 
-        <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+        <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
             <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Actividad de Oficinistas</h3>
           </div>
           <div class="overflow-x-auto p-1">
@@ -136,8 +136,8 @@
         </div>
       </div>
 
-      <div class="rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900/50 dark:ring-white/5 overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/5">
+      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>
         </div>
         <div class="p-1">

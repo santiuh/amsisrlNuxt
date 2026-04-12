@@ -1,39 +1,51 @@
 <template>
-  <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-6 flex-shrink-0 gap-2 dark:bg-[#0c162b] dark:border-[#22314d]">
-    <div class="flex items-center gap-2 min-w-0">
-      <button class="lg:hidden p-1.5 -ml-1 rounded-md text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-[#14213b]" @click="sidebarOpen = true">
-        <UIcon name="i-heroicons-bars-3" class="w-6 h-6" />
+  <header class="h-16 bg-white/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 shrink-0 gap-3 border-b border-gray-200/60 dark:bg-[#111827]/80 dark:border-white/[0.06]">
+    <div class="flex items-center gap-3 min-w-0">
+      <button
+        class="lg:hidden p-1.5 -ml-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/5 transition-colors"
+        @click="sidebarOpen = true"
+      >
+        <UIcon name="i-heroicons-bars-3" class="w-5 h-5" />
       </button>
-      <h2 class="text-4xl leading-none font-bold text-gray-900 truncate dark:text-white">{{ pageTitle }}</h2>
+      <h2 class="text-lg sm:text-xl font-semibold text-gray-900 truncate dark:text-white tracking-tight">
+        {{ pageTitle }}
+      </h2>
     </div>
-    <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+
+    <div class="flex items-center gap-3 shrink-0">
+      <!-- User info (desktop) -->
       <div class="hidden sm:flex items-center gap-3">
-        <NuxtLink to="/mi-avatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 transition-colors shrink-0">
+        <div class="text-right mr-1">
+          <p class="text-sm font-semibold text-gray-800 leading-none dark:text-gray-100">{{ profile?.nombre }}</p>
+          <p class="text-xs text-gray-400 capitalize mt-0.5 dark:text-slate-500">{{ rolLabel }}</p>
+        </div>
+        <NuxtLink
+          to="/mi-avatar"
+          class="w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-100 hover:ring-emerald-200 transition-all duration-200 shrink-0 dark:ring-white/10 dark:hover:ring-emerald-500/30"
+        >
           <UserAvatar :config="profile?.avatar_config ?? null" :seed="profile?.nombre" class="w-full h-full" />
         </NuxtLink>
-        <div class="text-right">
-          <p class="text-xl leading-none font-semibold text-gray-800 dark:text-gray-100">{{ profile?.nombre }}</p>
-          <p class="text-base leading-none mt-1 text-gray-500 capitalize dark:text-gray-400">{{ rolLabel }}</p>
-        </div>
       </div>
+
+      <!-- Logout -->
       <UButton
         icon="i-heroicons-arrow-right-on-rectangle"
         color="gray"
-        variant="solid"
+        variant="ghost"
         size="sm"
         @click="logout"
         :loading="loading"
-        class="hidden sm:inline-flex rounded-lg px-4 bg-slate-900 hover:bg-slate-800 text-white"
+        class="hidden sm:inline-flex text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300"
         label="Salir"
       />
       <UButton
         icon="i-heroicons-arrow-right-on-rectangle"
         color="gray"
-        variant="solid"
+        variant="ghost"
         size="sm"
         @click="logout"
         :loading="loading"
-        class="sm:hidden bg-slate-900 hover:bg-slate-800 text-white"
+        class="sm:hidden text-gray-400 dark:text-slate-500"
       />
     </div>
   </header>
