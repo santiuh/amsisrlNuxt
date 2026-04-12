@@ -4,7 +4,7 @@
     {
       "name": "dev",
       "runtimeExecutable": "/Users/leonardosalvucci/Library/pnpm/pnpm",
-      "runtimeArgs": ["dev"],
+      "runtimeArgs": ["dev", "--host"],
       "port": 3000,
       "autoPort": true,
       "env": {

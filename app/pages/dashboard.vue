@@ -200,7 +200,8 @@ const formatCompact = (n: number) => {
 
 const formatFecha = (f: string) => {
   if (!f) return ''
-  return new Date(f).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
+  const date = f.length === 10 ? new Date(`${f}T12:00:00`) : new Date(f)
+  return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
 }
 
 const rankingColumns = [
@@ -531,21 +532,29 @@ const ventasConComentariosPendientes = computed(() =>
 )
 
 const rankingVendedores = computed(() => {
-  const map: Record<string, { nombre: string; total: number; concretadas: number; ingresos: string }> = {}
+  const map: Record<string, { nombre: string; total: number; concretadas: number; ingresos: number }> = {}
+
+  // "Total" = ventas creadas durante el ciclo (por fecha_carga)
   ventasCiclo.value.forEach(v => {
     const nombre = v.profiles?.nombre ?? 'Desconocido'
-    if (!map[nombre]) map[nombre] = { nombre, total: 0, concretadas: 0, ingresos: '' }
+    if (!map[nombre]) map[nombre] = { nombre, total: 0, concretadas: 0, ingresos: 0 }
     map[nombre].total++
-    if (v.estado === 'concretado') map[nombre].concretadas++
   })
-  const result = Object.values(map)
-  result.forEach(r => {
-    const ingreso = ventasCiclo.value
-      .filter(v => (v.profiles?.nombre ?? 'Desconocido') === r.nombre && v.estado === 'concretado')
-      .reduce((sum: number, v: any) => sum + (Number(v.precio_concretado ?? v.precio) || 0), 0)
-    r.ingresos = formatCompact(ingreso)
+
+  // "Concretadas" = ventas concretadas durante el ciclo (por fecha_concretado)
+  ventas.value.forEach(v => {
+    if (v.estado !== 'concretado' || !v.fecha_concretado) return
+    const ciclo = ciclosComisiones.value.find(c => c.empresa === v.empresa)
+    if (!ciclo || v.fecha_concretado < ciclo.fechaInicio) return
+    const nombre = v.profiles?.nombre ?? 'Desconocido'
+    if (!map[nombre]) map[nombre] = { nombre, total: 0, concretadas: 0, ingresos: 0 }
+    map[nombre].concretadas++
+    map[nombre].ingresos += Number(v.precio_concretado ?? v.precio) || 0
   })
-  return result.sort((a, b) => b.concretadas - a.concretadas || b.total - a.total)
+
+  return Object.values(map)
+    .map(r => ({ ...r, ingresos: formatCompact(r.ingresos) }))
+    .sort((a, b) => b.concretadas - a.concretadas || b.total - a.total)
 })
 
 const actividadOficinistas = computed(() => {

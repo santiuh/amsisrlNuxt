@@ -611,9 +611,8 @@ const cerrarCiclo = async () => {
     })
     showModalCierre.value = false
     toast.add({ title: 'Ciclo cerrado correctamente', color: 'green' })
-    cicloActivo.value = null
-    estimaciones.value = []
-    await Promise.all([cargarHistorial(), cargarPagos()])
+    await Promise.all([cargarCicloActivo(), cargarHistorial(), cargarPagos()])
+    await cargarEstimaciones()
   } catch (err: any) {
     errorModal.value = err.data?.statusMessage || 'Error al cerrar ciclo'
   } finally {

@@ -107,6 +107,14 @@
         <span v-else class="text-sm text-gray-600 dark:text-gray-300">—</span>
       </template>
 
+      <template #fecha_concretado-data="{ row }">
+        <template v-if="row.fecha_concretado">
+          <span class="block text-sm text-gray-600 dark:text-gray-300">{{ formatFecha(row.fecha_concretado) }}</span>
+          <span class="block text-xs text-gray-400 dark:text-gray-500">{{ formatHora(row.fecha_concretado) }}</span>
+        </template>
+        <span v-else class="text-sm text-gray-600 dark:text-gray-300">—</span>
+      </template>
+
       <template #localidad-data="{ row }">
         <span class="text-sm">{{ row.dir_localidad || '—' }}</span>
       </template>
@@ -208,6 +216,7 @@ const columnas = computed(() => {
     { key: 'paquete', label: 'Paquete' },
     { key: 'precio', label: 'Precio' },
     { key: 'fecha_coordinacion', label: 'Turno' },
+    { key: 'fecha_concretado', label: 'Concretado' },
     { key: 'estado', label: 'Estado' },
   ]
   if (props.showVendedor) {
@@ -348,6 +357,7 @@ const handleExport = () => {
     Precio: v.precio,
     'Forma de Pago': v.forma_pago,
     Estado: estadoLabel(v.estado),
+    'Fecha Concretado': v.fecha_concretado ? `${formatFecha(v.fecha_concretado)} ${formatHora(v.fecha_concretado)}` : '',
     Decos: v.decos ?? 1,
     Bocas: v.bocas ?? 1,
     Vendedor: v.profiles?.nombre ?? '',

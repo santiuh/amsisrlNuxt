@@ -72,7 +72,9 @@ const fmtIngreso = (n: number) => {
 
 const fmtFecha = (f: string) => {
   if (!f) return ''
-  return new Date(f).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
+  // Fechas tipo "YYYY-MM-DD" se parsean como UTC; agregar T12:00 para evitar desfase de zona horaria
+  const date = f.length === 10 ? new Date(`${f}T12:00:00`) : new Date(f)
+  return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'numeric' })
 }
 
 const LOGOS: Record<string, string> = {
