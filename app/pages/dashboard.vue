@@ -115,14 +115,29 @@
         />
       </div>
 
-      <!-- Rankings -->
+      <!-- Rankings por empresa (uno por cada ciclo activo) + actividad oficinistas -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+        <div
+          v-for="cc in ciclosComisiones"
+          :key="`ranking-${cc.empresa}`"
+          class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden"
+        >
           <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ranking de Vendedores (Ciclo)</h3>
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              Ranking {{ cc.label }} (Ciclo)
+            </h3>
           </div>
           <div class="overflow-x-auto p-1">
-            <UTable :rows="rankingVendedores" :columns="rankingColumns" />
+            <UTable :rows="cc.ranking" :columns="rankingColumns">
+              <template #vendedor-data="{ row }">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
+                    <UserAvatar :config="row.avatar_config" :seed="row.nombre" class="w-full h-full" />
+                  </div>
+                  <span :title="row.nombre">{{ row.nombre }}</span>
+                </div>
+              </template>
+            </UTable>
           </div>
         </div>
 
@@ -189,6 +204,17 @@ interface CicloComisionData {
   ultimoCiclo: { ingresos: number; concretadas: number; creadas: number } | null
   // Historial de ciclos cerrados (para bar chart)
   historialCiclos: { label: string; concretadas: number }[]
+  // Ranking de vendedores (rol vendedor/lider) alineado con calcularEstimaciones
+  ranking: Array<{
+    vendedor_id: string
+    nombre: string
+    avatar_config: any
+    creadas: number
+    concretadas: number
+    ingresos: string
+    comision: string
+    _orden: number
+  }>
 }
 const ciclosComisiones = ref<CicloComisionData[]>([])
 
@@ -205,10 +231,11 @@ const formatFecha = (f: string) => {
 }
 
 const rankingColumns = [
-  { key: 'nombre', label: 'Vendedor' },
-  { key: 'total', label: 'Total' },
+  { key: 'vendedor', label: 'Vendedor' },
+  { key: 'creadas', label: 'Creadas' },
   { key: 'concretadas', label: 'Concretadas' },
   { key: 'ingresos', label: 'Ingresos' },
+  { key: 'comision', label: 'Comisión' },
 ]
 const actividadColumns = [
   { key: 'nombre', label: 'Oficinista' },
@@ -238,7 +265,7 @@ const cargarComisiones = async () => {
 
   // Datos compartidos
   const [{ data: profilesData }, { data: gruposData }] = await Promise.all([
-    client.from('profiles').select('id, nombre, rol, grupo_id'),
+    client.from('profiles').select('id, nombre, rol, grupo_id, avatar_config'),
     client.from('grupos').select('id, lider_id'),
   ])
 
@@ -291,6 +318,29 @@ const cargarComisiones = async () => {
       )
       const miEstimacion = estimaciones.find(e => e.vendedor_id === myId)
       const cfg = EMPRESAS_CONFIG[empresa] ?? { label: empresa, color: 'gray' }
+
+      // Ranking por empresa: usa estimaciones (alineado con comisiones) + "creadas" por fecha_carga
+      const ranking = estimaciones
+        .filter(e => e.rol === 'vendedor' || e.rol === 'lider')
+        .map((e) => {
+          const perfil = profilesData?.find((p: any) => p.id === e.vendedor_id)
+          const creadas = ventas.value.filter(v =>
+            v.empresa === empresa &&
+            v.vendedor_id === e.vendedor_id &&
+            v.fecha_carga >= ciclo.fecha_inicio,
+          ).length
+          return {
+            vendedor_id: e.vendedor_id,
+            nombre: e.nombre,
+            avatar_config: (perfil as any)?.avatar_config ?? null,
+            creadas,
+            concretadas: e.cantidad_ventas,
+            ingresos: formatCompact(e.monto_total_ventas),
+            comision: formatCompact(e.monto_total),
+            _orden: e.monto_total,
+          }
+        })
+        .sort((a, b) => b._orden - a._orden || b.concretadas - a.concretadas)
 
       // Stats del ciclo actual (según rol)
       const allConcretadas = ventasCicloData ?? []
@@ -402,6 +452,7 @@ const cargarComisiones = async () => {
         totalComisiones: estimaciones.reduce((sum, e) => sum + e.monto_total, 0),
         ultimoCiclo,
         historialCiclos,
+        ranking,
       } satisfies CicloComisionData
     }),
   )
@@ -530,32 +581,6 @@ const tieneComentarioNuevo = (venta: any): boolean => {
 const ventasConComentariosPendientes = computed(() =>
   ventasFiltradas.value.filter(v => tieneComentarioNuevo(v)).length
 )
-
-const rankingVendedores = computed(() => {
-  const map: Record<string, { nombre: string; total: number; concretadas: number; ingresos: number }> = {}
-
-  // "Total" = ventas creadas durante el ciclo (por fecha_carga)
-  ventasCiclo.value.forEach(v => {
-    const nombre = v.profiles?.nombre ?? 'Desconocido'
-    if (!map[nombre]) map[nombre] = { nombre, total: 0, concretadas: 0, ingresos: 0 }
-    map[nombre].total++
-  })
-
-  // "Concretadas" = ventas concretadas durante el ciclo (por fecha_concretado)
-  ventas.value.forEach(v => {
-    if (v.estado !== 'concretado' || !v.fecha_concretado) return
-    const ciclo = ciclosComisiones.value.find(c => c.empresa === v.empresa)
-    if (!ciclo || v.fecha_concretado < ciclo.fechaInicio) return
-    const nombre = v.profiles?.nombre ?? 'Desconocido'
-    if (!map[nombre]) map[nombre] = { nombre, total: 0, concretadas: 0, ingresos: 0 }
-    map[nombre].concretadas++
-    map[nombre].ingresos += Number(v.precio_concretado ?? v.precio) || 0
-  })
-
-  return Object.values(map)
-    .map(r => ({ ...r, ingresos: formatCompact(r.ingresos) }))
-    .sort((a, b) => b.concretadas - a.concretadas || b.total - a.total)
-})
 
 const actividadOficinistas = computed(() => {
   const map: Record<string, { nombre: string; gestionadas: number }> = {}
