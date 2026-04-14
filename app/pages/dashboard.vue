@@ -115,7 +115,7 @@
         />
       </div>
 
-      <!-- Rankings por empresa (uno por cada ciclo activo) + actividad oficinistas -->
+      <!-- Rankings por empresa (uno por cada ciclo activo) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div
           v-for="cc in ciclosComisiones"
@@ -140,16 +140,10 @@
             </UTable>
           </div>
         </div>
-
-        <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Actividad de Oficinistas</h3>
-          </div>
-          <div class="overflow-x-auto p-1">
-            <UTable :rows="actividadOficinistas" :columns="actividadColumns" />
-          </div>
-        </div>
       </div>
+
+      <!-- Actividad de oficinistas (full width) -->
+      <ActividadOficinistasPanel />
 
       <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
@@ -237,11 +231,6 @@ const rankingColumns = [
   { key: 'ingresos', label: 'Ingresos' },
   { key: 'comision', label: 'Comisión' },
 ]
-const actividadColumns = [
-  { key: 'nombre', label: 'Oficinista' },
-  { key: 'gestionadas', label: 'Gestionadas' },
-]
-
 // Cargar comisiones de TODAS las empresas con ciclo activo
 const EMPRESAS_CONFIG: Record<string, { label: string; color: string }> = {
   express: { label: 'Express', color: 'purple' },
@@ -581,18 +570,6 @@ const tieneComentarioNuevo = (venta: any): boolean => {
 const ventasConComentariosPendientes = computed(() =>
   ventasFiltradas.value.filter(v => tieneComentarioNuevo(v)).length
 )
-
-const actividadOficinistas = computed(() => {
-  const map: Record<string, { nombre: string; gestionadas: number }> = {}
-  ventasFiltradas.value.forEach(v => {
-    if (v.profiles?.rol === 'oficinista' && v.estado !== 'pendiente') {
-      const nombre = v.profiles.nombre
-      if (!map[nombre]) map[nombre] = { nombre, gestionadas: 0 }
-      map[nombre].gestionadas++
-    }
-  })
-  return Object.values(map).sort((a, b) => b.gestionadas - a.gestionadas)
-})
 
 // ============ GRÁFICOS ============
 

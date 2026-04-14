@@ -14,11 +14,12 @@ interface Dataset {
   backgroundColor: string
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   title: string
   labels: string[]
   datasets: Dataset[]
-}>()
+  stacked?: boolean
+}>(), { stacked: false })
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
@@ -37,11 +38,13 @@ const chartOptions = computed(() => ({
   maintainAspectRatio: true,
   scales: {
     x: {
+      stacked: props.stacked,
       ticks: { color: isDark.value ? '#64748b' : '#94a3b8', font: { size: 11 } },
       grid: { display: false },
       border: { display: false },
     },
     y: {
+      stacked: props.stacked,
       beginAtZero: true,
       ticks: { color: isDark.value ? '#64748b' : '#94a3b8', stepSize: 1, precision: 0, font: { size: 11 } },
       grid: { color: isDark.value ? 'rgba(51,65,85,0.3)' : 'rgba(226,232,240,0.5)' },
