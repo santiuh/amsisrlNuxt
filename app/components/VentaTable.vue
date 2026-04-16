@@ -1,38 +1,15 @@
 <template>
   <div class="space-y-4">
     <!-- Filtros + Exportar -->
-    <div class="flex flex-col gap-3">
-      <div class="flex items-start justify-between gap-3">
-        <VentaFilters
-          v-model:filters="filters"
-          v-model:remember="recordarFiltros"
-          :show-vendedor="showVendedor"
-          :vendedores="vendedoresOptions"
-          :localidades="localidadesOptions"
-          class="flex-1"
-        />
-        <UButton
-          v-if="canExport"
-          icon="i-heroicons-arrow-down-tray"
-          label="Exportar CSV"
-          color="gray"
-          variant="outline"
-          size="sm"
-          class="shrink-0 hidden sm:flex"
-          @click="handleExport"
-        />
-      </div>
-      <UButton
-        v-if="canExport"
-        icon="i-heroicons-arrow-down-tray"
-        label="Exportar CSV"
-        color="gray"
-        variant="outline"
-        size="sm"
-        class="self-end sm:hidden"
-        @click="handleExport"
-      />
-    </div>
+    <VentaFilters
+      v-model:filters="filters"
+      v-model:remember="recordarFiltros"
+      :show-vendedor="showVendedor"
+      :vendedores="vendedoresOptions"
+      :localidades="localidadesOptions"
+      :can-export="canExport"
+      @export="handleExport"
+    />
 
     <!-- Tabla -->
     <div class="overflow-x-auto -mx-4 sm:mx-0">
@@ -41,7 +18,9 @@
       :rows="ventasFiltradas"
       :columns="columnas"
       :loading="loading"
+      :sort="sortState"
       :ui="{ tr: { base: 'cursor-pointer' } }"
+      @update:sort="sortState = $event"
       @select="abrirVenta"
     >
       <template #empresa-data="{ row }">
@@ -171,6 +150,8 @@ const defaultFilters = (): VentaFilterState => ({
   estado: '',
   fechaDesde: '',
   fechaHasta: '',
+  fechaConcretadoDesde: '',
+  fechaConcretadoHasta: '',
   vendedor: '',
   localidad: '',
   empresa: '',
@@ -205,22 +186,24 @@ const localidadesOptions = computed(() => {
   ]
 })
 
+const sortState = ref({ column: 'fecha_carga', direction: 'desc' as 'asc' | 'desc' })
+
 const columnas = computed(() => {
   const base = [
-    { key: 'fecha_carga', label: 'Fecha' },
-    { key: 'empresa', label: 'Empresa' },
-    { key: 'cliente', label: 'Cliente' },
-    { key: 'dni_cuil', label: 'DNI/CUIL' },
-    { key: 'telefono', label: 'Teléfono' },
-    { key: 'localidad', label: 'Localidad' },
-    { key: 'paquete', label: 'Paquete' },
-    { key: 'precio', label: 'Precio' },
-    { key: 'fecha_coordinacion', label: 'Turno' },
-    { key: 'fecha_concretado', label: 'Concretado' },
-    { key: 'estado', label: 'Estado' },
+    { key: 'fecha_carga', label: 'Fecha', sortable: true },
+    { key: 'estado', label: 'Estado', sortable: true },
+    { key: 'empresa', label: 'Empresa', sortable: true },
+    { key: 'cliente', label: 'Cliente', sortable: true },
+    { key: 'dni_cuil', label: 'DNI/CUIL', sortable: true },
+    { key: 'telefono', label: 'Teléfono', sortable: true },
+    { key: 'localidad', label: 'Localidad', sortable: true },
+    { key: 'paquete', label: 'Paquete', sortable: true },
+    { key: 'precio', label: 'Precio', sortable: true, sort: (a: number, b: number, dir: 'asc' | 'desc') => dir === 'asc' ? (a ?? 0) - (b ?? 0) : (b ?? 0) - (a ?? 0) },
+    { key: 'fecha_coordinacion', label: 'Turno', sortable: true },
+    { key: 'fecha_concretado', label: 'Concretado', sortable: true },
   ]
   if (props.showVendedor) {
-    base.splice(2, 0, { key: 'vendedor', label: 'Vendedor' })
+    base.splice(2, 0, { key: 'vendedor', label: 'Vendedor', sortable: true })
   }
   return base
 })
@@ -235,10 +218,13 @@ const ventasFiltradas = computed(() =>
     const fechaVenta = v.fecha_carga?.split('T')[0] ?? ''
     const matchFechaDesde = !filters.fechaDesde || fechaVenta >= filters.fechaDesde
     const matchFechaHasta = !filters.fechaHasta || fechaVenta <= filters.fechaHasta
+    const fechaConcretado = v.fecha_concretado?.split('T')[0] ?? ''
+    const matchConcretadoDesde = !filters.fechaConcretadoDesde || fechaConcretado >= filters.fechaConcretadoDesde
+    const matchConcretadoHasta = !filters.fechaConcretadoHasta || fechaConcretado <= filters.fechaConcretadoHasta
     const matchVendedor = !filters.vendedor || v.vendedor_id === filters.vendedor
     const matchLocalidad = !filters.localidad || v.dir_localidad === filters.localidad
     const matchEmpresa = !filters.empresa || v.empresa === filters.empresa
-    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchVendedor && matchLocalidad && matchEmpresa
+    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchConcretadoDesde && matchConcretadoHasta && matchVendedor && matchLocalidad && matchEmpresa
   }),
 )
 
@@ -304,6 +290,8 @@ const applySavedFilters = (raw: unknown) => {
   filters.estado = typeof candidate.estado === 'string' ? candidate.estado : ''
   filters.fechaDesde = typeof candidate.fechaDesde === 'string' ? candidate.fechaDesde : ''
   filters.fechaHasta = typeof candidate.fechaHasta === 'string' ? candidate.fechaHasta : ''
+  filters.fechaConcretadoDesde = typeof candidate.fechaConcretadoDesde === 'string' ? candidate.fechaConcretadoDesde : ''
+  filters.fechaConcretadoHasta = typeof candidate.fechaConcretadoHasta === 'string' ? candidate.fechaConcretadoHasta : ''
   filters.vendedor = typeof candidate.vendedor === 'string' ? candidate.vendedor : ''
   filters.localidad = typeof candidate.localidad === 'string' ? candidate.localidad : ''
   filters.empresa = typeof candidate.empresa === 'string' ? candidate.empresa : ''
