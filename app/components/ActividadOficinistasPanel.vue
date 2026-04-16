@@ -40,7 +40,7 @@
     <template v-else>
       <!-- Tabla resumen -->
       <div class="overflow-x-auto p-1">
-        <UTable :rows="summary" :columns="columns">
+        <UTable :rows="summaryWithToday" :columns="columns">
           <template #usuario-data="{ row }">
             <div class="flex items-center gap-2">
               <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
@@ -55,6 +55,16 @@
               </span>
             </div>
           </template>
+          <template #accionesHoy-data="{ row }">
+            <span :class="row.accionesHoy > 0 ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-300 dark:text-gray-600'">
+              {{ row.accionesHoy }}
+            </span>
+          </template>
+          <template #horarioHoy-data="{ row }">
+            <span class="text-xs font-mono" :class="row.horarioHoy !== '—' ? 'text-gray-700 dark:text-gray-300' : 'text-gray-300 dark:text-gray-600'">
+              {{ row.horarioHoy }}
+            </span>
+          </template>
           <template #ultimaActividad-data="{ row }">
             <span v-if="row.ultimaActividad" :title="formatFullDate(row.ultimaActividad)" class="text-gray-700 dark:text-gray-300">
               {{ formatRelative(row.ultimaActividad) }}
@@ -63,6 +73,9 @@
           </template>
         </UTable>
       </div>
+
+      <!-- Sesiones de trabajo -->
+      <ActividadSesiones :sessions="workingSessions" :oficinistas="oficinistas" />
 
       <!-- Heatmap horario -->
       <div class="px-5 pt-5 pb-4 border-t border-gray-100 dark:border-white/[0.06] mt-2">
@@ -131,6 +144,8 @@
           :stacked="true"
         />
       </div>
+      <!-- Feed de actividad -->
+      <ActividadFeed :feed="activityFeed" />
     </template>
   </div>
 </template>
@@ -149,6 +164,9 @@ const {
   heatmap,
   timeline,
   inicioHistorial,
+  activityFeed,
+  workingSessions,
+  todayStats,
 } = useOficinistaActivity()
 
 // Cargar al montar
@@ -182,12 +200,29 @@ const nombrePorId = (id: string) => oficinistas.value.find(o => o.id === id)?.no
 
 const columns = [
   { key: 'usuario', label: 'Usuario' },
+  { key: 'accionesHoy', label: 'Hoy', sortable: true },
+  { key: 'horarioHoy', label: 'Horario hoy' },
   { key: 'acciones', label: 'Acciones', sortable: true },
-  { key: 'turnosCoordinados', label: 'Turnos coordinados', sortable: true },
+  { key: 'turnosCoordinados', label: 'Turnos coord.', sortable: true },
   { key: 'ventasConcretadas', label: 'Concretadas', sortable: true },
   { key: 'cargaActual', label: 'Carga actual', sortable: true },
   { key: 'ultimaActividad', label: 'Última actividad' },
 ]
+
+// Enriquecer summary con datos de hoy
+const summaryWithToday = computed(() => {
+  return summary.value.map(row => {
+    const stat = row.id ? todayStats.value.get(row.id) : null
+    const accionesHoy = stat?.acciones ?? 0
+    let horarioHoy = '—'
+    if (stat?.firstAction && stat?.lastAction) {
+      const f = new Date(stat.firstAction).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+      const l = new Date(stat.lastAction).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+      horarioHoy = f === l ? f : `${f} - ${l}`
+    }
+    return { ...row, accionesHoy, horarioHoy }
+  })
+})
 
 const rolLabel = (rol: string) => {
   if (rol === 'admin') return 'Admin'

@@ -142,9 +142,6 @@
         </div>
       </div>
 
-      <!-- Actividad de oficinistas (full width) -->
-      <ActividadOficinistasPanel />
-
       <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>

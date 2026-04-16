@@ -7,6 +7,7 @@ import { serverSupabaseClient } from '#supabase/server'
  *  - oficinistas: perfiles con rol in ('oficinista','admin') — el personal que opera ventas
  *    (para mostrar incluso a quien tenga 0 actividad en el rango)
  *  - ventasAbiertas: ventas actualmente en en_proceso/coordinado (para calcular carga actual)
+ *  - ventasContext: info mínima de cada venta referenciada en los events (para mostrar cliente/localidad en el feed)
  */
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -51,9 +52,34 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: ventasRes.error.message })
   }
 
+  // Obtener contexto de ventas referenciadas en los events
+  const distinctVentaIds = [...new Set(
+    (eventsRes.data ?? []).map(e => e.venta_id).filter(Boolean) as string[],
+  )]
+
+  let ventasContext: Record<string, { cliente: string; dir_localidad: string | null; paquete_nombre: string; estado: string; empresa: string }> = {}
+  if (distinctVentaIds.length > 0) {
+    const { data: ventasCtx } = await client
+      .from('ventas')
+      .select('id, cliente, dir_localidad, paquete_nombre, estado, empresa')
+      .in('id', distinctVentaIds)
+    if (ventasCtx) {
+      for (const v of ventasCtx) {
+        ventasContext[v.id] = {
+          cliente: v.cliente,
+          dir_localidad: v.dir_localidad,
+          paquete_nombre: v.paquete_nombre,
+          estado: v.estado,
+          empresa: v.empresa,
+        }
+      }
+    }
+  }
+
   return {
     events: eventsRes.data ?? [],
     oficinistas: oficinistasRes.data ?? [],
     ventasAbiertas: ventasRes.data ?? [],
+    ventasContext,
   }
 })

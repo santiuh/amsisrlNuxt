@@ -33,6 +33,45 @@ export interface OficinistaSummary {
   ultimaActividad: string | null
 }
 
+export interface VentaContext {
+  cliente: string
+  dir_localidad: string | null
+  paquete_nombre: string
+  estado: string
+  empresa: string
+}
+
+export interface FeedItem {
+  id: string
+  created_at: string
+  oficinistaNombre: string
+  oficinistaAvatar: AvatarConfig | null
+  action_type: ActivityEvent['action_type']
+  from_estado: string | null
+  to_estado: string | null
+  fecha_coordinacion_set: string | null
+  metadata: Record<string, any>
+  venta: VentaContext | null
+}
+
+export interface DaySession {
+  oficinistaId: string
+  nombre: string
+  avatar_config: AvatarConfig | null
+  date: string // YYYY-MM-DD
+  firstAction: string // ISO
+  lastAction: string // ISO
+  actionCount: number
+  durationMinutes: number
+}
+
+export interface TodayStat {
+  id: string
+  acciones: number
+  firstAction: string | null
+  lastAction: string | null
+}
+
 const OFICINISTA_COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#14b8a6']
 
 export function useOficinistaActivity() {
@@ -46,6 +85,7 @@ export function useOficinistaActivity() {
   const events = ref<ActivityEvent[]>([])
   const oficinistas = ref<OficinistaRef[]>([])
   const ventasAbiertas = ref<Array<{ id: string; estado: string }>>([])
+  const ventasContext = ref<Record<string, VentaContext>>({})
   const loading = ref(false)
   const error = ref<string | null>(null)
 
@@ -110,10 +150,12 @@ export function useOficinistaActivity() {
         events: ActivityEvent[]
         oficinistas: OficinistaRef[]
         ventasAbiertas: Array<{ id: string; estado: string }>
+        ventasContext: Record<string, VentaContext>
       }>('/api/dashboard/oficinista-activity', { query })
       events.value = res.events
       oficinistas.value = res.oficinistas
       ventasAbiertas.value = res.ventasAbiertas
+      ventasContext.value = res.ventasContext ?? {}
     } catch (err: any) {
       error.value = err?.data?.statusMessage ?? err?.message ?? 'Error al cargar actividad'
       events.value = []
@@ -286,6 +328,111 @@ export function useOficinistaActivity() {
     return min
   })
 
+  /**
+   * Feed de actividad enriquecido con nombre de oficinista y contexto de venta.
+   * Ordenado por created_at desc (ya viene así del API).
+   */
+  const activityFeed = computed<FeedItem[]>(() => {
+    const ofiMap = new Map(oficinistas.value.map(o => [o.id, o]))
+    return events.value.map(ev => {
+      const ofi = ev.oficinista_id ? ofiMap.get(ev.oficinista_id) : null
+      return {
+        id: ev.id,
+        created_at: ev.created_at,
+        oficinistaNombre: ofi?.nombre ?? 'Usuario eliminado',
+        oficinistaAvatar: ofi?.avatar_config ?? null,
+        action_type: ev.action_type,
+        from_estado: ev.from_estado,
+        to_estado: ev.to_estado,
+        fecha_coordinacion_set: ev.fecha_coordinacion_set,
+        metadata: ev.metadata,
+        venta: ev.venta_id ? (ventasContext.value[ev.venta_id] ?? null) : null,
+      }
+    })
+  })
+
+  /**
+   * Sesiones de trabajo: para cada oficinista y cada día, primera/última acción y duración.
+   * Incluye oficinistas con 0 acciones en cada día para visibilidad de inactividad.
+   */
+  const workingSessions = computed<DaySession[]>(() => {
+    if (events.value.length === 0) return []
+
+    // Obtener todos los días del rango a partir de los eventos
+    const daySet = new Set<string>()
+    for (const ev of events.value) {
+      const d = new Date(ev.created_at)
+      daySet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)
+    }
+    const days = [...daySet].sort().reverse() // más reciente primero
+
+    // Agrupar eventos por (oficinista_id, día)
+    const grouped = new Map<string, { first: Date; last: Date; count: number }>()
+    for (const ev of events.value) {
+      if (!ev.oficinista_id) continue
+      const d = new Date(ev.created_at)
+      const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      const key = `${ev.oficinista_id}|${dayKey}`
+      const existing = grouped.get(key)
+      if (!existing) {
+        grouped.set(key, { first: d, last: d, count: 1 })
+      } else {
+        if (d < existing.first) existing.first = d
+        if (d > existing.last) existing.last = d
+        existing.count++
+      }
+    }
+
+    const result: DaySession[] = []
+    for (const day of days) {
+      for (const ofi of oficinistas.value) {
+        const key = `${ofi.id}|${day}`
+        const data = grouped.get(key)
+        result.push({
+          oficinistaId: ofi.id,
+          nombre: ofi.nombre,
+          avatar_config: ofi.avatar_config,
+          date: day,
+          firstAction: data ? data.first.toISOString() : '',
+          lastAction: data ? data.last.toISOString() : '',
+          actionCount: data?.count ?? 0,
+          durationMinutes: data ? Math.round((data.last.getTime() - data.first.getTime()) / 60000) : 0,
+        })
+      }
+    }
+    return result
+  })
+
+  /**
+   * Estadísticas del día de hoy por oficinista (para columnas extra en la tabla resumen).
+   */
+  const todayStats = computed<Map<string, TodayStat>>(() => {
+    const now = new Date()
+    const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+    const map = new Map<string, TodayStat>()
+
+    for (const ofi of oficinistas.value) {
+      map.set(ofi.id, { id: ofi.id, acciones: 0, firstAction: null, lastAction: null })
+    }
+
+    for (const ev of events.value) {
+      if (!ev.oficinista_id) continue
+      const d = new Date(ev.created_at)
+      const evDay = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      if (evDay !== todayKey) continue
+
+      let stat = map.get(ev.oficinista_id)
+      if (!stat) {
+        stat = { id: ev.oficinista_id, acciones: 0, firstAction: null, lastAction: null }
+        map.set(ev.oficinista_id, stat)
+      }
+      stat.acciones++
+      if (!stat.firstAction || ev.created_at < stat.firstAction) stat.firstAction = ev.created_at
+      if (!stat.lastAction || ev.created_at > stat.lastAction) stat.lastAction = ev.created_at
+    }
+    return map
+  })
+
   return {
     // state
     preset,
@@ -303,5 +450,8 @@ export function useOficinistaActivity() {
     heatmap,
     timeline,
     inicioHistorial,
+    activityFeed,
+    workingSessions,
+    todayStats,
   }
 }
