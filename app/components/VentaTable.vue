@@ -2,25 +2,26 @@
   <div class="space-y-4">
     <!-- Filtros + Exportar -->
     <VentaFilters
-      v-model:filters="filters"
+      v-model:filters="filtersModel"
       v-model:remember="recordarFiltros"
       :show-vendedor="showVendedor"
       :vendedores="vendedoresOptions"
       :localidades="localidadesOptions"
       :can-export="canExport"
-      @export="handleExport"
+      :exporting="exporting"
+      @export="$emit('export')"
     />
 
     <!-- Tabla -->
     <div class="overflow-x-auto -mx-4 sm:mx-0">
     <div class="min-w-[700px] sm:min-w-0">
     <UTable
-      :rows="ventasFiltradas"
+      :rows="ventas"
       :columns="columnas"
       :loading="loading"
-      :sort="sortState"
+      :sort="sort"
       :ui="{ tr: { base: 'cursor-pointer' } }"
-      @update:sort="sortState = $event"
+      @update:sort="onSortChange"
       @select="abrirVenta"
     >
       <template #empresa-data="{ row }">
@@ -123,70 +124,88 @@
     </div>
     </div>
 
-    <p v-if="!loading && !ventasFiltradas.length" class="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+    <p v-if="!loading && ventas.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
       No hay ventas que coincidan con los filtros.
     </p>
+
+    <!-- Paginación -->
+    <div
+      v-if="total > 0"
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-gray-200/60 dark:border-white/[0.06]"
+    >
+      <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+        <span class="hidden sm:inline">Mostrar</span>
+        <USelect
+          :model-value="pageSize"
+          :options="pageSizeOptions"
+          size="xs"
+          class="w-[80px]"
+          @update:model-value="$emit('update:pageSize', Number($event))"
+        />
+        <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+          {{ rangeStart }}–{{ rangeEnd }} de {{ total.toLocaleString('es-AR') }}
+        </span>
+      </div>
+
+      <UPagination
+        :model-value="page"
+        :page-count="pageSize"
+        :total="total"
+        :max="5"
+        size="sm"
+        @update:model-value="$emit('update:page', $event)"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { exportCsv } from '~/utils/exportCsv'
 import { buildVentaWhatsappUrl } from '~/utils/whatsapp'
 import type { VentaFilterState } from '~/components/VentaFilters.vue'
+import type { VentasSortState } from '~/composables/useVentasList'
 
 const props = defineProps<{
   ventas: any[]
   loading?: boolean
+  total: number
+  page: number
+  pageSize: number
+  sort: VentasSortState
+  filters: VentaFilterState
+  exporting?: boolean
   canExport?: boolean
   showVendedor?: boolean
-  lecturas?: Record<string, string>  // venta_id → ultima_lectura ISO
+  lecturas?: Record<string, string>
+  vendedoresOptions: { label: string; value: string }[]
+  localidadesOptions: { label: string; value: string }[]
+}>()
+
+const emit = defineEmits<{
+  'update:page': [value: number]
+  'update:pageSize': [value: number]
+  'update:sort': [value: VentasSortState]
+  export: []
 }>()
 
 const STORAGE_REMEMBER_KEY = 'ventas-filtros-recordar'
 const STORAGE_FILTERS_KEY = 'ventas-filtros'
 
-const defaultFilters = (): VentaFilterState => ({
-  search: '',
-  estado: '',
-  fechaDesde: '',
-  fechaHasta: '',
-  fechaConcretadoDesde: '',
-  fechaConcretadoHasta: '',
-  vendedor: '',
-  localidad: '',
-  empresa: '',
-})
-
 const recordarFiltros = ref(false)
 
-const filters = reactive<VentaFilterState>(defaultFilters())
+const filtersModel = toRef(props, 'filters')
 
-const vendedoresOptions = computed(() => {
-  const map = new Map<string, string>()
-  props.ventas.forEach(v => {
-    if (v.vendedor_id && v.profiles?.nombre) {
-      map.set(v.vendedor_id, v.profiles.nombre)
-    }
-  })
-  return [
-    { label: 'Todos los vendedores', value: '' },
-    ...Array.from(map, ([value, label]) => ({ label, value }))
-      .sort((a, b) => a.label.localeCompare(b.label)),
-  ]
-})
+const pageSizeOptions = [
+  { label: '25', value: 25 },
+  { label: '50', value: 50 },
+  { label: '100', value: 100 },
+]
 
-const localidadesOptions = computed(() => {
-  const set = new Set<string>()
-  props.ventas.forEach(v => {
-    if (v.dir_localidad) set.add(v.dir_localidad)
-  })
-  return [
-    { label: 'Todas las localidades', value: '' },
-    ...[...set].sort().map(l => ({ label: l, value: l })),
-  ]
-})
-
-const sortState = ref({ column: 'fecha_carga', direction: 'desc' as 'asc' | 'desc' })
+const rangeStart = computed(() =>
+  props.total === 0 ? 0 : (props.page - 1) * props.pageSize + 1,
+)
+const rangeEnd = computed(() =>
+  Math.min(props.page * props.pageSize, props.total),
+)
 
 const columnas = computed(() => {
   const base = [
@@ -198,7 +217,7 @@ const columnas = computed(() => {
     { key: 'telefono', label: 'Teléfono', sortable: true },
     { key: 'localidad', label: 'Localidad', sortable: true },
     { key: 'paquete', label: 'Paquete', sortable: true },
-    { key: 'precio', label: 'Precio', sortable: true, sort: (a: number, b: number, dir: 'asc' | 'desc') => dir === 'asc' ? (a ?? 0) - (b ?? 0) : (b ?? 0) - (a ?? 0) },
+    { key: 'precio', label: 'Precio', sortable: true },
     { key: 'fecha_coordinacion', label: 'Turno', sortable: true },
     { key: 'fecha_concretado', label: 'Concretado', sortable: true },
   ]
@@ -208,25 +227,9 @@ const columnas = computed(() => {
   return base
 })
 
-const ventasFiltradas = computed(() =>
-  props.ventas.filter(v => {
-    const q = filters.search.toLowerCase()
-    const matchSearch = !q ||
-      v.cliente?.toLowerCase().includes(q) ||
-      v.dni_cuil?.toLowerCase().includes(q)
-    const matchEstado = !filters.estado || v.estado === filters.estado
-    const fechaVenta = v.fecha_carga?.split('T')[0] ?? ''
-    const matchFechaDesde = !filters.fechaDesde || fechaVenta >= filters.fechaDesde
-    const matchFechaHasta = !filters.fechaHasta || fechaVenta <= filters.fechaHasta
-    const fechaConcretado = v.fecha_concretado?.split('T')[0] ?? ''
-    const matchConcretadoDesde = !filters.fechaConcretadoDesde || fechaConcretado >= filters.fechaConcretadoDesde
-    const matchConcretadoHasta = !filters.fechaConcretadoHasta || fechaConcretado <= filters.fechaConcretadoHasta
-    const matchVendedor = !filters.vendedor || v.vendedor_id === filters.vendedor
-    const matchLocalidad = !filters.localidad || v.dir_localidad === filters.localidad
-    const matchEmpresa = !filters.empresa || v.empresa === filters.empresa
-    return matchSearch && matchEstado && matchFechaDesde && matchFechaHasta && matchConcretadoDesde && matchConcretadoHasta && matchVendedor && matchLocalidad && matchEmpresa
-  }),
-)
+function onSortChange(next: { column: string; direction: 'asc' | 'desc' }) {
+  emit('update:sort', { column: next.column, direction: next.direction })
+}
 
 const estadoLabel = (e: string) => ({
   pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
@@ -286,15 +289,16 @@ const formatNombreResumido = (value: unknown) => {
 const applySavedFilters = (raw: unknown) => {
   if (!raw || typeof raw !== 'object') return
   const candidate = raw as Partial<VentaFilterState>
-  filters.search = typeof candidate.search === 'string' ? candidate.search : ''
-  filters.estado = typeof candidate.estado === 'string' ? candidate.estado : ''
-  filters.fechaDesde = typeof candidate.fechaDesde === 'string' ? candidate.fechaDesde : ''
-  filters.fechaHasta = typeof candidate.fechaHasta === 'string' ? candidate.fechaHasta : ''
-  filters.fechaConcretadoDesde = typeof candidate.fechaConcretadoDesde === 'string' ? candidate.fechaConcretadoDesde : ''
-  filters.fechaConcretadoHasta = typeof candidate.fechaConcretadoHasta === 'string' ? candidate.fechaConcretadoHasta : ''
-  filters.vendedor = typeof candidate.vendedor === 'string' ? candidate.vendedor : ''
-  filters.localidad = typeof candidate.localidad === 'string' ? candidate.localidad : ''
-  filters.empresa = typeof candidate.empresa === 'string' ? candidate.empresa : ''
+  const f = props.filters
+  f.search = typeof candidate.search === 'string' ? candidate.search : ''
+  f.estado = typeof candidate.estado === 'string' ? candidate.estado : ''
+  f.fechaDesde = typeof candidate.fechaDesde === 'string' ? candidate.fechaDesde : ''
+  f.fechaHasta = typeof candidate.fechaHasta === 'string' ? candidate.fechaHasta : ''
+  f.fechaConcretadoDesde = typeof candidate.fechaConcretadoDesde === 'string' ? candidate.fechaConcretadoDesde : ''
+  f.fechaConcretadoHasta = typeof candidate.fechaConcretadoHasta === 'string' ? candidate.fechaConcretadoHasta : ''
+  f.vendedor = typeof candidate.vendedor === 'string' ? candidate.vendedor : ''
+  f.localidad = typeof candidate.localidad === 'string' ? candidate.localidad : ''
+  f.empresa = typeof candidate.empresa === 'string' ? candidate.empresa : ''
 }
 
 onMounted(() => {
@@ -317,45 +321,19 @@ watch(recordarFiltros, (enabled) => {
   localStorage.setItem(STORAGE_REMEMBER_KEY, enabled ? '1' : '0')
 
   if (enabled) {
-    localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(filters))
+    localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(props.filters))
     return
   }
 
   localStorage.removeItem(STORAGE_FILTERS_KEY)
 })
 
-watch(filters, (next) => {
-  if (!import.meta.client || !recordarFiltros.value) return
-  localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(next))
-}, { deep: true })
-
-const handleExport = () => {
-  const data = ventasFiltradas.value.map(v => ({
-    Fecha: formatFecha(v.fecha_carga),
-    Empresa: v.empresa === 'ultra' ? 'Ultra' : 'Express',
-    Cliente: v.cliente,
-    'DNI/CUIL': v.dni_cuil,
-    Dirección: v.dir_calle ?? '',
-    'Entre calles': v.dir_entre_calles ?? '',
-    Localidad: v.dir_localidad ?? '',
-    Aclaración: v.dir_aclaracion ?? '',
-    Teléfono: v.telefono ?? '',
-    Email: v.mail ?? '',
-    Paquete: v.paquete_nombre ?? '',
-    Precio: v.precio,
-    'Forma de Pago': v.forma_pago,
-    Estado: estadoLabel(v.estado),
-    'Fecha Concretado': v.fecha_concretado ? `${formatFecha(v.fecha_concretado)} ${formatHora(v.fecha_concretado)}` : '',
-    Decos: v.decos ?? 1,
-    Bocas: v.bocas ?? 1,
-    Vendedor: v.profiles?.nombre ?? '',
-    'Comentarios Venta': v.comentarios_venta ?? '',
-    'Comentarios Gestión': Array.isArray(v.comentarios_gestion)
-      ? v.comentarios_gestion.map((e: any) =>
-          `[${formatFechaHora(e.fecha_hora)}] ${e.autor}: ${e.texto}`
-        ).join(' | ')
-      : (v.comentarios_gestion ?? ''),
-  }))
-  exportCsv(data, `ventas-${new Date().toISOString().split('T')[0]}.csv`)
-}
+watch(
+  () => ({ ...props.filters }),
+  (next) => {
+    if (!import.meta.client || !recordarFiltros.value) return
+    localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(next))
+  },
+  { deep: true },
+)
 </script>

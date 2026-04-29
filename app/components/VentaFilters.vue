@@ -17,6 +17,8 @@
         variant="outline"
         size="sm"
         class="shrink-0 hidden sm:flex"
+        :loading="exporting"
+        :disabled="exporting"
         @click="$emit('export')"
       />
       <label class="shrink-0 hidden sm:flex items-center gap-2 cursor-pointer select-none">
@@ -149,6 +151,8 @@
           variant="outline"
           size="xs"
           class="sm:hidden"
+          :loading="exporting"
+          :disabled="exporting"
           @click="$emit('export')"
         />
       </div>
@@ -174,6 +178,7 @@ const props = withDefaults(defineProps<{
   vendedores: { label: string; value: string }[]
   localidades?: { label: string; value: string }[]
   canExport?: boolean
+  exporting?: boolean
 }>(), {
   localidades: () => [],
 })
