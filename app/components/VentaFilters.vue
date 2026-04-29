@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-3">
-    <!-- Fila 1: Búsqueda + recordar + exportar -->
+    <!-- Fila 1: Búsqueda + limpiar + exportar + recordar -->
     <div class="flex items-center gap-2.5">
       <UInput
         :model-value="filters.search"
@@ -9,6 +9,33 @@
         class="flex-1 min-w-0"
         @update:model-value="filters.search = $event"
       />
+      <Transition name="clear-filters">
+        <button
+          v-if="countFiltrosActivos > 0"
+          type="button"
+          class="group inline-flex items-center gap-1.5 px-2.5 h-9 shrink-0 rounded-md
+                 bg-gray-50 hover:bg-gray-100 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]
+                 ring-1 ring-inset ring-gray-200/80 dark:ring-white/[0.08]
+                 hover:ring-gray-300 dark:hover:ring-white/[0.16]
+                 text-xs font-medium text-gray-600 dark:text-gray-300
+                 transition-all"
+          :title="`Limpiar ${countFiltrosActivos} filtro${countFiltrosActivos === 1 ? '' : 's'}`"
+          @click="limpiarFiltros"
+        >
+          <UIcon
+            name="i-heroicons-x-mark"
+            class="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors"
+          />
+          <span class="hidden sm:inline">Limpiar</span>
+          <span
+            class="inline-flex items-center justify-center min-w-[1.25rem] h-[1.125rem] px-1 rounded
+                   bg-gray-200/80 dark:bg-white/[0.1]
+                   text-[10px] font-semibold tabular-nums text-gray-700 dark:text-gray-200"
+          >
+            {{ countFiltrosActivos }}
+          </span>
+        </button>
+      </Transition>
       <UButton
         v-if="canExport"
         icon="i-heroicons-arrow-down-tray"
@@ -74,6 +101,8 @@
             :variant="presetCargaActivo === p.key ? 'solid' : 'outline'"
             class="justify-center"
             :ui="{ rounded: 'rounded-md' }"
+            :aria-pressed="presetCargaActivo === p.key"
+            :title="presetCargaActivo === p.key ? 'Click para deseleccionar' : p.label"
             @click="aplicarPresetCarga(p.key)"
           />
         </div>
@@ -108,6 +137,8 @@
             :variant="presetConcretadoActivo === p.key ? 'solid' : 'outline'"
             class="justify-center"
             :ui="{ rounded: 'rounded-md' }"
+            :aria-pressed="presetConcretadoActivo === p.key"
+            :title="presetConcretadoActivo === p.key ? 'Click para deseleccionar' : p.label"
             @click="aplicarPresetConcretado(p.key)"
           />
         </div>
@@ -127,35 +158,23 @@
       </div>
     </div>
 
-    <!-- Fila 4: Acciones -->
-    <div class="flex items-center justify-between">
-      <label class="sm:hidden flex items-center gap-2 cursor-pointer select-none">
+    <!-- Fila 4: Acciones (solo mobile) -->
+    <div class="flex items-center justify-between sm:hidden">
+      <label class="flex items-center gap-2 cursor-pointer select-none">
         <UToggle v-model="remember" color="primary" size="sm" />
         <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Recordar filtros</span>
       </label>
-      <div class="flex items-center gap-2 sm:ml-auto">
-        <UButton
-          v-if="tieneAlgunFiltro"
-          icon="i-heroicons-x-mark"
-          label="Limpiar filtros"
-          size="xs"
-          color="gray"
-          variant="ghost"
-          @click="limpiarFiltros"
-        />
-        <UButton
-          v-if="canExport"
-          icon="i-heroicons-arrow-down-tray"
-          label="Exportar CSV"
-          color="gray"
-          variant="outline"
-          size="xs"
-          class="sm:hidden"
-          :loading="exporting"
-          :disabled="exporting"
-          @click="$emit('export')"
-        />
-      </div>
+      <UButton
+        v-if="canExport"
+        icon="i-heroicons-arrow-down-tray"
+        label="Exportar CSV"
+        color="gray"
+        variant="outline"
+        size="xs"
+        :loading="exporting"
+        :disabled="exporting"
+        @click="$emit('export')"
+      />
     </div>
   </div>
 </template>
@@ -211,12 +230,18 @@ const presets = [
   { key: 'mes_pasado', label: 'Mes pasado' },
 ]
 
-const tieneAlgunFiltro = computed(() =>
-  filters.value.search || filters.value.estado || filters.value.fechaDesde ||
-  filters.value.fechaHasta || filters.value.fechaConcretadoDesde ||
-  filters.value.fechaConcretadoHasta || filters.value.vendedor ||
-  filters.value.localidad || filters.value.empresa,
-)
+const countFiltrosActivos = computed(() => {
+  const f = filters.value
+  let n = 0
+  if (f.search) n++
+  if (f.estado) n++
+  if (f.fechaDesde || f.fechaHasta) n++
+  if (f.fechaConcretadoDesde || f.fechaConcretadoHasta) n++
+  if (f.vendedor) n++
+  if (f.localidad) n++
+  if (f.empresa) n++
+  return n
+})
 
 const yyyy = (d: Date): string => d.toISOString().split('T')[0]!
 
@@ -245,6 +270,12 @@ function calcularRango(preset: string): { desde: string; hasta: string } {
 }
 
 function aplicarPresetCarga(preset: string) {
+  if (presetCargaActivo.value === preset) {
+    presetCargaActivo.value = ''
+    filters.value.fechaDesde = ''
+    filters.value.fechaHasta = ''
+    return
+  }
   presetCargaActivo.value = preset
   const { desde, hasta } = calcularRango(preset)
   filters.value.fechaDesde = desde
@@ -252,6 +283,12 @@ function aplicarPresetCarga(preset: string) {
 }
 
 function aplicarPresetConcretado(preset: string) {
+  if (presetConcretadoActivo.value === preset) {
+    presetConcretadoActivo.value = ''
+    filters.value.fechaConcretadoDesde = ''
+    filters.value.fechaConcretadoHasta = ''
+    return
+  }
   presetConcretadoActivo.value = preset
   const { desde, hasta } = calcularRango(preset)
   filters.value.fechaConcretadoDesde = desde
@@ -292,3 +329,15 @@ function limpiarFiltros() {
   presetConcretadoActivo.value = ''
 }
 </script>
+
+<style scoped>
+.clear-filters-enter-active,
+.clear-filters-leave-active {
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.clear-filters-enter-from,
+.clear-filters-leave-to {
+  opacity: 0;
+  transform: scale(0.92);
+}
+</style>
