@@ -2,24 +2,25 @@
   <div class="space-y-4">
     <!-- Filtros + Exportar -->
     <VentaFilters
-      v-model:filters="filtersModel"
+      v-model:filters="currentFilters"
       v-model:remember="recordarFiltros"
       :show-vendedor="showVendedor"
-      :vendedores="vendedoresOptions"
-      :localidades="localidadesOptions"
+      :vendedores="effectiveVendedoresOptions"
+      :localidades="effectiveLocalidadesOptions"
       :can-export="canExport"
       :exporting="exporting"
-      @export="$emit('export')"
+      :show-remember-toggle="serverPaginated"
+      @export="handleExport"
     />
 
     <!-- Tabla -->
     <div class="overflow-x-auto -mx-4 sm:mx-0">
     <div class="min-w-[700px] sm:min-w-0">
     <UTable
-      :rows="ventas"
+      :rows="displayVentas"
       :columns="columnas"
       :loading="loading"
-      :sort="sort"
+      :sort="currentSort"
       :ui="{ tr: { base: 'cursor-pointer' } }"
       @update:sort="onSortChange"
       @select="abrirVenta"
@@ -124,61 +125,68 @@
     </div>
     </div>
 
-    <p v-if="!loading && ventas.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+    <p v-if="!loading && displayVentas.length === 0" class="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
       No hay ventas que coincidan con los filtros.
     </p>
 
     <!-- Paginación -->
     <div
-      v-if="total > 0"
+      v-if="effectiveTotal > 0"
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-gray-200/60 dark:border-white/[0.06]"
     >
       <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
         <span class="hidden sm:inline">Mostrar</span>
         <USelect
-          :model-value="pageSize"
+          :model-value="currentPageSize"
           :options="pageSizeOptions"
           size="xs"
           class="w-[80px]"
-          @update:model-value="$emit('update:pageSize', Number($event))"
+          @update:model-value="onPageSizeChange(Number($event))"
         />
         <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-          {{ rangeStart }}–{{ rangeEnd }} de {{ total.toLocaleString('es-AR') }}
+          {{ rangeStart }}–{{ rangeEnd }} de {{ effectiveTotal.toLocaleString('es-AR') }}
         </span>
       </div>
 
       <UPagination
-        :model-value="page"
-        :page-count="pageSize"
-        :total="total"
+        :model-value="currentPage"
+        :page-count="currentPageSize"
+        :total="effectiveTotal"
         :max="5"
         size="sm"
-        @update:model-value="$emit('update:page', $event)"
+        @update:model-value="onPageChange"
       />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { exportCsv } from '~/utils/exportCsv'
 import { buildVentaWhatsappUrl } from '~/utils/whatsapp'
 import type { VentaFilterState } from '~/components/VentaFilters.vue'
 import type { VentasSortState } from '~/composables/useVentasList'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   ventas: any[]
   loading?: boolean
-  total: number
-  page: number
-  pageSize: number
-  sort: VentasSortState
-  filters: VentaFilterState
+  // Server-paginated mode (opcional). Si total/page/pageSize están definidos,
+  // el componente delega control al padre. Si no, maneja todo internamente.
+  total?: number
+  page?: number
+  pageSize?: number
+  sort?: VentasSortState
+  filters?: VentaFilterState
   exporting?: boolean
   canExport?: boolean
   showVendedor?: boolean
   lecturas?: Record<string, string>
-  vendedoresOptions: { label: string; value: string }[]
-  localidadesOptions: { label: string; value: string }[]
-}>()
+  vendedoresOptions?: { label: string; value: string }[]
+  localidadesOptions?: { label: string; value: string }[]
+  // Tamaño de página por defecto en modo cliente (default 25)
+  defaultPageSize?: number
+}>(), {
+  defaultPageSize: 25,
+})
 
 const emit = defineEmits<{
   'update:page': [value: number]
@@ -187,25 +195,195 @@ const emit = defineEmits<{
   export: []
 }>()
 
+// Modo: si el padre pasa `total`, asumimos server-paginated.
+const serverPaginated = computed(() => props.total !== undefined)
+
 const STORAGE_REMEMBER_KEY = 'ventas-filtros-recordar'
 const STORAGE_FILTERS_KEY = 'ventas-filtros'
 
 const recordarFiltros = ref(false)
 
-const filtersModel = toRef(props, 'filters')
+// Estado interno (modo cliente)
+const filtersInternal = reactive<VentaFilterState>({
+  search: '',
+  estado: '',
+  fechaDesde: '',
+  fechaHasta: '',
+  fechaConcretadoDesde: '',
+  fechaConcretadoHasta: '',
+  vendedor: '',
+  localidad: '',
+  empresa: '',
+})
+const pageInternal = ref(1)
+const pageSizeInternal = ref(props.defaultPageSize)
+const sortInternal = ref<VentasSortState>({ column: 'fecha_carga', direction: 'desc' })
+
+// Refs unificados: leen del padre (server) o del estado interno (client).
+// Usamos computed con get/set para que `v-model:filters` y demás funcionen igual en ambos modos.
+const currentFilters = computed<VentaFilterState>({
+  get: () => (serverPaginated.value && props.filters ? props.filters : filtersInternal),
+  set: () => {}, // mutaciones son in-place sobre el reactive — no hay reasignación
+})
+const currentPage = computed(() =>
+  serverPaginated.value ? (props.page ?? 1) : pageInternal.value,
+)
+const currentPageSize = computed(() =>
+  serverPaginated.value ? (props.pageSize ?? props.defaultPageSize) : pageSizeInternal.value,
+)
+const currentSort = computed(() =>
+  serverPaginated.value ? (props.sort ?? sortInternal.value) : sortInternal.value,
+)
 
 const pageSizeOptions = [
+  { label: '10', value: 10 },
   { label: '25', value: 25 },
   { label: '50', value: 50 },
   { label: '100', value: 100 },
 ]
 
+// === Modo cliente: derivar opciones, filtrar, ordenar y paginar ===
+
+const derivedVendedoresOptions = computed(() => {
+  const map = new Map<string, string>()
+  props.ventas.forEach((v) => {
+    if (v.vendedor_id && v.profiles?.nombre) {
+      map.set(v.vendedor_id, v.profiles.nombre)
+    }
+  })
+  return [
+    { label: 'Todos los vendedores', value: '' },
+    ...Array.from(map, ([value, label]) => ({ label, value }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  ]
+})
+
+const derivedLocalidadesOptions = computed(() => {
+  const set = new Set<string>()
+  props.ventas.forEach((v) => {
+    if (v.dir_localidad) set.add(v.dir_localidad)
+  })
+  return [
+    { label: 'Todas las localidades', value: '' },
+    ...[...set].sort().map((l) => ({ label: l, value: l })),
+  ]
+})
+
+const effectiveVendedoresOptions = computed(() =>
+  props.vendedoresOptions ?? derivedVendedoresOptions.value,
+)
+const effectiveLocalidadesOptions = computed(() =>
+  props.localidadesOptions ?? derivedLocalidadesOptions.value,
+)
+
+const filteredVentas = computed(() => {
+  if (serverPaginated.value) return props.ventas
+  const f = filtersInternal
+  const q = f.search.toLowerCase().trim()
+  return props.ventas.filter((v) => {
+    if (q && !(v.cliente?.toLowerCase().includes(q) || v.dni_cuil?.toLowerCase().includes(q))) return false
+    if (f.estado && v.estado !== f.estado) return false
+    if (f.empresa && v.empresa !== f.empresa) return false
+    if (f.vendedor && v.vendedor_id !== f.vendedor) return false
+    if (f.localidad && v.dir_localidad !== f.localidad) return false
+    const fechaCarga = v.fecha_carga?.split('T')[0] ?? ''
+    if (f.fechaDesde && fechaCarga < f.fechaDesde) return false
+    if (f.fechaHasta && fechaCarga > f.fechaHasta) return false
+    const fechaConcretado = v.fecha_concretado?.split('T')[0] ?? ''
+    if (f.fechaConcretadoDesde && fechaConcretado < f.fechaConcretadoDesde) return false
+    if (f.fechaConcretadoHasta && fechaConcretado > f.fechaConcretadoHasta) return false
+    return true
+  })
+})
+
+const SORT_FIELD_MAP: Record<string, string> = {
+  localidad: 'dir_localidad',
+  paquete: 'paquete_nombre',
+  vendedor: 'profiles.nombre',
+}
+
+function getSortValue(row: any, key: string): unknown {
+  const path = SORT_FIELD_MAP[key] ?? key
+  if (path.includes('.')) {
+    return path.split('.').reduce<any>((acc, k) => (acc == null ? acc : acc[k]), row)
+  }
+  return row[path]
+}
+
+const sortedVentas = computed(() => {
+  if (serverPaginated.value) return filteredVentas.value
+  const arr = [...filteredVentas.value]
+  const { column, direction } = sortInternal.value
+  const dir = direction === 'asc' ? 1 : -1
+  arr.sort((a, b) => {
+    const av = getSortValue(a, column)
+    const bv = getSortValue(b, column)
+    if (av == null && bv == null) return 0
+    if (av == null) return 1
+    if (bv == null) return -1
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir
+    return String(av).localeCompare(String(bv)) * dir
+  })
+  return arr
+})
+
+const displayVentas = computed(() => {
+  if (serverPaginated.value) return props.ventas
+  const start = (pageInternal.value - 1) * pageSizeInternal.value
+  return sortedVentas.value.slice(start, start + pageSizeInternal.value)
+})
+
+const effectiveTotal = computed(() =>
+  serverPaginated.value ? (props.total ?? 0) : sortedVentas.value.length,
+)
+
 const rangeStart = computed(() =>
-  props.total === 0 ? 0 : (props.page - 1) * props.pageSize + 1,
+  effectiveTotal.value === 0 ? 0 : (currentPage.value - 1) * currentPageSize.value + 1,
 )
 const rangeEnd = computed(() =>
-  Math.min(props.page * props.pageSize, props.total),
+  Math.min(currentPage.value * currentPageSize.value, effectiveTotal.value),
 )
+
+// Reset a página 1 cuando cambian filtros o sort en modo cliente
+watch(
+  () => [
+    filtersInternal.search,
+    filtersInternal.estado,
+    filtersInternal.empresa,
+    filtersInternal.vendedor,
+    filtersInternal.localidad,
+    filtersInternal.fechaDesde,
+    filtersInternal.fechaHasta,
+    filtersInternal.fechaConcretadoDesde,
+    filtersInternal.fechaConcretadoHasta,
+    sortInternal.value.column,
+    sortInternal.value.direction,
+    pageSizeInternal.value,
+  ],
+  () => {
+    if (!serverPaginated.value) pageInternal.value = 1
+  },
+)
+
+// === Handlers ===
+
+function onSortChange(next: { column: string; direction: 'asc' | 'desc' }) {
+  if (serverPaginated.value) {
+    emit('update:sort', { column: next.column, direction: next.direction })
+  } else {
+    sortInternal.value = { column: next.column, direction: next.direction }
+  }
+}
+
+function onPageChange(next: number) {
+  if (serverPaginated.value) emit('update:page', next)
+  else pageInternal.value = next
+}
+
+function onPageSizeChange(next: number) {
+  if (serverPaginated.value) emit('update:pageSize', next)
+  else pageSizeInternal.value = next
+}
 
 const columnas = computed(() => {
   const base = [
@@ -226,10 +404,6 @@ const columnas = computed(() => {
   }
   return base
 })
-
-function onSortChange(next: { column: string; direction: 'asc' | 'desc' }) {
-  emit('update:sort', { column: next.column, direction: next.direction })
-}
 
 const estadoLabel = (e: string) => ({
   pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
@@ -286,10 +460,50 @@ const formatNombreResumido = (value: unknown) => {
   return `${nombre} ${apellido.charAt(0)}.`
 }
 
+// === Export ===
+//
+// En modo server, se delega al padre vía emit('export'). En modo cliente,
+// exportamos las ventas filtradas (no solo la página actual).
+function handleExport() {
+  if (serverPaginated.value) {
+    emit('export')
+    return
+  }
+  const data = sortedVentas.value.map((v: any) => ({
+    Fecha: formatFecha(v.fecha_carga),
+    Empresa: v.empresa === 'ultra' ? 'Ultra' : 'Express',
+    Cliente: v.cliente,
+    'DNI/CUIL': v.dni_cuil,
+    Dirección: v.dir_calle ?? '',
+    'Entre calles': v.dir_entre_calles ?? '',
+    Localidad: v.dir_localidad ?? '',
+    Aclaración: v.dir_aclaracion ?? '',
+    Teléfono: v.telefono ?? '',
+    Email: v.mail ?? '',
+    Paquete: v.paquete_nombre ?? '',
+    Precio: v.precio,
+    'Forma de Pago': v.forma_pago,
+    Estado: estadoLabel(v.estado),
+    'Fecha Concretado': v.fecha_concretado ? `${formatFecha(v.fecha_concretado)} ${formatHora(v.fecha_concretado)}` : '',
+    Decos: v.decos ?? 1,
+    Bocas: v.bocas ?? 1,
+    Vendedor: v.profiles?.nombre ?? '',
+    'Comentarios Venta': v.comentarios_venta ?? '',
+    'Comentarios Gestión': Array.isArray(v.comentarios_gestion)
+      ? v.comentarios_gestion.map((e: any) =>
+          `[${formatFechaHora(e.fecha_hora)}] ${e.autor}: ${e.texto}`
+        ).join(' | ')
+      : (v.comentarios_gestion ?? ''),
+  }))
+  exportCsv(data, `ventas-${new Date().toISOString().split('T')[0]}.csv`)
+}
+
+// === Persistencia de filtros (solo modo server, sirve a /ventas) ===
+
 const applySavedFilters = (raw: unknown) => {
   if (!raw || typeof raw !== 'object') return
   const candidate = raw as Partial<VentaFilterState>
-  const f = props.filters
+  const f = currentFilters.value
   f.search = typeof candidate.search === 'string' ? candidate.search : ''
   f.estado = typeof candidate.estado === 'string' ? candidate.estado : ''
   f.fechaDesde = typeof candidate.fechaDesde === 'string' ? candidate.fechaDesde : ''
@@ -302,7 +516,7 @@ const applySavedFilters = (raw: unknown) => {
 }
 
 onMounted(() => {
-  if (!import.meta.client) return
+  if (!import.meta.client || !serverPaginated.value) return
 
   recordarFiltros.value = localStorage.getItem(STORAGE_REMEMBER_KEY) === '1'
   if (!recordarFiltros.value) return
@@ -317,11 +531,11 @@ onMounted(() => {
 })
 
 watch(recordarFiltros, (enabled) => {
-  if (!import.meta.client) return
+  if (!import.meta.client || !serverPaginated.value) return
   localStorage.setItem(STORAGE_REMEMBER_KEY, enabled ? '1' : '0')
 
   if (enabled) {
-    localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(props.filters))
+    localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(currentFilters.value))
     return
   }
 
@@ -329,9 +543,9 @@ watch(recordarFiltros, (enabled) => {
 })
 
 watch(
-  () => ({ ...props.filters }),
+  () => ({ ...currentFilters.value }),
   (next) => {
-    if (!import.meta.client || !recordarFiltros.value) return
+    if (!import.meta.client || !serverPaginated.value || !recordarFiltros.value) return
     localStorage.setItem(STORAGE_FILTERS_KEY, JSON.stringify(next))
   },
   { deep: true },
