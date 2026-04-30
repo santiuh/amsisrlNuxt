@@ -127,17 +127,8 @@
               Ranking {{ cc.label }} (Ciclo)
             </h3>
           </div>
-          <div class="overflow-x-auto p-1">
-            <UTable :rows="cc.ranking" :columns="rankingColumns">
-              <template #vendedor-data="{ row }">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
-                    <UserAvatar :config="row.avatar_config" :seed="row.nombre" class="w-full h-full" />
-                  </div>
-                  <span :title="row.nombre">{{ row.nombre }}</span>
-                </div>
-              </template>
-            </UTable>
+          <div class="overflow-x-auto p-3">
+            <RankingVendedoresTable :rows="cc.ranking" :columns="rankingColumns" />
           </div>
         </div>
       </div>

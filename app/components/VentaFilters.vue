@@ -48,7 +48,7 @@
         :disabled="exporting"
         @click="$emit('export')"
       />
-      <label class="shrink-0 hidden sm:flex items-center gap-2 cursor-pointer select-none">
+      <label v-if="showRememberToggle" class="shrink-0 hidden sm:flex items-center gap-2 cursor-pointer select-none">
         <UToggle v-model="remember" color="primary" size="sm" />
         <span class="text-sm font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Recordar filtros</span>
       </label>
@@ -159,11 +159,13 @@
     </div>
 
     <!-- Fila 4: Acciones (solo mobile) -->
-    <div class="flex items-center justify-between sm:hidden">
-      <label class="flex items-center gap-2 cursor-pointer select-none">
+    <div v-if="showRememberToggle || canExport" class="flex items-center justify-between sm:hidden">
+      <label v-if="showRememberToggle" class="flex items-center gap-2 cursor-pointer select-none">
         <UToggle v-model="remember" color="primary" size="sm" />
         <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Recordar filtros</span>
       </label>
+      <span v-else />
+
       <UButton
         v-if="canExport"
         icon="i-heroicons-arrow-down-tray"
@@ -198,8 +200,10 @@ const props = withDefaults(defineProps<{
   localidades?: { label: string; value: string }[]
   canExport?: boolean
   exporting?: boolean
+  showRememberToggle?: boolean
 }>(), {
   localidades: () => [],
+  showRememberToggle: true,
 })
 
 defineEmits<{
