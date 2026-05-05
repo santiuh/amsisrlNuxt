@@ -139,7 +139,7 @@
             placeholder="Seleccionar paquete"
             class="w-full"
             :loading="loadingCatalogo"
-            :disabled="readonly"
+            :disabled="precioFieldsDisabled"
           />
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(paqueteLabel, 'Paquete')" />
         </div>
@@ -165,7 +165,7 @@
                 :value="extra.id"
                 v-model="form.extras_ids"
                 class="w-4 h-4 accent-primary-500 shrink-0"
-                :disabled="readonly"
+                :disabled="precioFieldsDisabled"
               />
               <span class="text-sm flex-1 text-gray-800 dark:text-gray-200">{{ extra.nombre }}</span>
               <span class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ formatPrecio(extra.precio) }}</span>
@@ -183,7 +183,7 @@
               v-model="form.decos"
               :options="decosOptions"
               class="w-full"
-              :disabled="readonly"
+              :disabled="precioFieldsDisabled"
             />
             <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(decosLabel, 'Decos')" />
           </div>
@@ -195,7 +195,7 @@
               v-model="form.bocas"
               :options="bocasOptions"
               class="w-full"
-              :disabled="readonly"
+              :disabled="precioFieldsDisabled"
             />
             <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(bocasLabel, 'Bocas')" />
           </div>
@@ -372,6 +372,9 @@
       <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 dark:text-gray-400 text-right mt-0.5">
         {{ desgloseBocasDecos }}
       </p>
+      <p v-if="isExistingVenta && !readonly" class="text-xs text-gray-400 dark:text-gray-500 text-right mt-1 italic">
+        Para corregir precios, eliminá y recreá la venta.
+      </p>
     </div>
 
     <!-- ═══ Botones de acción ═══ -->
@@ -428,6 +431,8 @@ const hideGestionFields = computed(() => !!props.hideGestionFields)
 const hideGestionLog = computed(() => !!props.hideGestionLog)
 const sectionReadonly = computed(() => !!props.readonly && !props.readonlyMainFieldsOnly)
 const showSubmitActions = computed(() => !props.readonly || !!props.readonlyMainFieldsOnly)
+const isExistingVenta = computed(() => !!props.initialData)
+const precioFieldsDisabled = computed(() => !!props.readonly || isExistingVenta.value)
 const submitDisabled = computed(() =>
   props.readonly && props.readonlyMainFieldsOnly ? form.estado === (props.initialData?.estado ?? 'pendiente') : false
 )
@@ -592,7 +597,36 @@ watch(() => form.decos, (newDecos) => {
 })
 
 // ——— Precio calculado ———
+// En ventas existentes usamos los snapshots guardados al momento de crear la venta
+// (paquete_precio_snapshot, precio_boca_extra_snapshot, precio_deco_extra_snapshot,
+// venta_extras[i].precio_snapshot). En ventas nuevas usamos el catálogo actual.
+const precioBocaExtraEfectivo = computed(() =>
+  isExistingVenta.value
+    ? Number(props.initialData?.precio_boca_extra_snapshot ?? 0)
+    : precioBocaExtra.value,
+)
+const precioDecoExtraEfectivo = computed(() =>
+  isExistingVenta.value
+    ? Number(props.initialData?.precio_deco_extra_snapshot ?? 0)
+    : precioDecoExtra.value,
+)
+
 const precioCalculado = computed(() => {
+  if (isExistingVenta.value) {
+    const paquetePrecio = Number(props.initialData?.paquete_precio_snapshot ?? 0)
+    const ventaExtras = (props.initialData?.venta_extras as any[] | undefined) ?? []
+    const precioExtras = ventaExtras.reduce(
+      (sum, ve) => sum + Number(ve.precio_snapshot ?? 0),
+      0,
+    )
+    const extraDecos = Math.max(0, Number(props.initialData?.decos ?? 1) - 3)
+    const extraBocas = Math.max(0, Number(props.initialData?.bocas ?? 1) - 3)
+    const bocasSueltas = Math.max(0, extraBocas - extraDecos)
+    const costoBocasDecos =
+      (extraDecos * precioDecoExtraEfectivo.value)
+      + (bocasSueltas * precioBocaExtraEfectivo.value)
+    return paquetePrecio + precioExtras + costoBocasDecos
+  }
   const paquete = paquetesActivos.value.find(p => p.id === form.paquete_id)
   const precioExtras = extrasActivos.value
     .filter(e => (form.extras_ids as string[]).includes(e.id))
@@ -605,15 +639,17 @@ const precioCalculado = computed(() => {
 })
 
 const desgloseBocasDecos = computed(() => {
-  const extraDecos = Math.max(0, Number(form.decos) - 3)
-  const extraBocas = Math.max(0, Number(form.bocas) - 3)
+  const decosBase = isExistingVenta.value ? Number(props.initialData?.decos ?? 1) : Number(form.decos)
+  const bocasBase = isExistingVenta.value ? Number(props.initialData?.bocas ?? 1) : Number(form.bocas)
+  const extraDecos = Math.max(0, decosBase - 3)
+  const extraBocas = Math.max(0, bocasBase - 3)
   const bocasSueltas = Math.max(0, extraBocas - extraDecos)
   const parts: string[] = []
-  if (extraDecos > 0 && precioDecoExtra.value > 0) {
-    parts.push(`${extraDecos} deco${extraDecos > 1 ? 's' : ''} extra${extraDecos > 1 ? 's' : ''} × ${formatPrecio(precioDecoExtra.value)}`)
+  if (extraDecos > 0 && precioDecoExtraEfectivo.value > 0) {
+    parts.push(`${extraDecos} deco${extraDecos > 1 ? 's' : ''} extra${extraDecos > 1 ? 's' : ''} × ${formatPrecio(precioDecoExtraEfectivo.value)}`)
   }
-  if (bocasSueltas > 0 && precioBocaExtra.value > 0) {
-    parts.push(`${bocasSueltas} boca${bocasSueltas > 1 ? 's' : ''} extra${bocasSueltas > 1 ? 's' : ''} × ${formatPrecio(precioBocaExtra.value)}`)
+  if (bocasSueltas > 0 && precioBocaExtraEfectivo.value > 0) {
+    parts.push(`${bocasSueltas} boca${bocasSueltas > 1 ? 's' : ''} extra${bocasSueltas > 1 ? 's' : ''} × ${formatPrecio(precioBocaExtraEfectivo.value)}`)
   }
   return parts.length > 0 ? 'Incluye ' + parts.join(' + ') : ''
 })
@@ -753,21 +789,43 @@ const submit = async () => {
   // Combinar: entradas nuevas primero (más recientes al inicio)
   const logActualizado = [...nuevasEntradas, ...logEntradas.value]
 
-  const paquete = paquetesActivos.value.find(p => p.id === form.paquete_id)
-  const extrasSeleccionados = extrasActivos.value.filter(e => (form.extras_ids as string[]).includes(e.id))
-
   try {
-    await props.onSubmit?.({
-      ...form,
-      fecha_coordinacion: datetimeLocalToISO(form.fecha_coordinacion),
-      paquete_nombre: paquete?.nombre ?? '',
-      paquete_precio_snapshot: paquete?.precio ?? 0,
-      precio: precioCalculado.value,
-      precio_boca_extra_snapshot: precioBocaExtra.value,
-      precio_deco_extra_snapshot: precioDecoExtra.value,
-      comentarios_gestion: logActualizado,
-      _extras: extrasSeleccionados.map(e => ({ id: e.id, precio: e.precio })),
-    })
+    if (isExistingVenta.value) {
+      // Edición: no enviar campos de precio. El backend los protege con whitelist.
+      const {
+        precio: _precio,
+        paquete_id: _paqueteId,
+        paquete_nombre: _paqueteNombre,
+        paquete_precio_snapshot: _paqueteSnap,
+        bocas: _bocas,
+        decos: _decos,
+        precio_boca_extra_snapshot: _bocaSnap,
+        precio_deco_extra_snapshot: _decoSnap,
+        precio_concretado: _precioConcretado,
+        empresa: _empresa,
+        extras_ids: _extrasIds,
+        ...formSinPrecios
+      } = form as Record<string, any>
+      await props.onSubmit?.({
+        ...formSinPrecios,
+        fecha_coordinacion: datetimeLocalToISO(form.fecha_coordinacion),
+        comentarios_gestion: logActualizado,
+      })
+    } else {
+      const paquete = paquetesActivos.value.find(p => p.id === form.paquete_id)
+      const extrasSeleccionados = extrasActivos.value.filter(e => (form.extras_ids as string[]).includes(e.id))
+      await props.onSubmit?.({
+        ...form,
+        fecha_coordinacion: datetimeLocalToISO(form.fecha_coordinacion),
+        paquete_nombre: paquete?.nombre ?? '',
+        paquete_precio_snapshot: paquete?.precio ?? 0,
+        precio: precioCalculado.value,
+        precio_boca_extra_snapshot: precioBocaExtra.value,
+        precio_deco_extra_snapshot: precioDecoExtra.value,
+        comentarios_gestion: logActualizado,
+        _extras: extrasSeleccionados.map(e => ({ id: e.id, precio: e.precio })),
+      })
+    }
   } finally {
     loading.value = false
   }

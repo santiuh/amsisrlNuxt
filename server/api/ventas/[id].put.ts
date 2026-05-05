@@ -1,5 +1,17 @@
 import { serverSupabaseClient } from '#supabase/server'
 
+// Campos que el admin puede editar en una venta existente. Los campos de precio
+// (precio, paquete_*, bocas, decos, *_snapshot) y los inmutables (vendedor_id,
+// fecha_carga, empresa) quedan congelados al momento de crear la venta.
+// precio_concretado y fecha_concretado se gestionan exclusivamente server-side.
+const ALLOWED_EDIT_FIELDS = [
+  'cliente', 'dni_cuil', 'telefono', 'mail',
+  'dir_calle', 'dir_entre_calles', 'dir_localidad', 'dir_aclaracion',
+  'forma_pago', 'cbu', 'nro_tarjeta', 'vencimiento_tarjeta',
+  'comentarios_venta', 'comentarios_gestion',
+  'estado', 'fecha_coordinacion', 'nro_cliente',
+] as const
+
 export default defineEventHandler(async (event) => {
   // Solo admin puede editar todos los campos de una venta
   const { user } = await requireAdmin(event)
@@ -7,10 +19,10 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const body = await readBody(event)
 
-  const { _extras, extras_ids, profiles, venta_extras, ...ventaData } = body
-
-  // precio_concretado es gestionado exclusivamente server-side, ignorar valor del cliente
-  delete ventaData.precio_concretado
+  const ventaData: Record<string, any> = {}
+  for (const key of ALLOWED_EDIT_FIELDS) {
+    if (key in body) ventaData[key] = body[key]
+  }
 
   // Leer estado actual siempre (para transiciones y para el activity log)
   const { data: current } = await client
@@ -102,20 +114,6 @@ export default defineEventHandler(async (event) => {
       }
     } catch (err) {
       console.error('[oficinista_activity] log insert threw', err)
-    }
-  }
-
-  // Reemplazar extras si se enviaron
-  if (_extras !== undefined) {
-    await client.from('venta_extras').delete().eq('venta_id', id)
-    if (Array.isArray(_extras) && _extras.length > 0) {
-      await client.from('venta_extras').insert(
-        _extras.map((e: any) => ({
-          venta_id: id,
-          extra_id: e.id,
-          precio_snapshot: e.precio,
-        })),
-      )
     }
   }
 
