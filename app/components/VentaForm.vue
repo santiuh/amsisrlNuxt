@@ -676,6 +676,7 @@ const localidadesUltra = [
   { label: 'Monjes', value: 'Monjes' },
   { label: 'Maciel', value: 'Maciel' },
   { label: 'Gaboto', value: 'Gaboto' },
+  { label: 'Barrancas', value: 'Barrancas' },
   { label: 'Oliveros', value: 'Oliveros' },
   { label: 'Andino', value: 'Andino' },
   { label: 'Timbues', value: 'Timbues' },
