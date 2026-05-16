@@ -178,48 +178,114 @@
 
             <!-- Detalle expandido -->
             <div v-if="cicloExpandido === ciclo.id" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" @click.stop>
-              <div class="overflow-x-auto -mx-4 sm:mx-0">
-                <UTable :rows="pagosCiclo(ciclo.id)" :columns="columnasPagos">
-                  <template #nombre-data="{ row }">
-                    {{ row.profiles?.nombre ?? 'Desconocido' }}
-                  </template>
-                  <template #rol_snapshot-data="{ row }">
-                    <UBadge :color="rolColor(row.rol_snapshot)" :label="rolLabel(row.rol_snapshot)" variant="subtle" />
-                  </template>
-                  <template #monto_total_ventas-data="{ row }">
-                    {{ formatPrecio(row.monto_total_ventas) }}
-                  </template>
-                  <template #porcentaje_aplicado-data="{ row }">
-                    {{ row.porcentaje_aplicado }}%
-                  </template>
-                  <template #monto_comision-data="{ row }">
-                    {{ formatPrecio(row.monto_comision) }}
-                  </template>
-                  <template #monto_liderazgo-data="{ row }">
-                    <span v-if="row.monto_liderazgo > 0" class="text-orange-600 font-medium">{{ formatPrecio(row.monto_liderazgo) }}</span>
-                    <span v-else class="text-gray-400">—</span>
-                  </template>
-                  <template #monto_total-data="{ row }">
-                    <span class="font-semibold text-green-600">{{ formatPrecio(row.monto_total) }}</span>
-                  </template>
-                  <template #pagado-data="{ row }">
-                    <div class="flex items-center gap-2">
+              <div v-if="pagosCiclo(ciclo.id).length === 0" class="text-center py-4 text-sm text-gray-400 dark:text-gray-500">
+                Sin pagos en este ciclo.
+              </div>
+              <ul v-else class="space-y-2">
+                <li
+                  v-for="pago in pagosCiclo(ciclo.id)"
+                  :key="pago.id"
+                  class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/40"
+                >
+                  <div
+                    class="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors"
+                    @click="toggleVendedor(ciclo, pago)"
+                  >
+                    <UIcon
+                      :name="vendedorExpandido === `${ciclo.id}-${pago.vendedor_id}` ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'"
+                      class="w-4 h-4 text-gray-400 shrink-0"
+                    />
+                    <div class="min-w-[140px] flex-1">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Vendedor</p>
+                      <p class="text-sm font-medium text-gray-800 dark:text-gray-100">{{ pago.profiles?.nombre ?? 'Desconocido' }}</p>
+                    </div>
+                    <div class="shrink-0">
+                      <UBadge :color="rolColor(pago.rol_snapshot)" :label="rolLabel(pago.rol_snapshot)" variant="subtle" />
+                    </div>
+                    <div class="text-right shrink-0 min-w-[60px]">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Ventas</p>
+                      <p class="text-sm text-gray-800 dark:text-gray-100">{{ pago.cantidad_ventas }}</p>
+                    </div>
+                    <div class="text-right shrink-0 min-w-[100px]">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Monto</p>
+                      <p class="text-sm text-gray-800 dark:text-gray-100">{{ formatPrecio(pago.monto_total_ventas) }}</p>
+                    </div>
+                    <div class="text-right shrink-0 min-w-[40px]">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">%</p>
+                      <p class="text-sm text-gray-800 dark:text-gray-100">{{ pago.porcentaje_aplicado }}%</p>
+                    </div>
+                    <div class="text-right shrink-0 min-w-[100px]">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Comisión</p>
+                      <p class="text-sm text-gray-800 dark:text-gray-100">{{ formatPrecio(pago.monto_comision) }}</p>
+                    </div>
+                    <div class="text-right shrink-0 min-w-[100px]">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Bonus Líder</p>
+                      <p v-if="pago.monto_liderazgo > 0" class="text-sm text-orange-600 font-medium">{{ formatPrecio(pago.monto_liderazgo) }}</p>
+                      <p v-else class="text-sm text-gray-400">—</p>
+                    </div>
+                    <div class="text-right shrink-0 min-w-[110px]">
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                      <p class="text-sm font-semibold text-green-600">{{ formatPrecio(pago.monto_total) }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0" @click.stop>
                       <input
                         type="checkbox"
-                        :checked="row.pagado"
+                        :checked="pago.pagado"
                         class="rounded border-gray-300 text-green-600 focus:ring-green-500"
-                        @change="togglePago(row)"
+                        @change="togglePago(pago)"
                       />
                       <UBadge
-                        :color="row.pagado ? 'green' : 'gray'"
-                        :label="row.pagado ? 'Pagado' : 'Pendiente'"
+                        :color="pago.pagado ? 'green' : 'gray'"
+                        :label="pago.pagado ? 'Pagado' : 'Pendiente'"
                         variant="subtle"
                         size="xs"
                       />
                     </div>
-                  </template>
-                </UTable>
-              </div>
+                  </div>
+
+                  <!-- Detalle de ventas del vendedor -->
+                  <div
+                    v-if="vendedorExpandido === `${ciclo.id}-${pago.vendedor_id}`"
+                    class="border-t border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-900/30 px-3 py-3"
+                    @click.stop
+                  >
+                    <div v-if="loadingVentasVendedor === `${ciclo.id}-${pago.vendedor_id}`" class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 py-2">
+                      <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+                      Cargando ventas…
+                    </div>
+                    <div
+                      v-else-if="!ventasPorVendedor[`${ciclo.id}-${pago.vendedor_id}`] || ventasPorVendedor[`${ciclo.id}-${pago.vendedor_id}`].length === 0"
+                      class="text-sm text-gray-400 dark:text-gray-500 py-2"
+                    >
+                      Sin ventas concretadas en este ciclo.
+                    </div>
+                    <div v-else class="space-y-1">
+                      <div class="hidden sm:grid grid-cols-[1.5fr_1.2fr_1fr_1fr_0.8fr] gap-3 px-2 py-1 text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                        <span>Cliente</span>
+                        <span>Paquete</span>
+                        <span class="text-right">Monto</span>
+                        <span>Concretado</span>
+                        <span>ID</span>
+                      </div>
+                      <a
+                        v-for="venta in ventasPorVendedor[`${ciclo.id}-${pago.vendedor_id}`]"
+                        :key="venta.id"
+                        :href="`/ventas/${venta.id}`"
+                        target="_blank"
+                        rel="noopener"
+                        class="grid grid-cols-1 sm:grid-cols-[1.5fr_1.2fr_1fr_1fr_0.8fr] gap-3 px-2 py-2 text-sm rounded hover:bg-white dark:hover:bg-gray-800/60 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700"
+                        @click.stop
+                      >
+                        <span class="text-gray-800 dark:text-gray-100 truncate" :title="venta.cliente">{{ venta.cliente }}</span>
+                        <span class="text-gray-600 dark:text-gray-300 truncate" :title="venta.paquete_nombre ?? ''">{{ venta.paquete_nombre ?? '—' }}</span>
+                        <span class="text-green-600 font-medium sm:text-right">{{ formatPrecio(Number(venta.precio_concretado ?? venta.precio)) }}</span>
+                        <span class="text-gray-600 dark:text-gray-300">{{ formatFecha(venta.fecha_concretado) }}</span>
+                        <code class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ venta.id.slice(0, 8) }}</code>
+                      </a>
+                    </div>
+                  </div>
+                </li>
+              </ul>
             </div>
           </UCard>
         </div>
@@ -344,6 +410,19 @@ const pagos = ref<CicloPago[]>([])
 const estimaciones = ref<EstimacionVendedor[]>([])
 const cicloExpandido = ref<string | null>(null)
 
+// Expand de vendedor dentro del detalle de un ciclo
+interface VentaDeVendedor {
+  id: string
+  cliente: string
+  paquete_nombre: string | null
+  precio: number
+  precio_concretado: number | null
+  fecha_concretado: string
+}
+const vendedorExpandido = ref<string | null>(null)
+const ventasPorVendedor = reactive<Record<string, VentaDeVendedor[]>>({})
+const loadingVentasVendedor = ref<string | null>(null)
+
 // Datos para cálculo de estimaciones
 const ventasConcretadas = ref<any[]>([])
 const allProfiles = ref<any[]>([])
@@ -370,18 +449,6 @@ const columnasEstimaciones = [
   { key: 'monto_comision', label: 'Comisión' },
   { key: 'monto_liderazgo', label: 'Bonus Líder' },
   { key: 'monto_total', label: 'Total' },
-]
-
-const columnasPagos = [
-  { key: 'nombre', label: 'Vendedor' },
-  { key: 'rol_snapshot', label: 'Rol' },
-  { key: 'cantidad_ventas', label: 'Ventas' },
-  { key: 'monto_total_ventas', label: 'Monto Ventas' },
-  { key: 'porcentaje_aplicado', label: '%' },
-  { key: 'monto_comision', label: 'Comisión' },
-  { key: 'monto_liderazgo', label: 'Bonus Líder' },
-  { key: 'monto_total', label: 'Total' },
-  { key: 'pagado', label: 'Estado' },
 ]
 
 // ——— Helpers ———
@@ -642,6 +709,37 @@ const togglePago = async (pago: CicloPago) => {
 
 const toggleDetalle = (cicloId: string) => {
   cicloExpandido.value = cicloExpandido.value === cicloId ? null : cicloId
+  vendedorExpandido.value = null
+}
+
+const toggleVendedor = async (ciclo: CicloComision, pago: CicloPago) => {
+  const clave = `${ciclo.id}-${pago.vendedor_id}`
+  if (vendedorExpandido.value === clave) {
+    vendedorExpandido.value = null
+    return
+  }
+  vendedorExpandido.value = clave
+  if (ventasPorVendedor[clave]) return
+
+  loadingVentasVendedor.value = clave
+  try {
+    const { data, error } = await client
+      .from('ventas')
+      .select('id, cliente, paquete_nombre, precio, precio_concretado, fecha_concretado')
+      .eq('estado', 'concretado')
+      .eq('empresa', empresaSeleccionada.value)
+      .eq('vendedor_id', pago.vendedor_id)
+      .gte('fecha_concretado', ciclo.fecha_inicio)
+      .lte('fecha_concretado', ciclo.fecha_cierre_real ?? new Date().toISOString())
+      .order('fecha_concretado', { ascending: false })
+    if (error) throw error
+    ventasPorVendedor[clave] = (data ?? []) as VentaDeVendedor[]
+  } catch (err: any) {
+    toast.add({ title: err?.message || 'No se pudieron cargar las ventas del vendedor', color: 'red' })
+    ventasPorVendedor[clave] = []
+  } finally {
+    if (loadingVentasVendedor.value === clave) loadingVentasVendedor.value = null
+  }
 }
 
 // ——— Init ———
@@ -654,7 +752,12 @@ const cargarTodo = async () => {
 
 onMounted(cargarTodo)
 
-watch(empresaSeleccionada, cargarTodo)
+watch(empresaSeleccionada, () => {
+  cicloExpandido.value = null
+  vendedorExpandido.value = null
+  for (const k of Object.keys(ventasPorVendedor)) delete ventasPorVendedor[k]
+  cargarTodo()
+})
 
 useHead({ title: 'Comisiones — AMSI SRL' })
 </script>
