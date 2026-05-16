@@ -115,30 +115,78 @@
         />
       </div>
 
-      <!-- Rankings por empresa (uno por cada ciclo activo) -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div
-          v-for="cc in ciclosComisiones"
-          :key="`ranking-${cc.empresa}`"
-          class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden"
-        >
-          <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
-            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">
-              Ranking {{ cc.label }} (Ciclo)
-            </h3>
-          </div>
-          <div class="overflow-x-auto p-3">
-            <RankingVendedoresTable :rows="cc.ranking" :columns="rankingColumns" />
-          </div>
-        </div>
-      </div>
+      <!-- Botoneras de atajos -->
+      <DashboardShortcuts />
 
+      <!-- Últimas ventas (preview compacto) -->
       <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
-        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
-          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Todas las Ventas</h3>
+        <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06] flex items-center justify-between gap-3">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Últimas ventas</h3>
+          <NuxtLink
+            to="/ventas"
+            class="text-xs font-medium text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 inline-flex items-center gap-1 transition-colors"
+          >
+            Ver todas
+            <UIcon name="i-heroicons-arrow-right" class="w-3.5 h-3.5" />
+          </NuxtLink>
         </div>
-        <div class="p-1">
-          <VentaTable :ventas="ventasFiltradas" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50/50 dark:bg-white/[0.02] text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-2 text-left font-medium">Fecha</th>
+                <th class="px-4 py-2 text-left font-medium">Empresa</th>
+                <th class="px-4 py-2 text-left font-medium">Cliente</th>
+                <th class="px-4 py-2 text-left font-medium">Vendedor</th>
+                <th class="px-4 py-2 text-right font-medium">Precio</th>
+                <th class="px-4 py-2 text-left font-medium">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-white/[0.05]">
+              <tr
+                v-for="v in ultimasVentas"
+                :key="v.id"
+                class="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors"
+              >
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ formatFecha(v.fecha_carga) }}</td>
+                <td class="px-4 py-3">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ring-1 ring-inset"
+                    :class="v.empresa === 'ultra'
+                      ? 'bg-violet-50 text-violet-700 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20'
+                      : 'bg-blue-50 text-blue-700 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20'"
+                  >
+                    {{ v.empresa === 'ultra' ? 'Ultra' : 'Express' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium max-w-[200px] truncate" :title="v.cliente">{{ v.cliente }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
+                      <UserAvatar :config="v.profiles?.avatar_config" :seed="v.profiles?.nombre || ''" class-name="w-full h-full" />
+                    </div>
+                    <span class="text-gray-600 dark:text-gray-300 whitespace-nowrap">{{ v.profiles?.nombre || '—' }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                  {{ formatPrecioARS(v.precio_concretado ?? v.precio) }}
+                </td>
+                <td class="px-4 py-3">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ring-1 ring-inset"
+                    :class="estadoPillClass(v.estado)"
+                  >
+                    {{ estadoLabel(v.estado) }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="ultimasVentas.length === 0">
+                <td colspan="6" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
+                  No hay ventas todavía.
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </template>
@@ -212,13 +260,25 @@ const formatFecha = (f: string) => {
   return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
 }
 
-const rankingColumns = [
-  { key: 'vendedor', label: 'Vendedor' },
-  { key: 'creadas', label: 'Creadas' },
-  { key: 'concretadas', label: 'Concretadas' },
-  { key: 'ingresos', label: 'Ingresos' },
-  { key: 'comision', label: 'Comisión' },
-]
+const formatPrecioARS = (n: number) =>
+  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(Number(n) || 0)
+
+const ESTADO_LABELS: Record<string, string> = {
+  pendiente: 'Pendiente', en_proceso: 'En Proceso', en_conflicto: 'En Conflicto',
+  rechazado: 'Rechazado', coordinado: 'Coordinado', concretado: 'Concretado', proxima_zona: 'Próxima Zona',
+}
+const ESTADO_PILL: Record<string, string> = {
+  pendiente: 'bg-gray-100 text-gray-600 ring-gray-200 dark:bg-slate-700/40 dark:text-slate-300 dark:ring-slate-600/40',
+  en_proceso: 'bg-amber-50 text-amber-700 ring-amber-200/60 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/20',
+  en_conflicto: 'bg-orange-50 text-orange-700 ring-orange-200/60 dark:bg-orange-500/10 dark:text-orange-300 dark:ring-orange-500/20',
+  rechazado: 'bg-rose-50 text-rose-700 ring-rose-200/60 dark:bg-rose-500/10 dark:text-rose-300 dark:ring-rose-500/20',
+  coordinado: 'bg-cyan-50 text-cyan-700 ring-cyan-200/60 dark:bg-cyan-500/10 dark:text-cyan-300 dark:ring-cyan-500/20',
+  concretado: 'bg-emerald-50 text-emerald-700 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+  proxima_zona: 'bg-violet-50 text-violet-700 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20',
+}
+const estadoLabel = (e: string) => ESTADO_LABELS[e] ?? e
+const estadoPillClass = (e: string) => ESTADO_PILL[e] ?? ESTADO_PILL.pendiente
+
 // Cargar comisiones de TODAS las empresas con ciclo activo
 const EMPRESAS_CONFIG: Record<string, { label: string; color: string }> = {
   express: { label: 'Express', color: 'purple' },
@@ -487,6 +547,8 @@ const ventasFiltradas = computed(() => {
   if (!empresaFiltro.value) return ventas.value
   return ventas.value.filter(v => v.empresa === empresaFiltro.value)
 })
+
+const ultimasVentas = computed(() => ventas.value.slice(0, 8))
 
 const enCiclo = (v: any) => {
   const ciclo = ciclosComisiones.value.find(c => c.empresa === v.empresa)
