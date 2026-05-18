@@ -71,6 +71,46 @@
         <span v-else class="text-gray-400 dark:text-gray-500">—</span>
       </template>
 
+      <template #whatsapp-data="{ row }">
+        <div
+          v-if="['en_proceso', 'en_conflicto'].includes(row.estado)"
+          class="relative z-10 inline-flex"
+          @click.stop
+          @mousedown.stop
+        >
+          <UButton
+            v-if="!row.whatsapp_enviado_en"
+            icon="i-simple-icons-whatsapp"
+            color="green"
+            variant="outline"
+            size="2xs"
+            label="Marcar"
+            :loading="whatsappLoading[row.id]"
+            @click.stop="toggleWhatsapp(row, true)"
+          />
+          <div v-else class="inline-flex items-center gap-1">
+            <UBadge
+              color="green"
+              variant="subtle"
+              size="xs"
+              icon="i-heroicons-check-circle"
+              :label="formatFecha(row.whatsapp_enviado_en)"
+              :title="`Enviado el ${formatFecha(row.whatsapp_enviado_en)} ${formatHora(row.whatsapp_enviado_en)}`"
+            />
+            <UButton
+              icon="i-heroicons-x-mark"
+              color="gray"
+              variant="ghost"
+              size="2xs"
+              :loading="whatsappLoading[row.id]"
+              title="Desmarcar"
+              @click.stop="toggleWhatsapp(row, false)"
+            />
+          </div>
+        </div>
+        <span v-else class="text-gray-400 dark:text-gray-500">—</span>
+      </template>
+
       <template #precio-data="{ row }">
         <span class="font-medium">{{ formatPrecio(row.precio) }}</span>
       </template>
@@ -165,6 +205,13 @@ import { exportCsv } from '~/utils/exportCsv'
 import { buildVentaWhatsappUrl } from '~/utils/whatsapp'
 import type { VentaFilterState } from '~/components/VentaFilters.vue'
 import type { VentasSortState } from '~/composables/useVentasList'
+
+const profile = useCurrentProfile()
+const toast = useToast()
+const canManageWhatsapp = computed(() =>
+  ['oficinista', 'admin'].includes(profile.value?.rol ?? ''),
+)
+const whatsappLoading = reactive<Record<string, boolean>>({})
 
 const props = withDefaults(defineProps<{
   ventas: any[]
@@ -386,7 +433,7 @@ function onPageSizeChange(next: number) {
 }
 
 const columnas = computed(() => {
-  const base = [
+  const base: { key: string; label: string; sortable: boolean }[] = [
     { key: 'fecha_carga', label: 'Fecha', sortable: true },
     { key: 'estado', label: 'Estado', sortable: true },
     { key: 'empresa', label: 'Empresa', sortable: true },
@@ -401,6 +448,11 @@ const columnas = computed(() => {
   ]
   if (props.showVendedor) {
     base.splice(2, 0, { key: 'vendedor', label: 'Vendedor', sortable: true })
+  }
+  // Columna "WhatsApp" solo para oficinistas y admins (los que gestionan la comunicación)
+  if (canManageWhatsapp.value) {
+    const idx = base.findIndex((c) => c.key === 'telefono')
+    base.splice(idx + 1, 0, { key: 'whatsapp', label: 'WhatsApp', sortable: false })
   }
   return base
 })
@@ -446,6 +498,35 @@ const buildWhatsappUrl = (row: any) => {
   return buildVentaWhatsappUrl(row) || '#'
 }
 
+async function toggleWhatsapp(row: any, enviado: boolean) {
+  if (!row?.id || whatsappLoading[row.id]) return
+  // Optimistic update + spinner por fila
+  const previo = row.whatsapp_enviado_en ?? null
+  row.whatsapp_enviado_en = enviado ? new Date().toISOString() : null
+  whatsappLoading[row.id] = true
+  try {
+    const res = await $fetch<{ success: boolean; whatsapp_enviado_en: string | null }>(
+      '/api/ventas/whatsapp',
+      { method: 'POST', body: { venta_id: row.id, enviado } },
+    )
+    // Sincronizamos con el timestamp del servidor
+    row.whatsapp_enviado_en = res.whatsapp_enviado_en
+    toast.add({
+      title: enviado ? 'WhatsApp marcado como enviado' : 'WhatsApp desmarcado',
+      color: 'green',
+    })
+  } catch (err: any) {
+    row.whatsapp_enviado_en = previo
+    toast.add({
+      title: 'No se pudo actualizar',
+      description: err?.data?.statusMessage || err?.message || 'Error desconocido',
+      color: 'red',
+    })
+  } finally {
+    whatsappLoading[row.id] = false
+  }
+}
+
 const abrirVenta = (row: any) => {
   if (!row?.id) return
   navigateTo(`/ventas/${row.id}`)
@@ -484,6 +565,7 @@ function handleExport() {
     Precio: v.precio,
     'Forma de Pago': v.forma_pago,
     Estado: estadoLabel(v.estado),
+    'WhatsApp Enviado': v.whatsapp_enviado_en ? `${formatFecha(v.whatsapp_enviado_en)} ${formatHora(v.whatsapp_enviado_en)}` : '',
     'Fecha Concretado': v.fecha_concretado ? `${formatFecha(v.fecha_concretado)} ${formatHora(v.fecha_concretado)}` : '',
     Decos: v.decos ?? 1,
     Bocas: v.bocas ?? 1,

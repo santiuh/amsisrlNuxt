@@ -18,7 +18,38 @@
         :label="estadoLabel(venta.estado)"
         variant="subtle"
       />
-      <div class="ml-auto">
+      <div class="ml-auto flex items-center gap-1">
+        <!-- Toggle "WhatsApp enviado" — solo oficinista/admin, solo en EN PROCESO / EN CONFLICTO -->
+        <template v-if="canManageWhatsapp && venta && canMarkWhatsapp">
+          <UButton
+            v-if="!venta.whatsapp_enviado_en"
+            icon="i-simple-icons-whatsapp"
+            color="green"
+            variant="outline"
+            size="sm"
+            label="Marcar enviado"
+            :loading="togglingWhatsapp"
+            @click="toggleWhatsappEnviado(true)"
+          />
+          <div v-else class="inline-flex items-center gap-1">
+            <UBadge
+              color="green"
+              variant="subtle"
+              size="sm"
+              icon="i-heroicons-check-circle"
+              :label="`WhatsApp enviado ${formatFecha(venta.whatsapp_enviado_en)}`"
+            />
+            <UButton
+              icon="i-heroicons-x-mark"
+              color="gray"
+              variant="ghost"
+              size="xs"
+              title="Desmarcar"
+              :loading="togglingWhatsapp"
+              @click="toggleWhatsappEnviado(false)"
+            />
+          </div>
+        </template>
         <UButton
           v-if="canContactByWhatsapp && whatsappUrl"
           icon="i-simple-icons-whatsapp"
@@ -237,6 +268,11 @@ const canEdit = computed(() => profile.value?.rol === 'admin')
 // Oficinista tiene su propio panel de gestión
 const isOficinistra = computed(() => profile.value?.rol === 'oficinista')
 const canContactByWhatsapp = computed(() => ['admin', 'oficinista'].includes(profile.value?.rol ?? ''))
+const canManageWhatsapp = computed(() => ['admin', 'oficinista'].includes(profile.value?.rol ?? ''))
+const canMarkWhatsapp = computed(() =>
+  ['en_proceso', 'en_conflicto'].includes(venta.value?.estado ?? ''),
+)
+const togglingWhatsapp = ref(false)
 const ventaSubmitLabel = computed(() =>
   isEditingVenta.value ? 'Guardar Cambios' : 'Guardar'
 )
@@ -296,6 +332,36 @@ const toggleEditarVenta = () => {
 const abrirWhatsapp = () => {
   if (!import.meta.client || !whatsappUrl.value) return
   window.open(whatsappUrl.value, '_blank', 'noopener,noreferrer')
+}
+
+async function toggleWhatsappEnviado(enviado: boolean) {
+  if (!venta.value?.id || togglingWhatsapp.value) return
+  const previo = venta.value.whatsapp_enviado_en ?? null
+  // Optimistic update
+  venta.value.whatsapp_enviado_en = enviado ? new Date().toISOString() : null
+  togglingWhatsapp.value = true
+  try {
+    const res = await $fetch<{ success: boolean; whatsapp_enviado_en: string | null }>(
+      '/api/ventas/whatsapp',
+      { method: 'POST', body: { venta_id: venta.value.id, enviado } },
+    )
+    venta.value.whatsapp_enviado_en = res.whatsapp_enviado_en
+    // Recargamos para reflejar la nueva entrada en el historial
+    await cargarVenta()
+    toast.add({
+      title: enviado ? 'WhatsApp marcado como enviado' : 'WhatsApp desmarcado',
+      color: 'green',
+    })
+  } catch (err: any) {
+    venta.value.whatsapp_enviado_en = previo
+    toast.add({
+      title: 'No se pudo actualizar',
+      description: err?.data?.statusMessage || err?.message || 'Error desconocido',
+      color: 'red',
+    })
+  } finally {
+    togglingWhatsapp.value = false
+  }
 }
 
 // Para observaciones (todos los roles, en cualquier estado)

@@ -126,6 +126,7 @@ async function handleExport() {
       Precio: v.precio,
       'Forma de Pago': v.forma_pago,
       Estado: estadoLabelExport(v.estado),
+      'WhatsApp Enviado': v.whatsapp_enviado_en ? `${formatFecha(v.whatsapp_enviado_en)} ${formatHora(v.whatsapp_enviado_en)}` : '',
       'Fecha Concretado': v.fecha_concretado ? `${formatFecha(v.fecha_concretado)} ${formatHora(v.fecha_concretado)}` : '',
       Decos: v.decos ?? 1,
       Bocas: v.bocas ?? 1,

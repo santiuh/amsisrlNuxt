@@ -36,10 +36,18 @@
             size="xs"
             label="Cambio de estado"
           />
+          <UBadge
+            v-else-if="entry.tipo === 'whatsapp'"
+            color="green"
+            variant="subtle"
+            size="xs"
+            icon="i-simple-icons-whatsapp"
+            label="WhatsApp"
+          />
         </div>
         <p
           class="text-gray-800 dark:text-gray-100"
-          :class="{ 'italic text-gray-500 dark:text-gray-400 text-xs': entry.tipo === 'estado' }"
+          :class="{ 'italic text-gray-500 dark:text-gray-400 text-xs': entry.tipo === 'estado' || entry.tipo === 'whatsapp' }"
         >
           {{ entry.texto }}
         </p>
