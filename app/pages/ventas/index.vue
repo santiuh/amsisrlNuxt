@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 import { exportCsv } from '~/utils/exportCsv'
+import { empresaLabel } from '~/utils/empresa'
 
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
@@ -113,7 +114,7 @@ async function handleExport() {
     }
     const data = rows.map((v: any) => ({
       Fecha: formatFecha(v.fecha_carga),
-      Empresa: v.empresa === 'ultra' ? 'Ultra' : 'Express',
+      Empresa: empresaLabel(v.empresa),
       Cliente: v.cliente,
       'DNI/CUIL': v.dni_cuil,
       Dirección: v.dir_calle ?? '',

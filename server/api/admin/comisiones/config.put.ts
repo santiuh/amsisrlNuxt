@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Porcentajes requeridos' })
   }
 
-  if (!empresa || !['express', 'ultra'].includes(empresa)) {
+  if (!empresa || !['express', 'ultra', 'chipped'].includes(empresa)) {
     throw createError({ statusCode: 400, statusMessage: 'Empresa inválida' })
   }
 

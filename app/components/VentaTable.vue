@@ -27,10 +27,10 @@
     >
       <template #empresa-data="{ row }">
         <UBadge
-          :color="row.empresa === 'ultra' ? 'violet' : 'blue'"
+          :color="empresaColor(row.empresa)"
           variant="subtle"
           size="xs"
-          :label="row.empresa === 'ultra' ? 'Ultra' : 'Express'"
+          :label="empresaLabel(row.empresa)"
         />
       </template>
 
@@ -203,6 +203,7 @@
 <script setup lang="ts">
 import { exportCsv } from '~/utils/exportCsv'
 import { buildVentaWhatsappUrl } from '~/utils/whatsapp'
+import { empresaColor, empresaLabel } from '~/utils/empresa'
 import type { VentaFilterState } from '~/components/VentaFilters.vue'
 import type { VentasSortState } from '~/composables/useVentasList'
 
@@ -552,7 +553,7 @@ function handleExport() {
   }
   const data = sortedVentas.value.map((v: any) => ({
     Fecha: formatFecha(v.fecha_carga),
-    Empresa: v.empresa === 'ultra' ? 'Ultra' : 'Express',
+    Empresa: empresaLabel(v.empresa),
     Cliente: v.cliente,
     'DNI/CUIL': v.dni_cuil,
     Dirección: v.dir_calle ?? '',

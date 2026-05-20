@@ -145,6 +145,9 @@ const empresaOptions = computed(() => {
   if (profile.value?.puede_vender_ultra || profile.value?.rol === 'admin') {
     options.push({ label: 'Ultra', value: 'ultra' })
   }
+  if (profile.value?.puede_vender_chipped || profile.value?.rol === 'admin') {
+    options.push({ label: 'Chipped', value: 'chipped' })
+  }
   return options
 })
 

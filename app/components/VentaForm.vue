@@ -145,8 +145,8 @@
         </div>
       </UFormGroup>
 
-      <!-- Extras como chips/toggles -->
-      <div v-if="extrasActivos.length > 0">
+      <!-- Extras como chips/toggles (Chipped no ofrece extras) -->
+      <div v-if="extrasActivos.length > 0 && form.empresa !== 'chipped'">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Extras</label>
         <div class="flex items-start gap-2">
           <div class="flex-1 space-y-1.5">
@@ -474,9 +474,15 @@ const empresaOptions = computed(() => {
   if (profile.value?.puede_vender_ultra || profile.value?.rol === 'admin') {
     options.push({ label: 'Ultra', value: 'ultra' })
   }
+  if (profile.value?.puede_vender_chipped || profile.value?.rol === 'admin') {
+    options.push({ label: 'Chipped', value: 'chipped' })
+  }
   // En modo edición, asegurar que la empresa original aparezca
   if (props.initialData?.empresa === 'ultra' && !options.find(o => o.value === 'ultra')) {
     options.push({ label: 'Ultra', value: 'ultra' })
+  }
+  if (props.initialData?.empresa === 'chipped' && !options.find(o => o.value === 'chipped')) {
+    options.push({ label: 'Chipped', value: 'chipped' })
   }
   return options
 })
@@ -515,7 +521,7 @@ watch(() => form.empresa, (newEmpresa, oldEmpresa) => {
     form.paquete_id = ''
     form.extras_ids = []
     // Resetear localidad si no existe en la nueva empresa
-    const nuevasLocalidades = newEmpresa === 'ultra' ? localidadesUltra : localidadesExpress
+    const nuevasLocalidades = LOCALIDADES_POR_EMPRESA[newEmpresa] ?? localidadesExpress
     if (!nuevasLocalidades.some(l => l.value === form.dir_localidad)) {
       form.dir_localidad = ''
     }
@@ -683,8 +689,18 @@ const localidadesUltra = [
   { label: 'Pto Gral San Martin', value: 'Pto Gral San Martin' },
 ]
 
+const localidadesChipped = [
+  { label: 'Roldán', value: 'Roldán' },
+]
+
+const LOCALIDADES_POR_EMPRESA: Record<string, Array<{ label: string, value: string }>> = {
+  express: localidadesExpress,
+  ultra: localidadesUltra,
+  chipped: localidadesChipped,
+}
+
 const localidadOptions = computed(() =>
-  form.empresa === 'ultra' ? localidadesUltra : localidadesExpress
+  LOCALIDADES_POR_EMPRESA[form.empresa] ?? localidadesExpress
 )
 
 const estadoOptions = [

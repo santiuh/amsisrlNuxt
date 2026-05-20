@@ -5,9 +5,11 @@ export const normalizePhone = (value: unknown) => {
   return digits.startsWith('549') ? digits : `549${digits}`
 }
 
+import { empresaLabel } from './empresa'
+
 export const buildVentaWhatsappMessage = (venta: { cliente?: string | null, paquete_nombre?: string | null, empresa?: string | null }) => {
   const nombre = venta?.cliente || '¿cómo estás?'
-  const empresaNombre = venta?.empresa === 'ultra' ? 'Ultra' : 'Express'
+  const empresaNombre = empresaLabel(venta?.empresa)
   const paquete = venta?.paquete_nombre
     ? ` También te confirmo que el servicio solicitado es ${venta.paquete_nombre}.`
     : ''

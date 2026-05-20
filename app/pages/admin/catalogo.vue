@@ -183,14 +183,26 @@ const empresaSeleccionada = ref('express')
 const empresaOptions = [
   { label: 'Express', value: 'express' },
   { label: 'Ultra', value: 'ultra' },
+  { label: 'Chipped', value: 'chipped' },
 ]
 
-const tabs = [
-  { label: 'Configuración', slot: 'configuracion' },
-  { label: 'Paquetes', slot: 'paquetes' },
-  { label: 'Extras', slot: 'extras' },
-]
+const tabs = computed(() => {
+  const base = [
+    { label: 'Configuración', slot: 'configuracion' },
+    { label: 'Paquetes', slot: 'paquetes' },
+  ]
+  // Chipped no ofrece extras
+  if (empresaSeleccionada.value !== 'chipped') {
+    base.push({ label: 'Extras', slot: 'extras' })
+  }
+  return base
+})
 const tabActivo = ref(0)
+
+// Si la empresa cambia y el tab actual ya no existe, volver al primero
+watch(tabs, (nuevosTabs) => {
+  if (tabActivo.value >= nuevosTabs.length) tabActivo.value = 0
+})
 
 // ——— Configuración (precio boca extra) ———
 const formConfig = reactive({ precio_boca_extra: 0, precio_deco_extra: 0 })

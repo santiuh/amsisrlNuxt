@@ -71,11 +71,9 @@
             <p v-if="item.venta" class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
               {{ item.venta.cliente }}
               <span v-if="item.venta.empresa" class="inline-flex items-center ml-1 px-1.5 py-0 rounded text-[10px] font-medium"
-                :class="item.venta.empresa === 'ultra'
-                  ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300'
-                  : 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300'"
+                :class="empresaPillClass(item.venta.empresa)"
               >
-                {{ item.venta.empresa === 'ultra' ? 'Ultra' : 'Express' }}
+                {{ empresaLabel(item.venta.empresa) }}
               </span>
               <span v-if="item.venta.dir_localidad"> — {{ item.venta.dir_localidad }}</span>
             </p>
@@ -98,6 +96,15 @@
 
 <script setup lang="ts">
 import type { FeedItem } from '~/composables/useOficinistaActivity'
+import { empresaLabel } from '~/utils/empresa'
+
+const EMPRESA_PILL: Record<string, string> = {
+  express: 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300',
+  ultra: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300',
+  chipped: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300',
+}
+const empresaPillClass = (empresa: string | null | undefined) =>
+  EMPRESA_PILL[empresa ?? ''] ?? EMPRESA_PILL.express
 
 const props = defineProps<{
   feed: FeedItem[]

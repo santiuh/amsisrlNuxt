@@ -7,9 +7,12 @@ export default defineEventHandler(async (event) => {
 
   const { _extras, extras_ids, ...ventaData } = body
 
-  // Validar permiso Ultra
+  // Validar permiso por empresa
   if (ventaData.empresa === 'ultra' && !profile.puede_vender_ultra) {
     throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Ultra' })
+  }
+  if (ventaData.empresa === 'chipped' && !profile.puede_vender_chipped) {
+    throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Chipped' })
   }
 
   const { data: ventaCreada, error } = await client

@@ -119,10 +119,10 @@
         <div>
           <span class="font-medium">Empresa:</span>
           <UBadge
-            :color="venta.empresa === 'ultra' ? 'violet' : 'blue'"
+            :color="empresaColor(venta.empresa)"
             variant="subtle"
             size="xs"
-            :label="venta.empresa === 'ultra' ? 'Ultra' : 'Express'"
+            :label="empresaLabel(venta.empresa)"
             class="ml-1"
           />
         </div>
@@ -252,6 +252,7 @@
 
 <script setup lang="ts">
 import { buildVentaWhatsappUrl } from '~/utils/whatsapp'
+import { empresaColor, empresaLabel } from '~/utils/empresa'
 
 const route = useRoute()
 const client = useSupabaseClient()

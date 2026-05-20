@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
   const body = await readBody(event)
 
-  const { nombre, rol, puede_vender_ultra } = body
+  const { nombre, rol, puede_vender_ultra, puede_vender_chipped } = body
 
   if (!nombre?.trim() || !rol) {
     throw createError({ statusCode: 400, statusMessage: 'Nombre y rol son requeridos' })
@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
     p_nombre: nombre.trim(),
     p_rol: rol,
     p_puede_vender_ultra: puede_vender_ultra ?? false,
+    p_puede_vender_chipped: puede_vender_chipped ?? false,
   })
 
   if (error) {

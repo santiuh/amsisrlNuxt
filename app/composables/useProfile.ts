@@ -9,6 +9,7 @@ export interface Profile {
   created_at: string
   must_change_password: boolean
   puede_vender_ultra: boolean
+  puede_vender_chipped: boolean
   avatar_config: AvatarConfig | null
 }
 

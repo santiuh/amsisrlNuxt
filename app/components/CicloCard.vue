@@ -76,6 +76,7 @@ const fmtFecha = (f: string) => {
 const LOGOS: Record<string, string> = {
   express: '/img/logo-express.png',
   ultra: '/img/logo-ultra.png',
+  chipped: '/img/logo-chipped.png',
 }
 
 const logoSrc = computed(() => LOGOS[props.empresa])
@@ -105,6 +106,18 @@ const STYLES: Record<string, Record<string, string>> = {
     footer: 'border-t border-violet-100/50 dark:border-violet-500/10 text-violet-500/40 dark:text-violet-400/30',
     logoFilter: 'violet-logo-filter',
   },
+  chipped: {
+    card: 'bg-white shadow-card ring-emerald-100 dark:bg-emerald-500/[0.06] dark:ring-emerald-500/15',
+    gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-700',
+    title: 'text-emerald-600/70 dark:text-emerald-400/70',
+    badge: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300',
+    value: 'text-emerald-700 dark:text-emerald-200',
+    sub: 'text-emerald-500/50 dark:text-emerald-400/50',
+    body: 'text-emerald-700/70 dark:text-emerald-300/60',
+    muted: 'text-emerald-500/40 dark:text-emerald-400/40',
+    footer: 'border-t border-emerald-100/50 dark:border-emerald-500/10 text-emerald-500/40 dark:text-emerald-400/30',
+    logoFilter: 'emerald-logo-filter',
+  },
 }
 
 const styles = computed(() => STYLES[props.empresa] ?? STYLES.express)
@@ -116,5 +129,8 @@ const styles = computed(() => STYLES[props.empresa] ?? STYLES.express)
 }
 .violet-logo-filter {
   filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(260deg) saturate(3);
+}
+.emerald-logo-filter {
+  filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(110deg) saturate(3);
 }
 </style>

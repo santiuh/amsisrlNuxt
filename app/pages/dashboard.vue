@@ -152,11 +152,9 @@
                 <td class="px-4 py-3">
                   <span
                     class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ring-1 ring-inset"
-                    :class="v.empresa === 'ultra'
-                      ? 'bg-violet-50 text-violet-700 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20'
-                      : 'bg-blue-50 text-blue-700 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20'"
+                    :class="EMPRESA_PILL_CLASS[v.empresa] ?? EMPRESA_PILL_CLASS.express"
                   >
-                    {{ v.empresa === 'ultra' ? 'Ultra' : 'Express' }}
+                    {{ empresaLabel(v.empresa) }}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200 font-medium max-w-[200px] truncate" :title="v.cliente">{{ v.cliente }}</td>
@@ -200,6 +198,7 @@
 
 <script setup lang="ts">
 import { calcularEstimaciones } from '~/composables/useComisiones'
+import { empresaLabel } from '~/utils/empresa'
 
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
@@ -283,7 +282,16 @@ const estadoPillClass = (e: string) => ESTADO_PILL[e] ?? ESTADO_PILL.pendiente
 const EMPRESAS_CONFIG: Record<string, { label: string; color: string }> = {
   express: { label: 'Express', color: 'purple' },
   ultra: { label: 'Ultra', color: 'violet' },
+  chipped: { label: 'Chipped', color: 'emerald' },
 }
+
+const EMPRESA_PILL_CLASS: Record<string, string> = {
+  express: 'bg-blue-50 text-blue-700 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20',
+  ultra: 'bg-violet-50 text-violet-700 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20',
+  chipped: 'bg-emerald-50 text-emerald-700 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+}
+
+const EMPRESA_ORDER: Record<string, number> = { express: 0, ultra: 1, chipped: 2 }
 
 const cargarComisiones = async () => {
   ciclosComisiones.value = []
@@ -494,8 +502,10 @@ const cargarComisiones = async () => {
     }),
   )
 
-  // Ordenar Express primero
-  ciclosComisiones.value = resultados.sort((a, b) => a.empresa === 'express' ? -1 : 1)
+  // Ordenar: Express → Ultra → Chipped
+  ciclosComisiones.value = resultados.sort(
+    (a, b) => (EMPRESA_ORDER[a.empresa] ?? 99) - (EMPRESA_ORDER[b.empresa] ?? 99),
+  )
 }
 
 // Totales agregados desde ciclosComisiones (respeta filtro de empresa y fechas por ciclo)

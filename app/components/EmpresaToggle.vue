@@ -46,6 +46,12 @@
         <img src="/img/logo-ultra.png" :alt="opt.label" class="h-5 object-contain dark:hidden" />
         <img src="/img/logo-ultra-white.png" :alt="opt.label" class="h-5 object-contain hidden dark:block" />
       </template>
+      <img
+        v-else-if="opt.value === 'chipped'"
+        src="/img/logo-chipped.png"
+        :alt="opt.label"
+        class="h-5 object-contain"
+      />
       <span v-else class="text-xs font-semibold">{{ opt.label }}</span>
     </button>
   </div>
@@ -76,6 +82,7 @@ const computedOptions = computed<EmpresaOption[]>(() => {
   return [
     { label: 'Express', value: 'express' },
     { label: 'Ultra', value: 'ultra' },
+    { label: 'Chipped', value: 'chipped' },
   ]
 })
 </script>
