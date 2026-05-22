@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-8">
     <!-- Cards de ciclo por empresa (compartido entre roles) -->
-    <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <CicloCard
         v-for="cc in ciclosComisiones"
         :key="cc.empresa"
@@ -18,13 +18,28 @@
 
     <!-- ============ VENDEDOR ============ -->
     <template v-if="profile?.rol === 'vendedor'">
-      <DashboardDoughnutChart
-        v-if="ventasPropiasCiclo.length > 0"
-        title="Estados de mis ventas del ciclo"
+      <DashboardEstadoBar
+        title="Estados de mis ventas del mes"
         :labels="distribucionEstadosPropias.labels"
         :data="distribucionEstadosPropias.data"
         :colors="distribucionEstadosPropias.colors"
       />
+
+      <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <DashboardLineChart
+          title="Mis ventas creadas por ciclo"
+          :labels="creadasPorCiclo.labels"
+          :datasets="creadasPorCiclo.datasets"
+        />
+        <DashboardLineChart
+          title="Mis ventas concretadas por ciclo"
+          :labels="concretadasPorCiclo.labels"
+          :datasets="concretadasPorCiclo.datasets"
+        />
+      </div>
+
+      <!-- Botoneras de atajos -->
+      <DashboardShortcuts />
 
       <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
@@ -38,13 +53,28 @@
 
     <!-- ============ LIDER ============ -->
     <template v-else-if="profile?.rol === 'lider'">
-      <DashboardDoughnutChart
-        v-if="ventasPropiasCiclo.length > 0"
-        title="Estados de mis ventas del ciclo"
+      <DashboardEstadoBar
+        title="Estados de mis ventas del mes"
         :labels="distribucionEstadosPropias.labels"
         :data="distribucionEstadosPropias.data"
         :colors="distribucionEstadosPropias.colors"
       />
+
+      <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <DashboardLineChart
+          title="Mis ventas creadas por ciclo"
+          :labels="creadasPorCiclo.labels"
+          :datasets="creadasPorCiclo.datasets"
+        />
+        <DashboardLineChart
+          title="Mis ventas concretadas por ciclo"
+          :labels="concretadasPorCiclo.labels"
+          :datasets="concretadasPorCiclo.datasets"
+        />
+      </div>
+
+      <!-- Botoneras de atajos -->
+      <DashboardShortcuts />
 
       <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
@@ -55,9 +85,8 @@
         </div>
       </div>
 
-      <DashboardDoughnutChart
-        v-if="ventasEquipoCiclo.length > 0"
-        title="Estados de ventas del equipo"
+      <DashboardEstadoBar
+        title="Estados de ventas del equipo (mes)"
         :labels="distribucionEstadosEquipo.labels"
         :data="distribucionEstadosEquipo.data"
         :colors="distribucionEstadosEquipo.colors"
@@ -75,17 +104,22 @@
 
     <!-- ============ OFICINISTA ============ -->
     <template v-else-if="profile?.rol === 'oficinista'">
-      <div v-if="ventasCiclo.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <DashboardDoughnutChart
-          title="Estados de las ventas del ciclo"
-          :labels="distribucionEstados.labels"
-          :data="distribucionEstados.data"
-          :colors="distribucionEstados.colors"
+      <DashboardEstadoBar
+        title="Estados de las ventas del mes"
+        :labels="distribucionEstados.labels"
+        :data="distribucionEstados.data"
+        :colors="distribucionEstados.colors"
+      />
+      <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <DashboardLineChart
+          title="Ventas creadas por ciclo"
+          :labels="creadasPorCiclo.labels"
+          :datasets="creadasPorCiclo.datasets"
         />
-        <DashboardBarChart
-          title="Ventas por ciclo"
-          :labels="ventasPorCiclo.labels"
-          :datasets="ventasPorCiclo.datasets"
+        <DashboardLineChart
+          title="Ventas concretadas por ciclo"
+          :labels="concretadasPorCiclo.labels"
+          :datasets="concretadasPorCiclo.datasets"
         />
       </div>
 
@@ -101,17 +135,22 @@
 
     <!-- ============ ADMIN ============ -->
     <template v-else-if="profile?.rol === 'admin'">
-      <div v-if="ventasCiclo.length > 0" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <DashboardDoughnutChart
-          title="Estados de las ventas del ciclo"
-          :labels="distribucionEstados.labels"
-          :data="distribucionEstados.data"
-          :colors="distribucionEstados.colors"
+      <DashboardEstadoBar
+        title="Estados de las ventas del mes"
+        :labels="distribucionEstados.labels"
+        :data="distribucionEstados.data"
+        :colors="distribucionEstados.colors"
+      />
+      <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <DashboardLineChart
+          title="Ventas creadas por ciclo"
+          :labels="creadasPorCiclo.labels"
+          :datasets="creadasPorCiclo.datasets"
         />
-        <DashboardBarChart
-          title="Ventas por ciclo"
-          :labels="ventasPorCiclo.labels"
-          :datasets="ventasPorCiclo.datasets"
+        <DashboardLineChart
+          title="Ventas concretadas por ciclo"
+          :labels="concretadasPorCiclo.labels"
+          :datasets="concretadasPorCiclo.datasets"
         />
       </div>
 
@@ -231,8 +270,8 @@ interface CicloComisionData {
   equipoIngresos: number
   // Último ciclo cerrado
   ultimoCiclo: { ingresos: number; concretadas: number; creadas: number } | null
-  // Historial de ciclos cerrados (para bar chart)
-  historialCiclos: { label: string; concretadas: number }[]
+  // Historial de ciclos cerrados (para gráficos)
+  historialCiclos: { label: string; concretadas: number; creadas: number }[]
   // Ranking de vendedores (rol vendedor/lider) alineado con calcularEstimaciones
   ranking: Array<{
     vendedor_id: string
@@ -462,17 +501,23 @@ const cargarComisiones = async () => {
           }
         }
 
-        // Historial de concretadas por ciclo (para bar chart)
+        // Historial de concretadas + creadas por ciclo (para gráficos)
         for (const cc of closedCiclos) {
           const ccPagos = pagosAll.filter((p: any) => p.ciclo_id === cc.id)
           const totalConc = isGlobal
             ? ccPagos.reduce((sum: number, p: any) => sum + (p.cantidad_ventas || 0), 0)
             : (ccPagos.find((p: any) => p.vendedor_id === myId)?.cantidad_ventas ?? 0)
+          const totalCreadas = ventas.value.filter(v =>
+            v.empresa === empresa &&
+            v.fecha_carga >= cc.fecha_inicio &&
+            cc.fecha_cierre_real && v.fecha_carga <= cc.fecha_cierre_real &&
+            (isGlobal || v.vendedor_id === myId),
+          ).length
           const fInicio = new Date(cc.fecha_inicio).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
           const fCierre = cc.fecha_cierre_real
             ? new Date(cc.fecha_cierre_real).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
             : '?'
-          historialCiclos.push({ label: `${fInicio} - ${fCierre}`, concretadas: totalConc })
+          historialCiclos.push({ label: `${fInicio} - ${fCierre}`, concretadas: totalConc, creadas: totalCreadas })
         }
         // Orden cronológico (más antiguo primero)
         historialCiclos.reverse()
@@ -580,6 +625,20 @@ const ventasEquipoCiclo = computed(() =>
   ventasEquipo.value.filter(enCiclo)
 )
 
+// Ventas del mes actual (todas las empresas)
+const inicioMes = computed(() => {
+  const d = new Date()
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString()
+})
+const enMes = (v: any) => v.fecha_carga >= inicioMes.value
+const ventasMes = computed(() => ventasFiltradas.value.filter(enMes))
+const ventasPropiasMes = computed(() =>
+  ventasMes.value.filter(v => v.vendedor_id === profile.value?.id),
+)
+const ventasEquipoMes = computed(() =>
+  ventasMes.value.filter(v => v.vendedor_id !== profile.value?.id),
+)
+
 const stats = computed(() => {
   const propiasCiclo = ventasPropiasCiclo.value
   const equipoCiclo = ventasEquipoCiclo.value
@@ -650,38 +709,52 @@ function buildDistribucion(source: any[]) {
   return { labels, data, colors }
 }
 
-const distribucionEstados = computed(() => buildDistribucion(ventasCiclo.value))
-const distribucionEstadosPropias = computed(() => buildDistribucion(ventasPropiasCiclo.value))
-const distribucionEstadosEquipo = computed(() => buildDistribucion(ventasEquipoCiclo.value))
+const distribucionEstados = computed(() => buildDistribucion(ventasMes.value))
+const distribucionEstadosPropias = computed(() => buildDistribucion(ventasPropiasMes.value))
+const distribucionEstadosEquipo = computed(() => buildDistribucion(ventasEquipoMes.value))
 
-const ventasPorCiclo = computed(() => {
-  if (ciclosComisiones.value.length === 0) return { labels: [], datasets: [] }
+const EMPRESA_LINE_COLOR: Record<string, string> = {
+  express: '#a855f7',
+  ultra: '#8b5cf6',
+  chipped: '#10b981',
+}
 
-  const labels: string[] = []
-  const data: number[] = []
+function buildPorCiclo(getValue: (h: { concretadas: number; creadas: number }) => number, getActual: (cc: CicloComisionData) => number) {
+  if (ciclosComisiones.value.length === 0) return { labels: [] as string[], datasets: [] as { label: string; data: number[]; color: string }[] }
 
-  // Ciclos cerrados (historial) — usar labels del primer empresa, sumar across all
-  const ref = ciclosComisiones.value[0]
-  for (let i = 0; i < ref.historialCiclos.length; i++) {
-    labels.push(ref.historialCiclos[i].label)
-    const total = ciclosComisiones.value.reduce((sum, cc) =>
-      sum + (cc.historialCiclos[i]?.concretadas ?? 0), 0)
-    data.push(total)
-  }
+  // Empresa con más historial → fuente de labels (típicamente Express)
+  const ref = [...ciclosComisiones.value].sort(
+    (a, b) => b.historialCiclos.length - a.historialCiclos.length,
+  )[0]
 
-  // Ciclo actual
+  const labels: string[] = ref.historialCiclos.map(h => h.label)
   const fI = new Date(ref.fechaInicio).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
   const fC = new Date(ref.fechaCierre).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
   labels.push(`${fI} - ${fC} *`)
-  data.push(ciclosComisiones.value.reduce((sum, cc) => sum + cc.concretadas, 0))
 
-  return {
-    labels,
-    datasets: [
-      { label: 'Concretadas', data, backgroundColor: '#10b981' },
-    ],
-  }
-})
+  const datasets = ciclosComisiones.value.map((cc) => {
+    const pad = ref.historialCiclos.length - cc.historialCiclos.length
+    const data = [
+      ...Array(pad).fill(0),
+      ...cc.historialCiclos.map(getValue),
+      getActual(cc),
+    ]
+    return {
+      label: cc.label,
+      data,
+      color: EMPRESA_LINE_COLOR[cc.empresa] ?? '#64748b',
+    }
+  })
+
+  return { labels, datasets }
+}
+
+const concretadasPorCiclo = computed(() =>
+  buildPorCiclo(h => h.concretadas, cc => cc.concretadas),
+)
+const creadasPorCiclo = computed(() =>
+  buildPorCiclo(h => h.creadas, cc => cc.ventasCreadas),
+)
 
 useHead({ title: 'Dashboard — AMSI SRL' })
 </script>

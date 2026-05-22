@@ -8,6 +8,10 @@ import {
   Legend,
   DoughnutController,
   BarController,
+  LineElement,
+  PointElement,
+  LineController,
+  Filler,
 } from 'chart.js'
 
 export default defineNuxtPlugin(() => {
@@ -20,5 +24,9 @@ export default defineNuxtPlugin(() => {
     Legend,
     DoughnutController,
     BarController,
+    LineElement,
+    PointElement,
+    LineController,
+    Filler,
   )
 })

@@ -24,6 +24,12 @@
         <template #created_at-data="{ row }">
           {{ formatFecha(row.created_at) }}
         </template>
+        <template #last_sign_in_at-data="{ row }">
+          <span v-if="row.last_sign_in_at" class="text-sm text-gray-600 dark:text-gray-300">
+            {{ formatFechaHora(row.last_sign_in_at) }}
+          </span>
+          <span v-else class="text-sm text-gray-400 dark:text-gray-500">Nunca</span>
+        </template>
         <template #acciones-data="{ row }">
           <div class="flex gap-1">
             <UButton
@@ -287,6 +293,7 @@ const columns = [
   { key: 'email', label: 'Email' },
   { key: 'rol', label: 'Rol' },
   { key: 'created_at', label: 'Creado' },
+  { key: 'last_sign_in_at', label: 'Último inicio' },
   { key: 'acciones', label: '' },
 ]
 
@@ -295,10 +302,7 @@ const rolColor = (r: string): any => ({ admin: 'red', oficinista: 'yellow', vend
 
 const cargarUsuarios = async () => {
   loading.value = true
-  const { data } = await client
-    .from('profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const { data } = await client.rpc('admin_list_users')
   usuarios.value = data ?? []
   loading.value = false
 }
