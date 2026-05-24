@@ -1,7 +1,10 @@
 <template>
-  <div class="space-y-8">
-    <!-- Cards de ciclo por empresa (compartido entre roles) -->
-    <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="space-y-4 md:space-y-8">
+    <!-- Cards de ciclo por empresa (solo desktop; en mobile todos los roles ven CicloHeroMobile) -->
+    <div
+      v-if="ciclosComisiones.length > 0"
+      class="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       <CicloCard
         v-for="cc in ciclosComisiones"
         :key="cc.empresa"
@@ -18,6 +21,14 @@
 
     <!-- ============ VENDEDOR ============ -->
     <template v-if="profile?.rol === 'vendedor'">
+      <!-- Mobile: hero unificado de ciclos -->
+      <CicloHeroMobile
+        v-if="ciclosComisiones.length > 0"
+        :ciclos="ciclosComisiones"
+        :mes-data="mesData"
+        class="md:hidden"
+      />
+
       <DashboardEstadoBar
         title="Estados de mis ventas del mes"
         :labels="distribucionEstadosPropias.labels"
@@ -25,7 +36,8 @@
         :colors="distribucionEstadosPropias.colors"
       />
 
-      <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <!-- Desktop: 2 charts apilados -->
+      <div v-if="ciclosComisiones.length > 0" class="hidden md:grid grid-cols-1 xl:grid-cols-2 gap-4">
         <DashboardLineChart
           title="Mis ventas creadas por ciclo"
           :labels="creadasPorCiclo.labels"
@@ -37,11 +49,21 @@
           :datasets="concretadasPorCiclo.datasets"
         />
       </div>
+      <!-- Mobile: un chart con tabs -->
+      <DashboardLineChartTabbed
+        v-if="ciclosComisiones.length > 0"
+        class="md:hidden"
+        title-creadas="Mis ventas creadas por ciclo"
+        title-concretadas="Mis ventas concretadas por ciclo"
+        :creadas="creadasPorCiclo"
+        :concretadas="concretadasPorCiclo"
+      />
 
       <!-- Botoneras de atajos -->
       <DashboardShortcuts />
 
-      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+      <!-- Desktop: tabla -->
+      <div class="hidden md:block rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
         </div>
@@ -49,10 +71,37 @@
           <VentaTable :ventas="ventasFiltradas" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
         </div>
       </div>
+      <!-- Mobile: lista de cards -->
+      <div class="md:hidden">
+        <div class="flex items-center justify-between gap-2 px-1 mb-2">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
+          <NuxtLink
+            to="/ventas"
+            class="text-xs font-medium text-cyan-600 dark:text-cyan-400 inline-flex items-center gap-1"
+          >
+            Ver todas
+            <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
+          </NuxtLink>
+        </div>
+        <VentaListMobile
+          :ventas="ventasFiltradas"
+          :loading="loading"
+          :show-vendedor="false"
+          :lecturas="lecturas"
+        />
+      </div>
     </template>
 
     <!-- ============ LIDER ============ -->
     <template v-else-if="profile?.rol === 'lider'">
+      <!-- Mobile: hero unificado de ciclos -->
+      <CicloHeroMobile
+        v-if="ciclosComisiones.length > 0"
+        :ciclos="ciclosComisiones"
+        :mes-data="mesData"
+        class="md:hidden"
+      />
+
       <DashboardEstadoBar
         title="Estados de mis ventas del mes"
         :labels="distribucionEstadosPropias.labels"
@@ -60,7 +109,8 @@
         :colors="distribucionEstadosPropias.colors"
       />
 
-      <div v-if="ciclosComisiones.length > 0" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <!-- Desktop: 2 charts apilados -->
+      <div v-if="ciclosComisiones.length > 0" class="hidden md:grid grid-cols-1 xl:grid-cols-2 gap-4">
         <DashboardLineChart
           title="Mis ventas creadas por ciclo"
           :labels="creadasPorCiclo.labels"
@@ -72,17 +122,46 @@
           :datasets="concretadasPorCiclo.datasets"
         />
       </div>
+      <!-- Mobile: un chart con tabs -->
+      <DashboardLineChartTabbed
+        v-if="ciclosComisiones.length > 0"
+        class="md:hidden"
+        title-creadas="Mis ventas creadas por ciclo"
+        title-concretadas="Mis ventas concretadas por ciclo"
+        :creadas="creadasPorCiclo"
+        :concretadas="concretadasPorCiclo"
+      />
 
       <!-- Botoneras de atajos -->
       <DashboardShortcuts />
 
-      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+      <!-- Desktop: tabla -->
+      <div class="hidden md:block rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
         </div>
         <div class="p-1">
           <VentaTable :ventas="ventasPropias" :loading="loading" :show-vendedor="false" :lecturas="lecturas" />
         </div>
+      </div>
+      <!-- Mobile: lista de cards -->
+      <div class="md:hidden">
+        <div class="flex items-center justify-between gap-2 px-1 mb-2">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Mis Ventas</h3>
+          <NuxtLink
+            to="/ventas"
+            class="text-xs font-medium text-cyan-600 dark:text-cyan-400 inline-flex items-center gap-1"
+          >
+            Ver todas
+            <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
+          </NuxtLink>
+        </div>
+        <VentaListMobile
+          :ventas="ventasPropias"
+          :loading="loading"
+          :show-vendedor="false"
+          :lecturas="lecturas"
+        />
       </div>
 
       <DashboardEstadoBar
@@ -92,7 +171,8 @@
         :colors="distribucionEstadosEquipo.colors"
       />
 
-      <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
+      <!-- Desktop: tabla equipo -->
+      <div class="hidden md:block rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
           <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ventas de mi Equipo</h3>
         </div>
@@ -100,10 +180,37 @@
           <VentaTable :ventas="ventasEquipo" :loading="loading" :show-vendedor="true" :can-export="true" :lecturas="lecturas" />
         </div>
       </div>
+      <!-- Mobile: lista de cards equipo -->
+      <div class="md:hidden">
+        <div class="flex items-center justify-between gap-2 px-1 mb-2">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Ventas de mi Equipo</h3>
+          <NuxtLink
+            to="/ventas"
+            class="text-xs font-medium text-cyan-600 dark:text-cyan-400 inline-flex items-center gap-1"
+          >
+            Ver todas
+            <UIcon name="i-heroicons-arrow-right" class="w-3 h-3" />
+          </NuxtLink>
+        </div>
+        <VentaListMobile
+          :ventas="ventasEquipo"
+          :loading="loading"
+          :show-vendedor="true"
+          :lecturas="lecturas"
+        />
+      </div>
     </template>
 
     <!-- ============ OFICINISTA ============ -->
     <template v-else-if="profile?.rol === 'oficinista'">
+      <!-- Mobile: hero unificado de ingresos -->
+      <CicloHeroMobile
+        v-if="ciclosComisiones.length > 0"
+        :ciclos="ciclosComisiones"
+        :mes-data="mesData"
+        class="md:hidden"
+      />
+
       <DashboardEstadoBar
         title="Estados de las ventas del mes"
         :labels="distribucionEstados.labels"
@@ -135,6 +242,14 @@
 
     <!-- ============ ADMIN ============ -->
     <template v-else-if="profile?.rol === 'admin'">
+      <!-- Mobile: hero unificado de ingresos -->
+      <CicloHeroMobile
+        v-if="ciclosComisiones.length > 0"
+        :ciclos="ciclosComisiones"
+        :mes-data="mesData"
+        class="md:hidden"
+      />
+
       <DashboardEstadoBar
         title="Estados de las ventas del mes"
         :labels="distribucionEstados.labels"
@@ -565,6 +680,42 @@ const statsCicloTotal = computed(() => {
     equipoVentasCreadas: ciclos.reduce((sum, c) => sum + (c.equipoVentasCreadas ?? 0), 0),
     equipoConcretadas: ciclos.reduce((sum, c) => sum + (c.equipoConcretadas ?? 0), 0),
     equipoIngresos: ciclos.reduce((sum, c) => sum + (c.equipoIngresos ?? 0), 0),
+  }
+})
+
+// Agregado del mes para CicloHeroMobile (vista "MES" consolidada AMSI)
+const mesData = computed(() => {
+  if (ciclosComisiones.value.length === 0 || !profile.value) return null
+  const ciclos = ciclosComisiones.value
+  const isVendedorOLider = profile.value.rol === 'vendedor' || profile.value.rol === 'lider'
+
+  if (isVendedorOLider) {
+    const comision = ciclos.reduce((sum, c) => sum + (c.estimadoComision ?? 0), 0)
+    const bonus = ciclos.reduce((sum, c) => sum + (c.estimadoBonus ?? 0), 0)
+    return {
+      valorPrincipal: comision + bonus,
+      tipo: 'comisiones' as const,
+      comision,
+      bonus,
+      concretadas: ciclos.reduce((sum, c) => sum + c.concretadas, 0),
+      ventasCreadas: ciclos.reduce((sum, c) => sum + c.ventasCreadas, 0),
+      porEmpresa: ciclos.map(c => ({
+        empresa: c.empresa,
+        label: c.label,
+        monto: c.estimadoTotal ?? 0,
+      })),
+    }
+  }
+  return {
+    valorPrincipal: ciclos.reduce((sum, c) => sum + c.ingresos, 0),
+    tipo: 'ingresos' as const,
+    concretadas: ciclos.reduce((sum, c) => sum + c.concretadas, 0),
+    ventasCreadas: ciclos.reduce((sum, c) => sum + c.ventasCreadas, 0),
+    porEmpresa: ciclos.map(c => ({
+      empresa: c.empresa,
+      label: c.label,
+      monto: c.ingresos,
+    })),
   }
 })
 

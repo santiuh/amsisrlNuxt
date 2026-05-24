@@ -81,7 +81,9 @@ const navItems = computed(() => {
     items.push({ to: '/admin/comisiones', label: 'Comisiones', icon: 'i-heroicons-calculator' })
     items.push({ to: '/admin/actividad', label: 'Actividad Personal', icon: 'i-heroicons-clock' })
   }
-  items.push({ to: '/mi-avatar', label: 'Mi Avatar', icon: 'i-heroicons-user-circle' })
+  if (profile.value?.id) {
+    items.push({ to: `/perfil/${profile.value.id}`, label: 'Mi Perfil', icon: 'i-heroicons-user-circle' })
+  }
   items.push({ to: '/cambiar-contrasena', label: 'Cambiar Contraseña', icon: 'i-heroicons-key' })
   return items
 })

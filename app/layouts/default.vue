@@ -14,11 +14,15 @@
 
       <div class="flex-1 flex flex-col overflow-hidden w-0">
         <AppHeader />
-        <main class="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6">
+        <main class="flex-1 overflow-y-auto px-3 sm:p-5 lg:p-6 pt-2 sm:pt-5 pb-28 md:pb-6">
+          <MobileProfileBadge />
           <slot />
         </main>
       </div>
     </div>
+
+    <MobileBottomNav />
+    <MobileMenuPanel />
   </div>
 </template>
 

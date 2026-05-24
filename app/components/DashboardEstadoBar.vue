@@ -1,15 +1,15 @@
 <template>
-  <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 p-5 dark:bg-white/[0.03] dark:ring-white/[0.06]">
-    <div class="flex items-baseline justify-between gap-3 mb-4">
-      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ title }}</h3>
-      <span class="text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+  <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 p-4 md:p-5 dark:bg-white/[0.03] dark:ring-white/[0.06]">
+    <div class="flex items-baseline justify-between gap-3 mb-3 md:mb-4">
+      <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 truncate">{{ title }}</h3>
+      <span class="text-[11px] md:text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap shrink-0">
         {{ total }} {{ total === 1 ? 'venta' : 'ventas' }}
       </span>
     </div>
 
     <div
       v-if="total > 0"
-      class="flex h-6 w-full overflow-hidden rounded-full ring-1 ring-gray-100 dark:ring-white/[0.08] bg-gray-50 dark:bg-white/[0.04]"
+      class="flex h-5 md:h-6 w-full overflow-hidden rounded-full ring-1 ring-gray-100 dark:ring-white/[0.08] bg-gray-50 dark:bg-white/[0.04]"
     >
       <div
         v-for="seg in segmentos"
@@ -22,14 +22,31 @@
 
     <div
       v-else
-      class="flex h-6 w-full items-center justify-center rounded-full bg-gray-50 dark:bg-white/[0.04] text-[11px] font-medium text-gray-400 dark:text-gray-500"
+      class="flex h-5 md:h-6 w-full items-center justify-center rounded-full bg-gray-50 dark:bg-white/[0.04] text-[11px] font-medium text-gray-400 dark:text-gray-500"
     >
       Sin ventas en el período
     </div>
 
+    <!-- Mobile: chips horizontalmente scrolleables -->
     <div
       v-if="segmentos.length > 0"
-      class="mt-4 grid gap-x-4 gap-y-2"
+      class="md:hidden mt-3 flex gap-1.5 overflow-x-auto -mx-4 px-4 pb-1 snap-x snap-mandatory"
+    >
+      <div
+        v-for="seg in segmentos"
+        :key="`m-${seg.label}`"
+        class="inline-flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-full bg-gray-50 dark:bg-white/[0.04] ring-1 ring-gray-200/60 dark:ring-white/[0.06] snap-start"
+      >
+        <span class="w-2 h-2 rounded-full shrink-0" :style="{ backgroundColor: seg.color }" />
+        <span class="text-sm font-bold tabular-nums text-gray-800 dark:text-gray-100">{{ seg.value }}</span>
+        <span class="text-[11px] text-gray-500 dark:text-slate-400">{{ shortLabel(seg.label) }}</span>
+      </div>
+    </div>
+
+    <!-- Desktop: grid de leyendas -->
+    <div
+      v-if="segmentos.length > 0"
+      class="hidden md:grid mt-4 gap-x-4 gap-y-2"
       style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))"
     >
       <div
@@ -68,4 +85,15 @@ const segmentos = computed(() => {
     }))
     .filter(s => s.value > 0)
 })
+
+const SHORT_LABELS: Record<string, string> = {
+  Concretadas: 'Concret.',
+  Coordinadas: 'Coordin.',
+  'En Proceso': 'Proceso',
+  Pendientes: 'Pendient.',
+  'En Conflicto': 'Conflicto',
+  Rechazadas: 'Rechaz.',
+  'Próxima Zona': 'Próx Zona',
+}
+const shortLabel = (l: string) => SHORT_LABELS[l] ?? l
 </script>

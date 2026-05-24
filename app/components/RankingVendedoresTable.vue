@@ -2,7 +2,17 @@
   <div class="space-y-3">
     <UTable :rows="visibleRows" :columns="columns">
       <template #vendedor-data="{ row }">
-        <div class="flex items-center gap-2">
+        <NuxtLink
+          v-if="row.vendedor_id"
+          :to="`/perfil/${row.vendedor_id}`"
+          class="flex items-center gap-2 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+        >
+          <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
+            <UserAvatar :config="row.avatar_config" :seed="row.nombre" class="w-full h-full" />
+          </div>
+          <span :title="row.nombre">{{ row.nombre }}</span>
+        </NuxtLink>
+        <div v-else class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
             <UserAvatar :config="row.avatar_config" :seed="row.nombre" class="w-full h-full" />
           </div>

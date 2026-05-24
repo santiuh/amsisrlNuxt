@@ -30,8 +30,24 @@
           </span>
           <span v-else class="text-sm text-gray-400 dark:text-gray-500">Nunca</span>
         </template>
+        <template #nombre-data="{ row }">
+          <NuxtLink
+            :to="`/perfil/${row.id}`"
+            class="font-medium text-gray-800 hover:text-emerald-600 dark:text-gray-100 dark:hover:text-emerald-400 transition-colors"
+          >
+            {{ row.nombre }}
+          </NuxtLink>
+        </template>
         <template #acciones-data="{ row }">
           <div class="flex gap-1">
+            <UButton
+              icon="i-heroicons-user-circle"
+              size="xs"
+              color="gray"
+              variant="ghost"
+              label="Ver perfil"
+              :to="`/perfil/${row.id}`"
+            />
             <UButton
               icon="i-heroicons-pencil-square"
               size="xs"
