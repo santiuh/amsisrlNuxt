@@ -148,6 +148,11 @@
         <span :title="row.cliente">{{ truncateText(row.cliente, 14) }}</span>
       </template>
 
+      <template #nro_cliente-data="{ row }">
+        <span v-if="row.nro_cliente" class="text-sm font-mono tabular-nums">{{ row.nro_cliente }}</span>
+        <span v-else class="text-gray-400 dark:text-gray-500">—</span>
+      </template>
+
       <template #vendedor-data="{ row }">
         <div class="flex items-center gap-2">
           <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-gray-600">
@@ -329,7 +334,7 @@ const filteredVentas = computed(() => {
   const f = filtersInternal
   const q = f.search.toLowerCase().trim()
   return props.ventas.filter((v) => {
-    if (q && !(v.cliente?.toLowerCase().includes(q) || v.dni_cuil?.toLowerCase().includes(q))) return false
+    if (q && !(v.cliente?.toLowerCase().includes(q) || v.dni_cuil?.toLowerCase().includes(q) || v.nro_cliente?.toLowerCase().includes(q))) return false
     if (f.estado && v.estado !== f.estado) return false
     if (f.empresa && v.empresa !== f.empresa) return false
     if (f.vendedor && v.vendedor_id !== f.vendedor) return false
@@ -440,6 +445,7 @@ const columnas = computed(() => {
     { key: 'empresa', label: 'Empresa', sortable: true },
     { key: 'cliente', label: 'Cliente', sortable: true },
     { key: 'dni_cuil', label: 'DNI/CUIL', sortable: true },
+    { key: 'nro_cliente', label: 'N° Cliente', sortable: true },
     { key: 'telefono', label: 'Teléfono', sortable: true },
     { key: 'localidad', label: 'Localidad', sortable: true },
     { key: 'paquete', label: 'Paquete', sortable: true },
@@ -556,6 +562,7 @@ function handleExport() {
     Empresa: empresaLabel(v.empresa),
     Cliente: v.cliente,
     'DNI/CUIL': v.dni_cuil,
+    'N° Cliente': v.nro_cliente ?? '',
     Dirección: v.dir_calle ?? '',
     'Entre calles': v.dir_entre_calles ?? '',
     Localidad: v.dir_localidad ?? '',

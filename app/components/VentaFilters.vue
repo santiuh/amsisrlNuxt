@@ -4,7 +4,7 @@
     <div class="flex items-center gap-2.5">
       <UInput
         :model-value="filters.search"
-        placeholder="Buscar cliente o DNI/CUIL..."
+        placeholder="Buscar cliente, DNI/CUIL o N° cliente..."
         icon="i-heroicons-magnifying-glass"
         class="flex-1 min-w-0"
         @update:model-value="filters.search = $event"

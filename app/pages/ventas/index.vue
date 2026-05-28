@@ -117,6 +117,7 @@ async function handleExport() {
       Empresa: empresaLabel(v.empresa),
       Cliente: v.cliente,
       'DNI/CUIL': v.dni_cuil,
+      'N° Cliente': v.nro_cliente ?? '',
       Dirección: v.dir_calle ?? '',
       'Entre calles': v.dir_entre_calles ?? '',
       Localidad: v.dir_localidad ?? '',

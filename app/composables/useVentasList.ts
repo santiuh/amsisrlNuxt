@@ -14,6 +14,7 @@ const SORT_COLUMN_MAP: Record<string, string> = {
   empresa: 'empresa',
   cliente: 'cliente',
   dni_cuil: 'dni_cuil',
+  nro_cliente: 'nro_cliente',
   telefono: 'telefono',
   localidad: 'dir_localidad',
   paquete: 'paquete_nombre',
@@ -81,7 +82,7 @@ export function useVentasList() {
     const term = filters.search.trim()
     if (term) {
       const safe = escapeIlike(term)
-      q = q.or(`cliente.ilike.%${safe}%,dni_cuil.ilike.%${safe}%`)
+      q = q.or(`cliente.ilike.%${safe}%,dni_cuil.ilike.%${safe}%,nro_cliente.ilike.%${safe}%`)
     }
 
     const sortCol = SORT_COLUMN_MAP[sort.value.column] ?? 'fecha_carga'
