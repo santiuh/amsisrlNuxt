@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Nombre y precio válido requeridos' })
   }
 
-  if (!empresa || !['express', 'ultra', 'chipped'].includes(empresa)) {
+  if (!empresa || !['express', 'ultra', 'chipped', 'fibertec'].includes(empresa)) {
     throw createError({ statusCode: 400, statusMessage: 'Empresa inválida' })
   }
 

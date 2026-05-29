@@ -477,12 +477,18 @@ const empresaOptions = computed(() => {
   if (profile.value?.puede_vender_chipped || profile.value?.rol === 'admin') {
     options.push({ label: 'Chipped', value: 'chipped' })
   }
+  if (profile.value?.puede_vender_fibertec || profile.value?.rol === 'admin') {
+    options.push({ label: 'Fibertec', value: 'fibertec' })
+  }
   // En modo edición, asegurar que la empresa original aparezca
   if (props.initialData?.empresa === 'ultra' && !options.find(o => o.value === 'ultra')) {
     options.push({ label: 'Ultra', value: 'ultra' })
   }
   if (props.initialData?.empresa === 'chipped' && !options.find(o => o.value === 'chipped')) {
     options.push({ label: 'Chipped', value: 'chipped' })
+  }
+  if (props.initialData?.empresa === 'fibertec' && !options.find(o => o.value === 'fibertec')) {
+    options.push({ label: 'Fibertec', value: 'fibertec' })
   }
   return options
 })
@@ -693,10 +699,16 @@ const localidadesChipped = [
   { label: 'Roldán', value: 'Roldán' },
 ]
 
+const localidadesFibertec = [
+  { label: 'Cañada de Gómez', value: 'Cañada de Gómez' },
+  { label: 'Totoras', value: 'Totoras' },
+]
+
 const LOCALIDADES_POR_EMPRESA: Record<string, Array<{ label: string, value: string }>> = {
   express: localidadesExpress,
   ultra: localidadesUltra,
   chipped: localidadesChipped,
+  fibertec: localidadesFibertec,
 }
 
 const localidadOptions = computed(() =>

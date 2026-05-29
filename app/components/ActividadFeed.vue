@@ -99,9 +99,10 @@ import type { FeedItem } from '~/composables/useOficinistaActivity'
 import { empresaLabel } from '~/utils/empresa'
 
 const EMPRESA_PILL: Record<string, string> = {
-  express: 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300',
-  ultra: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300',
-  chipped: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-300',
+  express: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
+  ultra: 'bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300',
+  chipped: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300',
+  fibertec: 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300',
 }
 const empresaPillClass = (empresa: string | null | undefined) =>
   EMPRESA_PILL[empresa ?? ''] ?? EMPRESA_PILL.express

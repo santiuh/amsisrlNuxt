@@ -42,16 +42,26 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ perfil.email }}</p>
             <div class="flex items-center gap-2 flex-wrap mt-3">
               <UBadge color="blue" variant="subtle" label="Express" />
-              <UBadge v-if="perfil.puede_vender_ultra" color="violet" variant="subtle" label="Ultra" />
-              <UBadge v-if="perfil.puede_vender_chipped" color="emerald" variant="subtle" label="Chipped" />
+              <UBadge v-if="perfil.puede_vender_ultra" color="green" variant="subtle" label="Ultra" />
+              <UBadge v-if="perfil.puede_vender_chipped" color="red" variant="subtle" label="Chipped" />
+              <UBadge v-if="perfil.puede_vender_fibertec" color="sky" variant="subtle" label="Fibertec" />
             </div>
           </div>
         </div>
       </UCard>
 
       <!-- LOADING STATS -->
-      <div v-if="loadingStats" class="flex justify-center py-12">
-        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" />
+      <div v-if="loadingStats" class="space-y-4">
+        <div class="flex items-center gap-2">
+          <SkeletonBox variant="pill" tone="purple" width="78" height="22" />
+          <SkeletonBox variant="text" width="220" height="13" />
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatsCardSkeleton color="blue" />
+          <StatsCardSkeleton color="green" />
+          <StatsCardSkeleton color="teal" />
+          <StatsCardSkeleton color="purple" />
+        </div>
       </div>
 
       <template v-else>
@@ -176,9 +186,37 @@
     </template>
 
     <!-- Loading inicial del perfil -->
-    <div v-else class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 animate-spin" />
-    </div>
+    <template v-else>
+      <UCard>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+          <SkeletonBox variant="circle" width="112" height="112" class="border-4 border-white dark:border-gray-800 shrink-0" />
+          <div class="flex-1 min-w-0 space-y-3">
+            <div class="flex items-center gap-2 flex-wrap">
+              <SkeletonBox variant="text" width="62%" height="26" />
+              <SkeletonBox variant="pill" tone="purple" width="74" height="20" />
+            </div>
+            <SkeletonBox variant="text" width="58%" height="13" />
+            <div class="flex items-center gap-2 flex-wrap">
+              <SkeletonBox variant="pill" tone="cyan" width="64" height="20" />
+              <SkeletonBox variant="pill" tone="violet" width="54" height="20" />
+              <SkeletonBox variant="pill" tone="emerald" width="68" height="20" />
+            </div>
+          </div>
+        </div>
+      </UCard>
+      <div class="space-y-4">
+        <div class="flex items-center gap-2">
+          <SkeletonBox variant="pill" tone="purple" width="78" height="22" />
+          <SkeletonBox variant="text" width="220" height="13" />
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatsCardSkeleton color="blue" />
+          <StatsCardSkeleton color="green" />
+          <StatsCardSkeleton color="teal" />
+          <StatsCardSkeleton color="purple" />
+        </div>
+      </div>
+    </template>
 
     <!-- Modal editor de avatar (solo propio perfil) -->
     <AvatarEditorModal
@@ -303,8 +341,9 @@ const ESTADOS_CONFIG = [
 
 const EMPRESA_LINE_COLOR: Record<string, string> = {
   express: '#a855f7',
-  ultra: '#8b5cf6',
-  chipped: '#10b981',
+  ultra: '#22c55e',
+  chipped: '#ef4444',
+  fibertec: '#0ea5e9',
 }
 
 const distribucionEstados = ref({
@@ -403,7 +442,7 @@ const cargarStats = async () => {
     })
   }
   // Orden empresa
-  const order: Record<string, number> = { express: 0, ultra: 1, chipped: 2 }
+  const order: Record<string, number> = { express: 0, ultra: 1, chipped: 2, fibertec: 3 }
   ciclosStats.value.sort((a, b) => (order[a.empresa] ?? 99) - (order[b.empresa] ?? 99))
 
   // Historial de ciclos pagados del vendedor + tendencia por ciclo

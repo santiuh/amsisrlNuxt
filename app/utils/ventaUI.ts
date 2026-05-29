@@ -20,8 +20,9 @@ export const ESTADO_PILL: Record<string, string> = {
 
 export const EMPRESA_PILL_CLASS: Record<string, string> = {
   express: 'bg-blue-50 text-blue-700 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20',
-  ultra: 'bg-violet-50 text-violet-700 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20',
-  chipped: 'bg-emerald-50 text-emerald-700 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+  ultra: 'bg-green-50 text-green-700 ring-green-200/60 dark:bg-green-500/10 dark:text-green-300 dark:ring-green-500/20',
+  chipped: 'bg-red-50 text-red-700 ring-red-200/60 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20',
+  fibertec: 'bg-sky-50 text-sky-700 ring-sky-200/60 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20',
 }
 
 export const estadoLabel = (e: string) => ESTADO_LABELS[e] ?? e

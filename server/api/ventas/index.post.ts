@@ -14,6 +14,9 @@ export default defineEventHandler(async (event) => {
   if (ventaData.empresa === 'chipped' && !profile.puede_vender_chipped) {
     throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Chipped' })
   }
+  if (ventaData.empresa === 'fibertec' && !profile.puede_vender_fibertec) {
+    throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Fibertec' })
+  }
 
   const { data: ventaCreada, error } = await client
     .from('ventas')

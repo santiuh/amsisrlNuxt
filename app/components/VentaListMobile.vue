@@ -1,8 +1,6 @@
 <template>
   <div class="space-y-2">
-    <div v-if="loading" class="flex justify-center py-8">
-      <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 text-gray-400 animate-spin" />
-    </div>
+    <VentaListMobileSkeleton v-if="loading" :count="5" />
 
     <template v-else>
       <NuxtLink

@@ -10,6 +10,7 @@ export interface Profile {
   must_change_password: boolean
   puede_vender_ultra: boolean
   puede_vender_chipped: boolean
+  puede_vender_fibertec: boolean
   avatar_config: AvatarConfig | null
 }
 

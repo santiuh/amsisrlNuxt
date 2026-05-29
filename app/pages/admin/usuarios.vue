@@ -105,6 +105,7 @@
           </UFormGroup>
           <UCheckbox v-model="nuevoUsuario.puede_vender_ultra" label="Puede vender Ultra" />
           <UCheckbox v-model="nuevoUsuario.puede_vender_chipped" label="Puede vender Chipped" />
+          <UCheckbox v-model="nuevoUsuario.puede_vender_fibertec" label="Puede vender Fibertec" />
 
           <UAlert
             v-if="createError"
@@ -227,6 +228,7 @@
           </UFormGroup>
           <UCheckbox v-model="usuarioEditando.puede_vender_ultra" label="Puede vender Ultra" />
           <UCheckbox v-model="usuarioEditando.puede_vender_chipped" label="Puede vender Chipped" />
+          <UCheckbox v-model="usuarioEditando.puede_vender_fibertec" label="Puede vender Fibertec" />
 
           <UAlert
             v-if="editError"
@@ -286,6 +288,7 @@ const nuevoUsuario = reactive({
   rol: 'vendedor',
   puede_vender_ultra: false,
   puede_vender_chipped: false,
+  puede_vender_fibertec: false,
 })
 
 const usuarioEditando = reactive({
@@ -295,6 +298,7 @@ const usuarioEditando = reactive({
   rol: 'vendedor',
   puede_vender_ultra: false,
   puede_vender_chipped: false,
+  puede_vender_fibertec: false,
 })
 
 const opcionesRol = [
@@ -326,7 +330,7 @@ const cargarUsuarios = async () => {
 onMounted(cargarUsuarios)
 
 const abrirModalCrear = () => {
-  Object.assign(nuevoUsuario, { nombre: '', email: '', password: '', rol: 'vendedor', puede_vender_ultra: false, puede_vender_chipped: false })
+  Object.assign(nuevoUsuario, { nombre: '', email: '', password: '', rol: 'vendedor', puede_vender_ultra: false, puede_vender_chipped: false, puede_vender_fibertec: false })
   createError.value = ''
   showModalCrear.value = true
 }
@@ -339,6 +343,7 @@ const abrirModalEditar = (row: any) => {
     rol: row.rol,
     puede_vender_ultra: row.puede_vender_ultra ?? false,
     puede_vender_chipped: row.puede_vender_chipped ?? false,
+    puede_vender_fibertec: row.puede_vender_fibertec ?? false,
   })
   editError.value = ''
   showModalEditar.value = true
@@ -367,6 +372,7 @@ const crearUsuario = async () => {
         rol: nuevoUsuario.rol,
         puede_vender_ultra: nuevoUsuario.puede_vender_ultra,
         puede_vender_chipped: nuevoUsuario.puede_vender_chipped,
+        puede_vender_fibertec: nuevoUsuario.puede_vender_fibertec,
       },
     })
     toast.add({ title: `Usuario ${nuevoUsuario.nombre} creado`, color: 'green' })
@@ -428,6 +434,7 @@ const guardarCambios = async () => {
         rol: usuarioEditando.rol,
         puede_vender_ultra: usuarioEditando.puede_vender_ultra,
         puede_vender_chipped: usuarioEditando.puede_vender_chipped,
+        puede_vender_fibertec: usuarioEditando.puede_vender_fibertec,
       },
     })
     toast.add({ title: `Usuario ${usuarioEditando.nombre} actualizado`, color: 'green' })

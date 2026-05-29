@@ -1,5 +1,8 @@
 <template>
-  <div class="space-y-4 md:space-y-8">
+  <!-- Skeleton mientras carga (incluye también el caso sin profile) -->
+  <DashboardSkeleton v-if="loading" :role="(profile?.rol as any) ?? 'vendedor'" />
+
+  <div v-else class="space-y-4 md:space-y-8">
     <!-- Cards de ciclo por empresa (solo desktop; en mobile todos los roles ven CicloHeroMobile) -->
     <div
       v-if="ciclosComisiones.length > 0"
@@ -343,10 +346,6 @@
       </div>
     </template>
 
-    <!-- Loading -->
-    <div v-if="loading && !profile" class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-500 animate-spin" />
-    </div>
   </div>
 </template>
 
@@ -435,17 +434,19 @@ const estadoPillClass = (e: string) => ESTADO_PILL[e] ?? ESTADO_PILL.pendiente
 // Cargar comisiones de TODAS las empresas con ciclo activo
 const EMPRESAS_CONFIG: Record<string, { label: string; color: string }> = {
   express: { label: 'Express', color: 'purple' },
-  ultra: { label: 'Ultra', color: 'violet' },
-  chipped: { label: 'Chipped', color: 'emerald' },
+  ultra: { label: 'Ultra', color: 'green' },
+  chipped: { label: 'Chipped', color: 'red' },
+  fibertec: { label: 'Fibertec', color: 'sky' },
 }
 
 const EMPRESA_PILL_CLASS: Record<string, string> = {
   express: 'bg-blue-50 text-blue-700 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-500/20',
-  ultra: 'bg-violet-50 text-violet-700 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/20',
-  chipped: 'bg-emerald-50 text-emerald-700 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/20',
+  ultra: 'bg-green-50 text-green-700 ring-green-200/60 dark:bg-green-500/10 dark:text-green-300 dark:ring-green-500/20',
+  chipped: 'bg-red-50 text-red-700 ring-red-200/60 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-500/20',
+  fibertec: 'bg-sky-50 text-sky-700 ring-sky-200/60 dark:bg-sky-500/10 dark:text-sky-300 dark:ring-sky-500/20',
 }
 
-const EMPRESA_ORDER: Record<string, number> = { express: 0, ultra: 1, chipped: 2 }
+const EMPRESA_ORDER: Record<string, number> = { express: 0, ultra: 1, chipped: 2, fibertec: 3 }
 
 const cargarComisiones = async () => {
   ciclosComisiones.value = []
@@ -866,8 +867,9 @@ const distribucionEstadosEquipo = computed(() => buildDistribucion(ventasEquipoM
 
 const EMPRESA_LINE_COLOR: Record<string, string> = {
   express: '#a855f7',
-  ultra: '#8b5cf6',
-  chipped: '#10b981',
+  ultra: '#22c55e',
+  chipped: '#ef4444',
+  fibertec: '#0ea5e9',
 }
 
 function buildPorCiclo(getValue: (h: { concretadas: number; creadas: number }) => number, getActual: (cc: CicloComisionData) => number) {

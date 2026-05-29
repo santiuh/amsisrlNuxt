@@ -184,6 +184,7 @@ const empresaOptions = [
   { label: 'Express', value: 'express' },
   { label: 'Ultra', value: 'ultra' },
   { label: 'Chipped', value: 'chipped' },
+  { label: 'Fibertec', value: 'fibertec' },
 ]
 
 const tabs = computed(() => {

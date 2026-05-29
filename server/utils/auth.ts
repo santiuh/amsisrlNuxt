@@ -23,7 +23,7 @@ export async function requireProfile(event: H3Event) {
 
   const { data: profile, error } = await client
     .from('profiles')
-    .select('id, nombre, email, rol, grupo_id, must_change_password, puede_vender_ultra, puede_vender_chipped')
+    .select('id, nombre, email, rol, grupo_id, must_change_password, puede_vender_ultra, puede_vender_chipped, puede_vender_fibertec')
     .eq('id', user.id)
     .single()
 

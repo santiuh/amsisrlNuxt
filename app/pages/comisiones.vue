@@ -148,6 +148,9 @@ const empresaOptions = computed(() => {
   if (profile.value?.puede_vender_chipped || profile.value?.rol === 'admin') {
     options.push({ label: 'Chipped', value: 'chipped' })
   }
+  if (profile.value?.puede_vender_fibertec || profile.value?.rol === 'admin') {
+    options.push({ label: 'Fibertec', value: 'fibertec' })
+  }
   return options
 })
 

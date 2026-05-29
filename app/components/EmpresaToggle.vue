@@ -52,6 +52,12 @@
         :alt="opt.label"
         class="h-5 object-contain"
       />
+      <img
+        v-else-if="opt.value === 'fibertec'"
+        src="/img/logo-fibertec.png"
+        :alt="opt.label"
+        class="h-5 object-contain"
+      />
       <span v-else class="text-xs font-semibold">{{ opt.label }}</span>
     </button>
   </div>
@@ -83,6 +89,7 @@ const computedOptions = computed<EmpresaOption[]>(() => {
     { label: 'Express', value: 'express' },
     { label: 'Ultra', value: 'ultra' },
     { label: 'Chipped', value: 'chipped' },
+    { label: 'Fibertec', value: 'fibertec' },
   ]
 })
 </script>

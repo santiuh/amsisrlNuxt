@@ -121,6 +121,7 @@ const LOGOS: Record<string, string> = {
   express: '/img/logo-express.png',
   ultra: '/img/logo-ultra.png',
   chipped: '/img/logo-chipped.png',
+  fibertec: '/img/logo-fibertec.png',
 }
 
 const logoSrc = computed(() => LOGOS[props.empresa])
@@ -143,36 +144,52 @@ const STYLES: Record<string, Record<string, string>> = {
     logoFilter: 'purple-logo-filter',
   },
   ultra: {
-    card: 'bg-white shadow-card ring-violet-100 dark:bg-violet-500/[0.06] dark:ring-violet-500/15',
-    orb: 'bg-gradient-to-br from-violet-300 via-indigo-200 to-transparent dark:from-violet-500/40 dark:via-indigo-500/20',
-    orb2: 'bg-gradient-to-tr from-violet-400 to-sky-300 dark:from-violet-500/30 dark:to-sky-500/20',
-    title: 'text-violet-600/80 dark:text-violet-300/80',
-    dot: 'bg-violet-500 ring-violet-500/20 dark:bg-violet-300 dark:ring-violet-300/30',
-    dotPulse: 'bg-violet-400 dark:bg-violet-300',
-    badge: 'bg-violet-50/80 text-violet-700 ring-violet-200/60 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-400/20',
-    value: 'text-violet-800 dark:text-white',
-    sub: 'text-violet-500/70 dark:text-violet-300/50',
-    body: 'text-violet-900 dark:text-violet-100',
-    muted: 'text-violet-500/60 dark:text-violet-300/50',
-    divider: 'bg-violet-200/70 dark:bg-violet-400/20',
-    footer: 'border-violet-100 dark:border-violet-400/15 text-violet-600/70 dark:text-violet-300/50',
-    logoFilter: 'violet-logo-filter',
+    card: 'bg-white shadow-card ring-green-100 dark:bg-green-500/[0.06] dark:ring-green-500/15',
+    orb: 'bg-gradient-to-br from-green-300 via-emerald-200 to-transparent dark:from-green-500/40 dark:via-emerald-500/20',
+    orb2: 'bg-gradient-to-tr from-green-400 to-teal-300 dark:from-green-500/30 dark:to-teal-500/20',
+    title: 'text-green-600/80 dark:text-green-300/80',
+    dot: 'bg-green-500 ring-green-500/20 dark:bg-green-300 dark:ring-green-300/30',
+    dotPulse: 'bg-green-400 dark:bg-green-300',
+    badge: 'bg-green-50/80 text-green-700 ring-green-200/60 dark:bg-green-500/15 dark:text-green-200 dark:ring-green-400/20',
+    value: 'text-green-800 dark:text-white',
+    sub: 'text-green-500/70 dark:text-green-300/50',
+    body: 'text-green-900 dark:text-green-100',
+    muted: 'text-green-500/60 dark:text-green-300/50',
+    divider: 'bg-green-200/70 dark:bg-green-400/20',
+    footer: 'border-green-100 dark:border-green-400/15 text-green-600/70 dark:text-green-300/50',
+    logoFilter: 'green-logo-filter',
   },
   chipped: {
-    card: 'bg-white shadow-card ring-emerald-100 dark:bg-emerald-500/[0.06] dark:ring-emerald-500/15',
-    orb: 'bg-gradient-to-br from-emerald-300 via-teal-200 to-transparent dark:from-emerald-500/40 dark:via-teal-500/20',
-    orb2: 'bg-gradient-to-tr from-emerald-400 to-lime-300 dark:from-emerald-500/30 dark:to-lime-500/20',
-    title: 'text-emerald-600/80 dark:text-emerald-300/80',
-    dot: 'bg-emerald-500 ring-emerald-500/20 dark:bg-emerald-300 dark:ring-emerald-300/30',
-    dotPulse: 'bg-emerald-400 dark:bg-emerald-300',
-    badge: 'bg-emerald-50/80 text-emerald-700 ring-emerald-200/60 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/20',
-    value: 'text-emerald-800 dark:text-white',
-    sub: 'text-emerald-500/70 dark:text-emerald-300/50',
-    body: 'text-emerald-900 dark:text-emerald-100',
-    muted: 'text-emerald-500/60 dark:text-emerald-300/50',
-    divider: 'bg-emerald-200/70 dark:bg-emerald-400/20',
-    footer: 'border-emerald-100 dark:border-emerald-400/15 text-emerald-600/70 dark:text-emerald-300/50',
-    logoFilter: 'emerald-logo-filter',
+    card: 'bg-white shadow-card ring-red-100 dark:bg-red-500/[0.06] dark:ring-red-500/15',
+    orb: 'bg-gradient-to-br from-red-300 via-rose-200 to-transparent dark:from-red-500/40 dark:via-rose-500/20',
+    orb2: 'bg-gradient-to-tr from-red-400 to-orange-300 dark:from-red-500/30 dark:to-orange-500/20',
+    title: 'text-red-600/80 dark:text-red-300/80',
+    dot: 'bg-red-500 ring-red-500/20 dark:bg-red-300 dark:ring-red-300/30',
+    dotPulse: 'bg-red-400 dark:bg-red-300',
+    badge: 'bg-red-50/80 text-red-700 ring-red-200/60 dark:bg-red-500/15 dark:text-red-200 dark:ring-red-400/20',
+    value: 'text-red-800 dark:text-white',
+    sub: 'text-red-500/70 dark:text-red-300/50',
+    body: 'text-red-900 dark:text-red-100',
+    muted: 'text-red-500/60 dark:text-red-300/50',
+    divider: 'bg-red-200/70 dark:bg-red-400/20',
+    footer: 'border-red-100 dark:border-red-400/15 text-red-600/70 dark:text-red-300/50',
+    logoFilter: 'red-logo-filter',
+  },
+  fibertec: {
+    card: 'bg-white shadow-card ring-sky-100 dark:bg-sky-500/[0.06] dark:ring-sky-500/15',
+    orb: 'bg-gradient-to-br from-sky-300 via-cyan-200 to-transparent dark:from-sky-500/40 dark:via-cyan-500/20',
+    orb2: 'bg-gradient-to-tr from-sky-400 to-blue-300 dark:from-sky-500/30 dark:to-blue-500/20',
+    title: 'text-sky-600/80 dark:text-sky-300/80',
+    dot: 'bg-sky-500 ring-sky-500/20 dark:bg-sky-300 dark:ring-sky-300/30',
+    dotPulse: 'bg-sky-400 dark:bg-sky-300',
+    badge: 'bg-sky-50/80 text-sky-700 ring-sky-200/60 dark:bg-sky-500/15 dark:text-sky-200 dark:ring-sky-400/20',
+    value: 'text-sky-800 dark:text-white',
+    sub: 'text-sky-500/70 dark:text-sky-300/50',
+    body: 'text-sky-900 dark:text-sky-100',
+    muted: 'text-sky-500/60 dark:text-sky-300/50',
+    divider: 'bg-sky-200/70 dark:bg-sky-400/20',
+    footer: 'border-sky-100 dark:border-sky-400/15 text-sky-600/70 dark:text-sky-300/50',
+    logoFilter: 'sky-logo-filter',
   },
 }
 
@@ -183,11 +200,14 @@ const styles = computed(() => STYLES[props.empresa] ?? STYLES.express)
 .purple-logo-filter {
   filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(240deg) saturate(3);
 }
-.violet-logo-filter {
-  filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(260deg) saturate(3);
+.green-logo-filter {
+  filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(90deg) saturate(3);
 }
-.emerald-logo-filter {
-  filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(110deg) saturate(3);
+.red-logo-filter {
+  filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(320deg) saturate(4);
+}
+.sky-logo-filter {
+  filter: brightness(0) saturate(100%) sepia(100%) hue-rotate(160deg) saturate(3);
 }
 
 /* Mask gradient para que el logo se desvanezca elegantemente y no moleste */
