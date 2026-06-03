@@ -134,3 +134,111 @@ export function calcularEstimaciones(
   // Ordenar por monto total descendente
   return estimaciones.sort((a, b) => b.monto_total - a.monto_total)
 }
+
+// ——— Generado por mes (todas las empresas) ———
+
+interface VentaConEmpresa extends VentaConcretada {
+  empresa: string
+}
+
+export interface GeneradoVendedorMes {
+  vendedor_id: string
+  nombre: string
+  rol: string
+  cantidad_ventas: number
+  monto_total_ventas: number
+  monto_comision: number // comisión + bonus liderazgo, sumado entre empresas
+}
+
+export interface MesGenerado {
+  key: string // 'YYYY-MM'
+  label: string // ej. 'junio 2026'
+  cantidad_ventas: number
+  monto_total_ventas: number
+  monto_comision: number
+  vendedores: GeneradoVendedorMes[]
+}
+
+const CONFIG_DEFAULT: ConfigComisiones = { pct_grupo: 80, pct_lider: 25 }
+
+/**
+ * Agrupa las ventas concretadas por mes calendario y, dentro de cada mes,
+ * calcula lo generado por cada vendedor sumando todas las empresas.
+ *
+ * La comisión se calcula por (mes × empresa) reutilizando `calcularEstimaciones`,
+ * para respetar el porcentaje propio de cada empresa, y luego se fusiona por vendedor.
+ */
+export function calcularGeneradoPorMes(
+  ventas: VentaConEmpresa[],
+  profiles: ProfileBasico[],
+  grupos: GrupoBasico[],
+  configPorEmpresa: Record<string, ConfigComisiones>,
+): MesGenerado[] {
+  // 1. Agrupar ventas por mes calendario (clave 'YYYY-MM')
+  const porMes = new Map<string, VentaConEmpresa[]>()
+  for (const venta of ventas) {
+    if (!venta.fecha_concretado) continue
+    const d = new Date(venta.fecha_concretado)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const lista = porMes.get(key)
+    if (lista) lista.push(venta)
+    else porMes.set(key, [venta])
+  }
+
+  const meses: MesGenerado[] = []
+
+  for (const [key, ventasMes] of porMes) {
+    // 2. Dentro del mes, agrupar por empresa y estimar con su config propia
+    const porEmpresa = new Map<string, VentaConEmpresa[]>()
+    for (const venta of ventasMes) {
+      const lista = porEmpresa.get(venta.empresa)
+      if (lista) lista.push(venta)
+      else porEmpresa.set(venta.empresa, [venta])
+    }
+
+    // 3. Fusionar estimaciones por vendedor a través de las empresas
+    const merge = new Map<string, GeneradoVendedorMes>()
+    for (const [empresa, ventasEmpresa] of porEmpresa) {
+      const config = configPorEmpresa[empresa] ?? CONFIG_DEFAULT
+      const estimaciones = calcularEstimaciones(ventasEmpresa, profiles, grupos, config)
+      for (const e of estimaciones) {
+        const acc = merge.get(e.vendedor_id)
+        if (acc) {
+          acc.cantidad_ventas += e.cantidad_ventas
+          acc.monto_total_ventas += e.monto_total_ventas
+          acc.monto_comision += e.monto_total
+        } else {
+          merge.set(e.vendedor_id, {
+            vendedor_id: e.vendedor_id,
+            nombre: e.nombre,
+            rol: e.rol,
+            cantidad_ventas: e.cantidad_ventas,
+            monto_total_ventas: e.monto_total_ventas,
+            monto_comision: e.monto_total,
+          })
+        }
+      }
+    }
+
+    // 4. Solo quienes generaron algo (ventas propias o comisión por liderazgo),
+    //    ordenados por comisión desc (igual que la estimación por ciclo).
+    const vendedores = Array.from(merge.values())
+      .filter(v => v.cantidad_ventas > 0 || v.monto_comision > 0)
+      .sort((a, b) => b.monto_comision - a.monto_comision)
+
+    // 5. Totales del mes
+    const [anio, mes] = key.split('-').map(Number)
+    const labelMes = new Date(anio, mes - 1, 1).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
+    meses.push({
+      key,
+      label: labelMes.charAt(0).toUpperCase() + labelMes.slice(1),
+      cantidad_ventas: vendedores.reduce((s, v) => s + v.cantidad_ventas, 0),
+      monto_total_ventas: vendedores.reduce((s, v) => s + v.monto_total_ventas, 0),
+      monto_comision: vendedores.reduce((s, v) => s + v.monto_comision, 0),
+      vendedores,
+    })
+  }
+
+  // 6. Meses más recientes primero
+  return meses.sort((a, b) => b.key.localeCompare(a.key))
+}

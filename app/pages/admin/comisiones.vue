@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div class="flex items-center justify-between gap-3">
       <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Comisiones</h2>
-      <div class="flex items-center gap-2">
+      <div v-if="vista === 'ciclo'" class="flex items-center gap-2">
         <USelect
           v-model="empresaSeleccionada"
           :options="empresaOptions"
@@ -17,8 +17,29 @@
       </div>
     </div>
 
+    <!-- Conmutador de vista -->
+    <UButtonGroup>
+      <UButton
+        :color="vista === 'ciclo' ? 'primary' : 'gray'"
+        :variant="vista === 'ciclo' ? 'solid' : 'outline'"
+        icon="i-heroicons-arrow-path-rounded-square"
+        label="Por ciclo"
+        @click="vista = 'ciclo'"
+      />
+      <UButton
+        :color="vista === 'mes' ? 'primary' : 'gray'"
+        :variant="vista === 'mes' ? 'solid' : 'outline'"
+        icon="i-heroicons-calendar-days"
+        label="Generado por mes"
+        @click="vista = 'mes'"
+      />
+    </UButtonGroup>
+
+    <!-- ============ VISTA: GENERADO POR MES ============ -->
+    <ComisionesPorMes v-if="vista === 'mes'" />
+
     <!-- Loading -->
-    <div v-if="loading" class="flex justify-center py-12">
+    <div v-else-if="loading" class="flex justify-center py-12">
       <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin" />
     </div>
 
@@ -391,6 +412,8 @@ definePageMeta({ middleware: ['role'] })
 
 const client = useSupabaseClient()
 const toast = useToast()
+
+const vista = ref<'ciclo' | 'mes'>('ciclo')
 
 const empresaSeleccionada = ref('express')
 const empresaOptions = [
