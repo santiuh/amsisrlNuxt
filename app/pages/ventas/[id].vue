@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl mx-auto space-y-4">
+  <div class="mx-auto space-y-4 transition-[max-width] duration-300" :class="layout === 'compacta' ? 'max-w-3xl lg:max-w-none' : 'max-w-3xl'">
     <!-- Header -->
     <div class="flex items-center gap-3">
       <UButton
@@ -19,6 +19,7 @@
         variant="subtle"
       />
       <div class="ml-auto flex items-center gap-1">
+        <VentaLayoutToggle class="mr-1" />
         <!-- Toggle "WhatsApp enviado" — solo oficinista/admin, solo en EN PROCESO / EN CONFLICTO -->
         <template v-if="canManageWhatsapp && venta && canMarkWhatsapp">
           <UButton
@@ -257,6 +258,7 @@ import { empresaColor, empresaLabel } from '~/utils/empresa'
 const route = useRoute()
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
+const layout = useVentaFormLayout()
 const toast = useToast()
 const loading = ref(true)
 const venta = ref<any>(null)

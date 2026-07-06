@@ -1,9 +1,10 @@
 <template>
-  <div class="space-y-4 pb-4">
+  <div class="venta-form space-y-3 sm:space-y-4 pb-1">
+    <div class="venta-sections" :class="seccionesClass">
     <!-- ═══ SECCIÓN: Empresa ═══ -->
-    <fieldset v-if="empresaOptions.length > 1 || readonly" class="space-y-3">
-      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-        <UIcon name="i-heroicons-building-office" class="w-3.5 h-3.5" />
+    <fieldset v-if="empresaOptions.length > 1 || readonly" class="venta-section rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] ring-1 ring-gray-200/70 dark:ring-white/[0.06] p-3.5 sm:p-4 space-y-3">
+      <legend class="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-700 dark:text-gray-200">
+        <UIcon name="i-heroicons-building-office" class="w-4 h-4 text-gray-700 dark:text-gray-200 shrink-0" />
         Empresa
       </legend>
 
@@ -11,15 +12,14 @@
         v-model="form.empresa"
         :options="empresaOptions"
         :disabled="readonly || !!props.initialData"
+        themed
       />
     </fieldset>
 
-    <UDivider v-if="empresaOptions.length > 1 || readonly" />
-
     <!-- ═══ SECCIÓN: Datos del Cliente ═══ -->
-    <fieldset class="space-y-3">
-      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-        <UIcon name="i-heroicons-user" class="w-3.5 h-3.5" />
+    <fieldset class="venta-section rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] ring-1 ring-gray-200/70 dark:ring-white/[0.06] p-3.5 sm:p-4 space-y-3">
+      <legend class="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-700 dark:text-gray-200">
+        <UIcon name="i-heroicons-user" class="w-4 h-4 text-gray-700 dark:text-gray-200 shrink-0" />
         Datos del cliente
       </legend>
 
@@ -76,12 +76,11 @@
       </UFormGroup>
     </fieldset>
 
-    <UDivider />
 
     <!-- ═══ SECCIÓN: Ubicación ═══ -->
-    <fieldset class="space-y-3">
-      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-        <UIcon name="i-heroicons-map-pin" class="w-3.5 h-3.5" />
+    <fieldset class="venta-section rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] ring-1 ring-gray-200/70 dark:ring-white/[0.06] p-3.5 sm:p-4 space-y-3">
+      <legend class="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-700 dark:text-gray-200">
+        <UIcon name="i-heroicons-map-pin" class="w-4 h-4 text-gray-700 dark:text-gray-200 shrink-0" />
         Ubicación
       </legend>
 
@@ -122,12 +121,11 @@
       </UFormGroup>
     </fieldset>
 
-    <UDivider />
 
     <!-- ═══ SECCIÓN: Paquete y Extras ═══ -->
-    <fieldset class="space-y-3">
-      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-        <UIcon name="i-heroicons-tv" class="w-3.5 h-3.5" />
+    <fieldset class="venta-section rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] ring-1 ring-gray-200/70 dark:ring-white/[0.06] p-3.5 sm:p-4 space-y-3">
+      <legend class="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-700 dark:text-gray-200">
+        <UIcon name="i-heroicons-tv" class="w-4 h-4 text-gray-700 dark:text-gray-200 shrink-0" />
         Paquete y extras
       </legend>
 
@@ -203,12 +201,11 @@
       </div>
     </fieldset>
 
-    <UDivider />
 
     <!-- ═══ SECCIÓN: Pago ═══ -->
-    <fieldset class="space-y-3">
-      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-        <UIcon name="i-heroicons-credit-card" class="w-3.5 h-3.5" />
+    <fieldset class="venta-section rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] ring-1 ring-gray-200/70 dark:ring-white/[0.06] p-3.5 sm:p-4 space-y-3">
+      <legend class="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-700 dark:text-gray-200">
+        <UIcon name="i-heroicons-credit-card" class="w-4 h-4 text-gray-700 dark:text-gray-200 shrink-0" />
         Pago
       </legend>
 
@@ -251,9 +248,9 @@
     </fieldset>
 
       <!-- ═══ SECCIÓN: Observaciones ═══ -->
-    <fieldset class="space-y-3">
-      <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-        <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="w-3.5 h-3.5" />
+    <fieldset class="venta-section rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] ring-1 ring-gray-200/70 dark:ring-white/[0.06] p-3.5 sm:p-4 space-y-3">
+      <legend class="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-700 dark:text-gray-200">
+        <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="w-4 h-4 text-gray-700 dark:text-gray-200 shrink-0" />
         Observaciones
       </legend>
       <UFormGroup label="Comentarios de venta">
@@ -272,11 +269,9 @@
 
     <!-- ═══ SECCIÓN: Gestión (solo oficinista/admin) ═══ -->
     <template v-if="!hideGestionFields && (canEditEstado || canEditGestion || readonly)">
-      <UDivider />
-
-      <fieldset class="space-y-3">
-        <legend class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 mb-1">
-          <UIcon name="i-heroicons-clipboard-document-list" class="w-3.5 h-3.5" />
+      <fieldset class="venta-section rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] ring-1 ring-gray-200/70 dark:ring-white/[0.06] p-3.5 sm:p-4 space-y-3">
+        <legend class="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-gray-700 dark:text-gray-200">
+          <UIcon name="i-heroicons-clipboard-document-list" class="w-4 h-4 text-gray-700 dark:text-gray-200 shrink-0" />
           Gestión
         </legend>
 
@@ -346,10 +341,7 @@
         </UFormGroup>
       </fieldset>
     </template>
-
-    <UDivider />
-
-  
+    </div>
 
     <!-- ═══ Error ═══ -->
     <UAlert
@@ -361,15 +353,18 @@
     />
 
     <!-- ═══ Precio Total ═══ -->
-    <div class="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 px-4 py-3">
-      <div class="flex items-center justify-between">
-        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Precio Total</span>
+    <div class="rounded-2xl bg-gradient-to-br from-primary-50 via-white to-white dark:from-primary-500/10 dark:via-gray-900/20 dark:to-gray-900/20 ring-1 ring-primary-200/70 dark:ring-primary-500/20 shadow-soft px-4 py-3.5">
+      <div class="flex items-center justify-between gap-3">
+        <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-primary-600 dark:text-primary-300">
+          <UIcon name="i-heroicons-banknotes" class="w-4 h-4" />
+          Precio total
+        </span>
         <div class="flex items-center gap-2">
-          <span class="text-xl font-bold text-gray-900 dark:text-white md:text-2xl">{{ formatPrecio(precioCalculado) }}</span>
+          <span class="text-2xl sm:text-[1.75rem] leading-none font-black tabular-nums text-gray-900 dark:text-white">{{ formatPrecio(precioCalculado) }}</span>
           <UButton v-if="readonly" icon="i-heroicons-clipboard-document" color="gray" variant="ghost" size="sm" square @click="copyField(formatPrecio(precioCalculado), 'Precio total')" />
         </div>
       </div>
-      <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 dark:text-gray-400 text-right mt-0.5">
+      <p v-if="desgloseBocasDecos" class="text-xs text-gray-500 dark:text-gray-400 text-right mt-1.5">
         {{ desgloseBocasDecos }}
       </p>
       <p v-if="isExistingVenta && !readonly" class="text-xs text-gray-400 dark:text-gray-500 text-right mt-1 italic">
@@ -378,13 +373,15 @@
     </div>
 
     <!-- ═══ Botones de acción ═══ -->
-    <div v-if="showSubmitActions" class="flex items-center gap-2 justify-center md:justify-end md:gap-3 pt-1">
+    <div v-if="showSubmitActions" class="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
       <UButton
         v-if="showCancel"
         label="Cancelar"
         color="gray"
         variant="outline"
-        size="sm"
+        size="md"
+        :block="true"
+        class="justify-center sm:w-auto"
         @click="$emit('cancel')"
       />
       <slot name="extra-actions" :form-data="form" />
@@ -392,8 +389,10 @@
         :loading="loading"
         :label="submitLabel ?? 'Guardar'"
         :disabled="submitDisabled"
-        size="sm"
-        class="flex w-fit"
+        size="md"
+        :block="true"
+        icon="i-heroicons-check-circle"
+        class="justify-center sm:w-auto"
         @click="submit"
       />
     </div>
@@ -420,6 +419,16 @@ const emit = defineEmits<{
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
 const toast = useToast()
+
+// Layout de escritorio: 'compacta' (multi-columna) o 'comoda' (una columna).
+// Las columnas y el toggle están gateados a lg+, así que mobile queda intacto.
+const layout = useVentaFormLayout()
+const seccionesClass = computed(() => {
+  const base = '[&>fieldset]:mb-3 sm:[&>fieldset]:mb-4 [&>fieldset]:break-inside-avoid'
+  return layout.value === 'compacta'
+    ? `${base} lg:columns-2 xl:columns-3 lg:[column-gap:1.25rem]`
+    : base
+})
 
 const canEditEstado = computed(() =>
   !!props.initialData && ['oficinista', 'admin'].includes(profile.value?.rol ?? '')
@@ -863,3 +872,20 @@ const submit = async () => {
 const formatPrecio = (n: number) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(n ?? 0)
 </script>
+
+<style scoped>
+/* Comodidad táctil en mobile: evita el zoom automático de iOS al enfocar
+   (font-size < 16px lo dispara) y agranda el área de toque de los controles. */
+@media (max-width: 639px) {
+  .venta-form :deep(input:not([type='checkbox'])),
+  .venta-form :deep(select),
+  .venta-form :deep(textarea) {
+    font-size: 16px;
+  }
+
+  .venta-form :deep(input:not([type='checkbox'])),
+  .venta-form :deep(select) {
+    min-height: 2.625rem;
+  }
+}
+</style>
