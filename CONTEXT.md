@@ -29,6 +29,19 @@ ventas       id, vendedor_id (FK→profiles), cliente, dni_cuil, telefono,
              fecha_carga, created_by
 venta_extras venta_id (FK→ventas), extra_id (FK→extras), precio_snapshot  ← PK compuesta
 grupos       id (UUID PK), lider_id (FK→profiles), created_at
+
+prospectos   id, nombre, telefono, canal, estado, motivo_perdida,
+             dir_calle, dir_entre_calles, dir_localidad, dir_aclaracion,
+             lat, lng (double precision, NULL/NULL = "sin ubicar"),
+             notas, proxima_visita (date), fecha_ultima_interaccion (denorm.),
+             vendedor_id (FK→profiles, dueño), created_by, venta_id (UNIQUE FK→ventas),
+             origen ('manual'|'importado'|'venta'), created_at, updated_at
+             CHECK estado IN ('por_visitar','ausente','visitado','ofrecido','contratado','perdido','reconectar')
+             CHECK canal IN ('puerta_a_puerta','telefono','whatsapp','instagram','facebook','referido','otro')
+             CHECK perdido ⇒ motivo_perdida NOT NULL
+prospecto_interacciones  id, prospecto_id (FK CASCADE), autor_id, tipo, resultado,
+             estado_resultante, comentario, proxima_visita, created_at  ← append-only (sin UPDATE/DELETE)
+geocode_cache  direccion (PK, normalizada), lat, lng, provider  ← cache geocodificación
 ```
 
 ### Rol CHECK constraint
@@ -42,10 +55,19 @@ rol IN ('vendedor', 'oficinista', 'admin', 'lider')
 - `admin_select_all` — admin ve todas
 - `lider_select_grupo_ventas` — lider ve ventas de su grupo
 
+### RLS — prospectos (mismo patrón aditivo)
+- SELECT/UPDATE: `own` (vendedor_id = auth.uid()) + `lider_grupo` (miembros de su grupo) + `staff` (admin/oficinista)
+- INSERT: vendedor/lider solo propio; staff cualquier vendedor_id
+- DELETE: solo admin
+- `prospecto_interacciones`: hereda acceso vía subquery a prospectos (corre bajo RLS del usuario); append-only
+
 ### RPCs SECURITY DEFINER
 - `admin_create_user(p_email, p_password, p_nombre, p_rol)` — crea usuario en auth + profile
 - `admin_create_grupo(p_lider_id UUID) RETURNS UUID`
 - `admin_set_grupo_members(p_grupo_id UUID, p_vendedor_ids UUID[]) RETURNS VOID`
+- `prospectos_mapa()` — capa limitada del mapa para TODOS los autenticados: solo columnas
+  seguras (id, lat/lng, estado, fechas, vendedor id+nombre, localidad, flag acceso_completo).
+  ⚠️ NUNCA agregarle teléfono/nombre del cliente/notas/dirección exacta sin revisar visibilidad.
 
 ### FK aliases para joins con Supabase
 - Lider de grupo: `profiles!grupos_lider_id_fkey`
@@ -173,3 +195,20 @@ git push origin main  # → trigger Vercel deploy automático
 - [x] comentarios_gestion como log JSONB: {fecha_hora, autor, tipo ('comentario'|'estado'), texto}
 - [x] Oficinistas solo pueden editar estado y agregar comentarios de gestión
 - [x] API server-side protegida: todas las mutaciones via Nitro routes con auth + roles (server/api/)
+- [x] Prospección / Mapa de clientes (/mapa): **ADMIN-ONLY por ahora** (middleware
+      app/middleware/admin.ts en /mapa, /prospectos/[id], /prospectos/importar; el link
+      aparece solo para admin en sidebar + menú móvil). Leaflet + OSM + clustering,
+      prospectos con pipeline puerta a puerta (por_visitar→…→contratado/perdido/reconectar),
+      historial de interacciones append-only, agenda de revisitas, quick-add con GPS,
+      buscador de direcciones, import CSV (/prospectos/importar) + desde ventas (todas, con
+      mapeo de estado), conversión prospecto→venta (?prospecto= en /ventas/nueva + link-venta).
+      Geocodificación: georef-ar por DEPARTAMENTO + validación por distancia al centroide de
+      la localidad (georef falla con localidad_censal), Nominatim de fallback, cache; alias de
+      localidades y centroides en server/utils/geo.ts. Direcciones que ningún mapa encuentra
+      (pueblos chicos) → botón "Ubicar aprox." las pone en el centro del pueblo con
+      ubicacion_aproximada=true (pin punteado, ajustable; se limpia al reubicar a mano).
+      Visibilidad por rol en la data (RLS + RPC prospectos_mapa() con solo columnas seguras),
+      lista para reactivar el acceso a vendedores/líderes cuando se quiera.
+      La capa del mapa se pagina (.range de a 1000) porque PostgREST corta las RPC en 1000.
+      Diseño: docs/plans/2026-07-12-prospectos-mapa-design.md
+      Migraciones: docs/migrations/2026-07-12-prospectos-mapa.sql y 2026-07-13-prospectos-ubicacion-aproximada.sql

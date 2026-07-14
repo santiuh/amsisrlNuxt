@@ -402,6 +402,10 @@
 <script setup lang="ts">
 const props = defineProps<{
   initialData?: Record<string, any>
+  // Semilla de campos para una venta NUEVA (ej. desde un prospecto).
+  // A diferencia de initialData, NO activa el modo edición (isExistingVenta):
+  // precios y empresa siguen comportándose como venta nueva.
+  prefill?: Record<string, any>
   submitLabel?: string
   showCancel?: boolean
   readonly?: boolean
@@ -527,6 +531,7 @@ const form = reactive({
   comentarios_gestion: [] as any[],
   nro_cliente: '',
   ...(props.initialData ?? {}),
+  ...(props.prefill ?? {}),
 })
 
 // Recargar catálogo cuando cambia la empresa

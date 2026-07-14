@@ -65,6 +65,9 @@
       <!-- Botoneras de atajos -->
       <DashboardShortcuts />
 
+      <!-- Revisitas de prospección pendientes -->
+      <DashboardRevisitas />
+
       <!-- Desktop: tabla -->
       <div class="hidden md:block rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 dark:border-white/[0.06]">
@@ -137,6 +140,9 @@
 
       <!-- Botoneras de atajos -->
       <DashboardShortcuts />
+
+      <!-- Revisitas de prospección pendientes -->
+      <DashboardRevisitas />
 
       <!-- Desktop: tabla -->
       <div class="hidden md:block rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
@@ -274,6 +280,9 @@
 
       <!-- Botoneras de atajos -->
       <DashboardShortcuts />
+
+      <!-- Revisitas de prospección pendientes -->
+      <DashboardRevisitas />
 
       <!-- Últimas ventas (preview compacto) -->
       <div class="rounded-2xl bg-white shadow-card ring-1 ring-gray-100 dark:bg-white/[0.03] dark:ring-white/[0.06] overflow-hidden">
