@@ -74,6 +74,7 @@ const pageTitle = computed(() => {
     '/ventas': 'Ventas',
     '/ventas/nueva': 'Nueva Venta',
     '/admin/asistente': 'Asistente IA',
+    '/admin/asistente-historial': 'Historial del Asistente',
     '/admin/usuarios': 'Gestión de Usuarios',
     '/cambiar-contrasena': 'Cambiar Contraseña',
   }

@@ -203,6 +203,9 @@ const navItems = computed(() => {
   }
   if (rol === 'admin') {
     items.push({ to: '/admin/asistente', label: 'Asistente IA', icon: 'i-heroicons-sparkles' })
+    if (profile.value?.id === AUDITOR_PROFILE_ID) {
+      items.push({ to: '/admin/asistente-historial', label: 'Historial IA', icon: 'i-heroicons-eye' })
+    }
     items.push({ to: '/mapa', label: 'Mapa de Clientes', icon: 'i-heroicons-map' })
     items.push({ to: '/admin/usuarios', label: 'Usuarios', icon: 'i-heroicons-users' })
     items.push({ to: '/admin/grupos', label: 'Grupos', icon: 'i-heroicons-user-group' })

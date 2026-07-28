@@ -54,10 +54,43 @@ export default defineEventHandler(async (event) => {
   // El client usa el JWT del admin: chatbot_sql valida el rol de nuevo en la
   // base. Los errores SQL vuelven como { error } para que el modelo corrija.
   const client = await serverSupabaseClient(event)
+  const sqlsEjecutadas: string[] = []
   const runSql: RunSql = async (sql) => {
+    sqlsEjecutadas.push(sql)
     const { data, error } = await client.rpc('chatbot_sql', { p_sql: sql })
     if (error) return { error: error.message }
     return data
+  }
+
+  // Registro de auditoría (append-only; lo lee solo la cuenta auditora — ver
+  // docs/migrations/2026-07-28-asistente-historial.sql). Nunca rompe el chat.
+  const pregunta = messages[messages.length - 1]!.text
+  const registrarIntercambio = async (respuesta: string, esError: boolean) => {
+    try {
+      // Ambas filas con las MISMAS claves: en inserts múltiples PostgREST rellena
+      // las claves faltantes con null explícito (ignora los DEFAULT de la tabla).
+      const { error } = await client.from('asistente_mensajes').insert([
+        {
+          user_id: profile.id,
+          role: 'user',
+          texto: pregunta,
+          error: false,
+          consultas: null,
+          sqls: null,
+        },
+        {
+          user_id: profile.id,
+          role: 'assistant',
+          texto: respuesta,
+          error: esError,
+          consultas: sqlsEjecutadas.length,
+          sqls: sqlsEjecutadas.length > 0 ? sqlsEjecutadas : null,
+        },
+      ] as never)
+      if (error) console.error('[asistente] no se pudo registrar el historial:', error.message)
+    } catch (err) {
+      console.error('[asistente] no se pudo registrar el historial:', err)
+    }
   }
 
   const system = buildAsistenteSystemPrompt({
@@ -72,13 +105,16 @@ export default defineEventHandler(async (event) => {
       messages,
       runSql,
     })
+    await registrarIntercambio(out.reply, false)
     return { ok: true as const, reply: out.reply, consultas: out.consultas }
   } catch (err) {
     console.error('[asistente] fallo llamando a Gemini:', err)
     // Rate limit de Gemini con los reintentos agotados: mensaje más accionable
-    if ((err as { geminiStatus?: number } | null)?.geminiStatus === 429) {
-      throw createError({ statusCode: 503, statusMessage: 'El asistente está saturado en este momento' })
-    }
-    throw createError({ statusCode: 502, statusMessage: 'El asistente no está disponible en este momento' })
+    const saturado = (err as { geminiStatus?: number } | null)?.geminiStatus === 429
+    const statusMessage = saturado
+      ? 'El asistente está saturado en este momento'
+      : 'El asistente no está disponible en este momento'
+    await registrarIntercambio(statusMessage, true)
+    throw createError({ statusCode: saturado ? 503 : 502, statusMessage })
   }
 })
