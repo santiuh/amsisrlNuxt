@@ -136,6 +136,9 @@
 import type { CicloComision, CicloPago, EstimacionVendedor } from '~/composables/useComisiones'
 import { calcularEstimaciones } from '~/composables/useComisiones'
 
+// Un admin que entre acá (o escriba la URL) va a /admin/comisiones
+definePageMeta({ middleware: ['comisiones'] })
+
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
 

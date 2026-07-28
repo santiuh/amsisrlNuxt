@@ -83,19 +83,19 @@
 
       <!-- Comisiones -->
       <NuxtLink
-        to="/comisiones"
+        :to="comisionesPath"
         class="flex flex-col items-center justify-end gap-1 h-full pb-2 group"
       >
         <UIcon
           name="i-heroicons-banknotes"
           class="w-[22px] h-[22px] transition-all duration-200"
-          :class="isActive('/comisiones')
+          :class="isActive(comisionesPath)
             ? 'text-cyan-600 dark:text-cyan-400 scale-110'
             : 'text-gray-400 dark:text-slate-500 group-active:text-gray-600'"
         />
         <span
           class="text-[10px] font-semibold transition-colors duration-200 leading-none"
-          :class="isActive('/comisiones') ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-500 dark:text-slate-500'"
+          :class="isActive(comisionesPath) ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-500 dark:text-slate-500'"
         >
           Comisiones
         </span>
@@ -143,6 +143,12 @@ const ventasLabel = computed(() => {
   const rol = profile.value?.rol
   return rol === 'vendedor' || rol === 'lider' ? 'Mis Ventas' : 'Ventas'
 })
+
+// El admin gestiona las comisiones en su propia pantalla (igual que en el
+// sidebar y el menú móvil); el resto ve las suyas.
+const comisionesPath = computed(() =>
+  profile.value?.rol === 'admin' ? '/admin/comisiones' : '/comisiones',
+)
 </script>
 
 <style scoped>
