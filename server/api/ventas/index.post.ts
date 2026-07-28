@@ -7,15 +7,17 @@ export default defineEventHandler(async (event) => {
 
   const { _extras, extras_ids, ...ventaData } = body
 
-  // Validar permiso por empresa
-  if (ventaData.empresa === 'ultra' && !profile.puede_vender_ultra) {
-    throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Ultra' })
-  }
-  if (ventaData.empresa === 'chipped' && !profile.puede_vender_chipped) {
-    throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Chipped' })
-  }
-  if (ventaData.empresa === 'fibertec' && !profile.puede_vender_fibertec) {
-    throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Fibertec' })
+  // Validar permiso por empresa (los admins pueden vender cualquiera: la UI ya se las ofrece)
+  if (profile.rol !== 'admin') {
+    if (ventaData.empresa === 'ultra' && !profile.puede_vender_ultra) {
+      throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Ultra' })
+    }
+    if (ventaData.empresa === 'chipped' && !profile.puede_vender_chipped) {
+      throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Chipped' })
+    }
+    if (ventaData.empresa === 'fibertec' && !profile.puede_vender_fibertec) {
+      throw createError({ statusCode: 403, statusMessage: 'No tenés permiso para vender Fibertec' })
+    }
   }
 
   const { data: ventaCreada, error } = await client

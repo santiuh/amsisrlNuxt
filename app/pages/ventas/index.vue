@@ -82,10 +82,10 @@ const localidadesOptions = ref<{ label: string; value: string }[]>([
 
 async function loadVendedores() {
   if (profile.value?.rol === 'vendedor') return
+  // Cualquier perfil puede tener ventas a su nombre (admins y líderes incluidos)
   const { data } = await client
     .from('profiles')
     .select('id, nombre')
-    .eq('rol', 'vendedor')
     .order('nombre')
   vendedoresOptions.value = [
     { label: 'Todos los vendedores', value: '' },

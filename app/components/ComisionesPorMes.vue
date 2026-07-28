@@ -146,6 +146,7 @@
 import type { MesGenerado } from '~/composables/useComisiones'
 import { calcularGeneradoPorMes } from '~/composables/useComisiones'
 import { empresaColor, empresaLabel } from '~/utils/empresa'
+import { mesKeyArgentina } from '~/utils/dates'
 
 const client = useSupabaseClient()
 const toast = useToast()
@@ -186,14 +187,9 @@ const rolLabel = (rol: string) => {
   return map[rol] ?? rol
 }
 
-const mesKeyDe = (fecha: string) => {
-  const d = new Date(fecha)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
 const ventasDeVendedor = (mesKey: string, vendedorId: string) =>
   ventas.value
-    .filter(v => v.vendedor_id === vendedorId && v.fecha_concretado && mesKeyDe(v.fecha_concretado) === mesKey)
+    .filter(v => v.vendedor_id === vendedorId && v.fecha_concretado && mesKeyArgentina(v.fecha_concretado) === mesKey)
     .sort((a, b) => new Date(b.fecha_concretado).getTime() - new Date(a.fecha_concretado).getTime())
 
 // ——— Toggles ———
@@ -208,22 +204,40 @@ const toggleVendedor = (mesKey: string, vendedorId: string) => {
 }
 
 // ——— Carga de datos ———
+// PostgREST corta los SELECT en 1000 filas: paginamos con .range() hasta traer
+// TODAS las concretadas (con 2400+ el .range(0, 9999) de antes perdía los meses viejos).
+const cargarVentasConcretadas = async (): Promise<VentaRaw[]> => {
+  const PAGE = 1000
+  const todas: VentaRaw[] = []
+  let desde = 0
+  while (true) {
+    const { data, error } = await client
+      .from('ventas')
+      .select('id, vendedor_id, empresa, cliente, paquete_nombre, precio, precio_concretado, fecha_concretado')
+      .eq('estado', 'concretado')
+      .order('fecha_concretado', { ascending: false })
+      .order('id', { ascending: true })
+      .range(desde, desde + PAGE - 1)
+    if (error) throw error
+    const lote = (data ?? []) as VentaRaw[]
+    todas.push(...lote)
+    if (lote.length < PAGE) break
+    desde += PAGE
+  }
+  return todas
+}
+
 onMounted(async () => {
   loading.value = true
   try {
-    const [{ data: ventasData }, { data: profilesData }, { data: gruposData }, { data: configData }] = await Promise.all([
-      client
-        .from('ventas')
-        .select('id, vendedor_id, empresa, cliente, paquete_nombre, precio, precio_concretado, fecha_concretado')
-        .eq('estado', 'concretado')
-        .order('fecha_concretado', { ascending: false })
-        .range(0, 9999),
+    const [ventasTodas, { data: profilesData }, { data: gruposData }, { data: configData }] = await Promise.all([
+      cargarVentasConcretadas(),
       client.from('profiles').select('id, nombre, rol, grupo_id'),
       client.from('grupos').select('id, lider_id'),
       client.from('configuracion').select('clave, valor, empresa').in('clave', ['comision_porcentaje_grupo', 'comision_porcentaje_lider']),
     ])
 
-    ventas.value = (ventasData ?? []) as VentaRaw[]
+    ventas.value = ventasTodas
 
     // Mapa empresa → { pct_grupo, pct_lider }
     const configPorEmpresa: Record<string, { pct_grupo: number; pct_lider: number }> = {}

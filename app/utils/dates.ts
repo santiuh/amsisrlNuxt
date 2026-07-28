@@ -77,3 +77,24 @@ export const datetimeLocalToISO = (value: string | null | undefined): string | n
   const d = parseBackendDate(value) // "sin timezone" → lo trata como hora local ✓
   return d ? d.toISOString() : null
 }
+
+const FMT_MES_AR = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'America/Argentina/Buenos_Aires',
+  year: 'numeric',
+  month: '2-digit',
+})
+
+/**
+ * Clave 'YYYY-MM' del mes calendario ARGENTINO de un timestamptz.
+ * Los timestamps de Supabase vienen en UTC: una venta concretada el 31/07 a las
+ * 23:00 (hora argentina) es 01/08 02:00 UTC — con el huso del navegador podía
+ * caer en el mes equivocado si el navegador no está en Argentina.
+ */
+export const mesKeyArgentina = (fecha: string | Date): string => {
+  const d = fecha instanceof Date ? fecha : new Date(fecha)
+  if (Number.isNaN(d.getTime())) return ''
+  const partes = FMT_MES_AR.formatToParts(d)
+  const anio = partes.find(p => p.type === 'year')?.value ?? '0000'
+  const mes = partes.find(p => p.type === 'month')?.value ?? '00'
+  return `${anio}-${mes}`
+}

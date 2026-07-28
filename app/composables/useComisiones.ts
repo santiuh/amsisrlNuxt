@@ -1,3 +1,5 @@
+import { mesKeyArgentina } from '~/utils/dates'
+
 // Tipos
 export interface CicloComision {
   id: string
@@ -78,9 +80,9 @@ export function calcularEstimaciones(
 ): EstimacionVendedor[] {
   const estimaciones: EstimacionVendedor[] = []
 
-  // Filtrar solo profiles que cobran comisiones
+  // Filtrar solo profiles que cobran comisiones (admin incluido: si vende, cobra)
   const comisionables = profiles.filter(p =>
-    ['vendedor', 'oficinista', 'lider'].includes(p.rol),
+    ['vendedor', 'oficinista', 'lider', 'admin'].includes(p.rol),
   )
 
   for (const perfil of comisionables) {
@@ -89,9 +91,12 @@ export function calcularEstimaciones(
     const cantidad = ventasPropias.length
     const montoTotal = ventasPropias.reduce((sum, v) => sum + Number(v.precio_concretado ?? v.precio), 0)
 
+    // Un admin sin ventas en el período no genera fila (igual que admin_cerrar_ciclo)
+    if (perfil.rol === 'admin' && cantidad === 0) continue
+
     // Determinar porcentaje
     let pct: number
-    if (perfil.rol === 'oficinista') {
+    if (perfil.rol === 'oficinista' || perfil.rol === 'admin') {
       pct = 100
     } else if (perfil.rol === 'vendedor' && !perfil.grupo_id) {
       pct = 100
@@ -178,8 +183,8 @@ export function calcularGeneradoPorMes(
   const porMes = new Map<string, VentaConEmpresa[]>()
   for (const venta of ventas) {
     if (!venta.fecha_concretado) continue
-    const d = new Date(venta.fecha_concretado)
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const key = mesKeyArgentina(venta.fecha_concretado)
+    if (!key) continue
     const lista = porMes.get(key)
     if (lista) lista.push(venta)
     else porMes.set(key, [venta])

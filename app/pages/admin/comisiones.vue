@@ -748,15 +748,19 @@ const toggleVendedor = async (ciclo: CicloComision, pago: CicloPago) => {
 
   loadingVentasVendedor.value = clave
   try {
-    const { data, error } = await client
+    let query = client
       .from('ventas')
       .select('id, cliente, paquete_nombre, precio, precio_concretado, fecha_concretado')
       .eq('estado', 'concretado')
       .eq('empresa', empresaSeleccionada.value)
       .eq('vendedor_id', pago.vendedor_id)
       .gte('fecha_concretado', ciclo.fecha_inicio)
-      .lte('fecha_concretado', ciclo.fecha_cierre_real ?? new Date().toISOString())
-      .order('fecha_concretado', { ascending: false })
+    // Ciclo cerrado: cota superior EXCLUSIVA (igual que admin_cerrar_ciclo), así una
+    // venta que cae justo en la frontera no aparece también en el ciclo siguiente
+    query = ciclo.fecha_cierre_real
+      ? query.lt('fecha_concretado', ciclo.fecha_cierre_real)
+      : query.lte('fecha_concretado', new Date().toISOString())
+    const { data, error } = await query.order('fecha_concretado', { ascending: false })
     if (error) throw error
     ventasPorVendedor[clave] = (data ?? []) as VentaDeVendedor[]
   } catch (err: any) {

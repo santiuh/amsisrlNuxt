@@ -131,6 +131,7 @@ Configurados en tabla `configuracion` por empresa:
 - Vendedores sin grupo: 100%
 - Vendedores con grupo: `comision_porcentaje_grupo`
 - Líderes: comisión propia + bonus sobre ventas de su equipo
+- Admins que venden: 100% (desde 2026-07-27; solo generan fila en `ciclo_pagos` si vendieron en el ciclo — ver `docs/migrations/2026-07-27-comisiones-admin.sql`)
 
 ## Archivos clave
 
