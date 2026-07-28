@@ -1,5 +1,4 @@
 <template>
-  <!-- Skeleton mientras carga (incluye también el caso sin profile) -->
   <DashboardSkeleton v-if="loading" :role="(profile?.rol as any) ?? 'vendedor'" />
 
   <div v-else class="space-y-4 md:space-y-8">
@@ -364,6 +363,9 @@ import { empresaLabel } from '~/utils/empresa'
 
 const client = useSupabaseClient()
 const profile = useCurrentProfile()
+// El par v-if/v-else del template tiene que ser el ÚNICO nodo raíz: cualquier otro
+// nodo suelto (un comentario también cuenta) convierte la página en un fragmento y
+// la transición de Nuxt deja la pantalla en blanco al navegar desde acá a otra página.
 const loading = ref(true)
 const ventas = ref<any[]>([])
 const lecturas = ref<Record<string, string>>({})
