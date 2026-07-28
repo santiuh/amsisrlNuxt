@@ -3,13 +3,10 @@
   "configurations": [
     {
       "name": "dev",
-      "runtimeExecutable": "/Users/leonardosalvucci/Library/pnpm/pnpm",
-      "runtimeArgs": ["dev", "--host"],
+      "runtimeExecutable": "corepack",
+      "runtimeArgs": ["pnpm", "dev", "--host"],
       "port": 3000,
-      "autoPort": true,
-      "env": {
-        "PATH": "/Users/leonardosalvucci/Library/pnpm/nodejs/24.13.0/bin:/Users/leonardosalvucci/Library/pnpm:/usr/local/bin:/usr/bin:/bin"
-      }
+      "autoPort": true
     }
   ]
 }
