@@ -179,6 +179,16 @@ pnpm build        # production build
 git push origin main  # → trigger Vercel deploy automático
 ```
 
+## Asistente IA (admin-only)
+
+- **Página:** `/admin/asistente` (`middleware: ['role']`) — chat para consultar los datos del CRM en lenguaje natural. Link en sidebar + menú móvil, título en AppHeader.
+- **Endpoint:** `server/api/asistente/chat.post.ts` — `requireAdmin` + rate limit en memoria (15 msg/min por usuario). Body `{ messages: [{role, text}] }` → `{ ok, reply, consultas }`.
+- **Cerebro:** `server/utils/asistente.ts` — system prompt con el esquema completo de la DB + loop de function calling con Gemini (`gemini-2.5-flash`). El modelo llama a la herramienta `consultar_sql`, el server la ejecuta y le devuelve las filas hasta que responde en texto (máx. 6 rondas / 10 consultas por mensaje). Los errores SQL vuelven al modelo para que corrija.
+- **Seguridad DB:** RPC `chatbot_sql(p_sql)` (SECURITY DEFINER, owner `chatbot_readonly`): re-valida rol admin por JWT, solo UNA sentencia SELECT/WITH, máx. 200 filas, corre con el rol `chatbot_readonly` que solo tiene SELECT sobre columnas permitidas — **sin acceso a `ventas.cbu` / `nro_tarjeta` / `vencimiento_tarjeta`** (por eso `SELECT *` en ventas falla: hay que nombrar columnas). Migración: `docs/migrations/2026-07-27-asistente-chatbot.sql`.
+- **Markdown:** respuestas renderizadas con `app/utils/markdownLite.ts` (mini-renderer seguro: escapa todo antes de armar HTML; tablas GFM, listas, negrita, código).
+- **Env:** `GEMINI_API_KEY` (misma key que Solcito en soldemayosoft) + opcional `GEMINI_MODEL`. En Vercel hay que cargar `GEMINI_API_KEY`; sin key el endpoint responde 503. `nitro.vercel.functions.maxDuration = 60` para las rondas múltiples.
+- **Fórmula de montos:** el prompt le enseña al modelo la fórmula oficial `coalesce(precio_concretado, precio)` (la misma de `admin_cerrar_ciclo`) y la atribución de ventas a ciclos por `fecha_concretado`. Porcentajes: oficinistas, admins y vendedores sin grupo cobran 100%; vendedores con grupo y líderes cobran `comision_porcentaje_grupo`; el líder suma `monto_liderazgo`. Los admins que venden se liquidan como cualquier vendedor (migración `docs/migrations/2026-07-27-comisiones-admin.sql`); solo generan fila en `ciclo_pagos` si vendieron algo en el ciclo.
+
 ## Historial de Features Implementadas
 - [x] Auth (login, logout, forgot/reset password)
 - [x] Roles: vendedor, oficinista, admin, lider
@@ -188,6 +198,7 @@ git push origin main  # → trigger Vercel deploy automático
 - [x] Gestión de grupos (/admin/grupos) con asignación de miembros
 - [x] Export CSV para oficinista/lider/admin
 - [x] Deploy en Vercel (amsisrl-nuxt.vercel.app)
+- [x] Asistente IA admin-only (/admin/asistente): chat con Gemini + consultas SQL de solo lectura (ver sección "Asistente IA")
 - [x] Paquetes y extras dinámicos con gestión admin (/admin/catalogo) — precio snapshot en ventas
 - [x] Dirección estructurada en ventas (dir_calle, dir_entre_calles, dir_localidad, dir_aclaracion)
 - [x] Precio calculado automáticamente en formulario (paquete + extras, read-only para vendedor)

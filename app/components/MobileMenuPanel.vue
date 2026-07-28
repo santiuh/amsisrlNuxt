@@ -202,6 +202,7 @@ const navItems = computed(() => {
     items.push({ to: '/comisiones', label: 'Mis Comisiones', icon: 'i-heroicons-banknotes' })
   }
   if (rol === 'admin') {
+    items.push({ to: '/admin/asistente', label: 'Asistente IA', icon: 'i-heroicons-sparkles' })
     items.push({ to: '/mapa', label: 'Mapa de Clientes', icon: 'i-heroicons-map' })
     items.push({ to: '/admin/usuarios', label: 'Usuarios', icon: 'i-heroicons-users' })
     items.push({ to: '/admin/grupos', label: 'Grupos', icon: 'i-heroicons-user-group' })

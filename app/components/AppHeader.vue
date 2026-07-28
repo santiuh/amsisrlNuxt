@@ -73,6 +73,7 @@ const pageTitle = computed(() => {
     '/dashboard': 'Dashboard',
     '/ventas': 'Ventas',
     '/ventas/nueva': 'Nueva Venta',
+    '/admin/asistente': 'Asistente IA',
     '/admin/usuarios': 'Gestión de Usuarios',
     '/cambiar-contrasena': 'Cambiar Contraseña',
   }

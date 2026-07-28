@@ -26,6 +26,7 @@
 Crear `.env` con:
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
+- `GEMINI_API_KEY` (Asistente IA del admin; sin key el endpoint responde 503)
 
 ## Convenciones para cambios
 1. Mantener cambios mínimos y enfocados.

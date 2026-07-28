@@ -19,6 +19,21 @@ export default defineNuxtConfig({
     compatibilityVersion: 4,
   },
 
+  runtimeConfig: {
+    // Gemini — Asistente IA del admin (server/api/asistente/chat.post.ts).
+    // Sin key el endpoint responde 503. En Vercel: cargar GEMINI_API_KEY.
+    geminiApiKey: process.env.GEMINI_API_KEY || '',
+    geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  },
+
+  nitro: {
+    // El asistente hace varias rondas modelo→SQL→modelo: necesita más que los
+    // ~10s default de Vercel para funciones serverless.
+    vercel: {
+      functions: { maxDuration: 60 },
+    },
+  },
+
   app: {
     layoutTransition: { name: 'layout', mode: 'out-in' },
     pageTransition: { name: 'page', mode: 'out-in' },
